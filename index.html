@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parque Hípico La Montaña</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <h1>Parque Hípico La Montaña</h1>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="#inicio" onclick="scrollToSection('inicio')">Inicio</a></li>
+                    <li><a href="#servicios" onclick="scrollToSection('servicios')">Servicios</a></li>
+                    <li><a href="#galeria" onclick="scrollToSection('galeria')">Galería</a></li>
+                    <li><a href="#contacto" onclick="scrollToSection('contacto')">Contacto</a></li>
+                </ul>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="inicio" class="hero">
+            <div class="hero-content">
+                <h2>Bienvenidos a Parque Hípico La Montaña</h2>
+                <p>Un lugar mágico donde la naturaleza y la equitación se encuentran</p>
+                <button class="cta-button" onclick="scrollToSection('servicios')">Descubre Nuestros Servicios</button>
+            </div>
+        </section>
+
+        <section id="servicios" class="services">
+            <div class="container">
+                <h2>Nuestros Servicios</h2>
+                <div class="services-grid">
+                    <div class="service-card">
+                        <div class="service-icon">🐎</div>
+                        <h3>Clases de Equitación</h3>
+                        <p>Clases para todos los niveles, desde principiantes hasta avanzados</p>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">🏇</div>
+                        <h3>Paseos a Caballo</h3>
+                        <p>Disfruta de hermosos paseos por nuestros senderos naturales</p>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">👨‍👩‍👧‍👦</div>
+                        <h3>Actividades Familiares</h3>
+                        <p>Programas especiales para toda la familia</p>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">🎓</div>
+                        <h3>Campamentos</h3>
+                        <p>Campamentos de verano para niños y jóvenes</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="galeria" class="gallery">
+            <div class="container">
+                <h2>Galería</h2>
+                <div class="gallery-grid">
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=400&h=300&fit=crop" alt="Caballo en el parque">
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop" alt="Clase de equitación">
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1544966503-7cc4ac81b4d4?w=400&h=300&fit=crop" alt="Paseo a caballo">
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop" alt="Niños aprendiendo">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contacto" class="contact">
+            <div class="container">
+                <h2>Contacto</h2>
+                <div class="contact-content">
+                    <div class="contact-info">
+                        <h3>Información de Contacto</h3>
+                        <div class="contact-item">
+                            <strong>Dirección:</strong>
+                            <p>Carretera Principal, Km 15<br>La Montaña, Colombia</p>
+                        </div>
+                        <div class="contact-item">
+                            <strong>Teléfono:</strong>
+                            <p>+57 (1) 234-5678</p>
+                        </div>
+                        <div class="contact-item">
+                            <strong>Email:</strong>
+                            <p>info@parquehipicolamontana.com</p>
+                        </div>
+                        <div class="contact-item">
+                            <strong>Horarios:</strong>
+                            <p>Lunes a Domingo: 8:00 AM - 6:00 PM</p>
+                        </div>
+                    </div>
+                    <div class="contact-form">
+                        <h3>Envíanos un Mensaje</h3>
+                        <form>
+                            <input type="text" placeholder="Nombre" required>
+                            <input type="email" placeholder="Email" required>
+                            <input type="tel" placeholder="Teléfono">
+                            <textarea placeholder="Mensaje" rows="5" required></textarea>
+                            <button type="submit">Enviar Mensaje</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Parque Hípico La Montaña. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
