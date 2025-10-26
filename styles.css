@@ -34,26 +34,31 @@ body {
     margin: 0 auto;
     padding: 0 20px;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
+    gap: 40px;
 }
 
 /* Brand Section */
 .brand {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 20px;
     flex: 0 0 auto;
+    margin-right: auto;
+    padding-left: 0;
 }
 
 .logo-image {
-    height: 60px;
+    height: 80px;
     width: auto;
+    max-width: 120px;
 }
 
 .logotipo-image {
-    height: 50px;
+    height: 70px;
     width: auto;
+    max-width: 200px;
 }
 
 /* Navigation Menu */
@@ -61,6 +66,7 @@ body {
     flex: 1;
     display: flex;
     justify-content: center;
+    margin: 0 auto;
 }
 
 .nav-menu {
@@ -563,7 +569,8 @@ body {
     }
     
     .brand {
-        justify-content: center;
+        justify-content: flex-start;
+        margin-right: 0;
     }
     
     .main-navigation {
@@ -598,11 +605,13 @@ body {
     }
     
     .logo-image {
-        height: 50px;
+        height: 60px;
+        max-width: 90px;
     }
     
     .logotipo-image {
-        height: 40px;
+        height: 50px;
+        max-width: 150px;
     }
     
     .nav-menu {
@@ -681,11 +690,13 @@ body {
     }
     
     .logo-image {
-        height: 45px;
+        height: 50px;
+        max-width: 80px;
     }
     
     .logotipo-image {
-        height: 35px;
+        height: 45px;
+        max-width: 120px;
     }
     
     .social-media {
