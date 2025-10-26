@@ -38,43 +38,22 @@ body {
     align-items: center;
 }
 
-/* Logo Section */
-.logo-section {
-    flex: 0 0 auto;
-}
-
-.logo-placeholder {
-    background: linear-gradient(135deg, #001F5B, #003366);
-    padding: 10px 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.logo-content {
+/* Brand Section */
+.brand {
     display: flex;
     align-items: center;
     gap: 15px;
+    flex: 0 0 auto;
 }
 
-.logo-icon {
-    font-size: 2.5rem;
-    color: #FFD700;
+.logo-image {
+    height: 60px;
+    width: auto;
 }
 
-.logo-text h1 {
-    color: #FFD700;
-    font-size: 1.2rem;
-    font-weight: 700;
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.logo-text p {
-    color: #FFD700;
-    font-size: 0.9rem;
-    margin: 0;
-    font-weight: 500;
+.logotipo-image {
+    height: 50px;
+    width: auto;
 }
 
 /* Navigation Menu */
@@ -103,18 +82,24 @@ body {
     padding: 15px 20px;
     color: #001F5B;
     text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9rem;
+    font-weight: 700;
+    font-size: 1rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     transition: all 0.3s ease;
-    border-bottom: 3px solid transparent;
+    border: 2px solid #000000;
+    border-radius: 8px;
+    background-color: #FFD700;
+    margin: 0 5px;
 }
 
 .nav-link:hover {
-    color: #FF0000;
-    border-bottom-color: #FF0000;
-    background-color: rgba(255, 255, 255, 0.1);
+    color: #001F5B;
+    border-color: #FF0000;
+    background-color: #FFD700;
+    text-decoration: underline;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .nav-link i {
@@ -185,21 +170,21 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     text-decoration: none;
     transition: all 0.3s ease;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
 }
 
 .social-link.instagram {
-    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    background: #E1306C;
     color: white;
 }
 
 .social-link.facebook {
-    background: #1877f2;
+    background: #1877F2;
     color: white;
 }
 
@@ -577,6 +562,10 @@ body {
         gap: 20px;
     }
     
+    .brand {
+        justify-content: center;
+    }
+    
     .main-navigation {
         width: 100%;
     }
@@ -602,10 +591,24 @@ body {
         padding: 0 15px;
     }
     
+    .brand {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .logo-image {
+        height: 50px;
+    }
+    
+    .logotipo-image {
+        height: 40px;
+    }
+    
     .nav-menu {
         flex-direction: column;
         width: 100%;
-        gap: 0;
+        gap: 10px;
     }
     
     .nav-item {
@@ -614,8 +617,9 @@ body {
     
     .nav-link {
         justify-content: center;
-        padding: 20px;
-        border-bottom: 1px solid rgba(0, 31, 91, 0.1);
+        padding: 15px;
+        margin: 0;
+        border-radius: 25px;
     }
     
     .dropdown-menu {
@@ -671,18 +675,17 @@ body {
         padding: 0 15px;
     }
     
-    .logo-content {
+    .brand {
         flex-direction: column;
-        gap: 10px;
-        text-align: center;
+        gap: 8px;
     }
     
-    .logo-text h1 {
-        font-size: 1rem;
+    .logo-image {
+        height: 45px;
     }
     
-    .logo-text p {
-        font-size: 0.8rem;
+    .logotipo-image {
+        height: 35px;
     }
     
     .social-media {
@@ -715,6 +718,37 @@ body {
     .event-date {
         align-self: center;
     }
+}
+
+/* WhatsApp Floating Button */
+.whatsapp-float {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background: #25D366;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 2rem;
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.whatsapp-float:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.6);
+    color: white;
+    text-decoration: none;
+}
+
+.whatsapp-float:active {
+    transform: translateY(-1px);
 }
 
 /* Smooth scrolling */
