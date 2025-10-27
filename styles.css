@@ -51,10 +51,6 @@ body {
     height: 84px;   /* antes 56px → +50% */
     width: auto;
 }
-.brand__wordmark {
-    height: 78px;   /* antes 52px → +50% */
-    width: auto;
-}
 
 /* NAV en una sola fila */
 .top-nav {
@@ -837,7 +833,6 @@ html {
 /* Responsivo para el nuevo header */
 @media (max-width: 1140px) {
     .brand__icon { height: 72px; } /* 84px * 0.857 */
-    .brand__wordmark { height: 66px; } /* 78px * 0.846 */
     .nav-pill { max-width: 190px; padding: 10px 12px; }
     .socials__item { width: 56px; height: 56px; } /* 66px * 0.848 */
 }
@@ -849,7 +844,6 @@ html {
 
 @media (max-width: 720px) {
     .brand__icon { height: 60px; } /* Mantiene proporción */
-    .brand__wordmark { display: none; } /* deja solo ícono para ganar espacio */
     .nav-pill { max-width: 170px; font-size: clamp(11px, 2.5vw, 13px); }
     .socials__item { width: 50px; height: 50px; } /* Mantiene proporción */
 }
