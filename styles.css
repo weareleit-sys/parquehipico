@@ -22,7 +22,7 @@ body {
 /* Header Styles */
 .header {
     background-color: #FFD700;
-    padding: 25px 0;
+    padding: 40px 0;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     position: sticky;
     top: 0;
@@ -30,37 +30,37 @@ body {
 }
 
 .header-container {
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 20px;
-    min-height: 100px;
+    gap: 30px;
+    min-height: 180px;
 }
 
 /* Brand Section */
 .brand {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 30px;
     flex: 0 0 auto;
     padding-left: 0;
-    min-height: 80px;
+    min-height: 160px;
 }
 
 .logo-image {
-    height: 80px;
+    height: 160px;
     width: auto;
-    max-width: 100px;
+    max-width: 200px;
     object-fit: contain;
 }
 
 .logotipo-image {
-    height: 70px;
+    height: 140px;
     width: auto;
-    max-width: 250px;
+    max-width: 500px;
     object-fit: contain;
 }
 
@@ -76,7 +76,7 @@ body {
 .nav-menu {
     display: flex;
     list-style: none;
-    gap: 8px;
+    gap: 12px;
     margin: 0;
     padding: 0;
     justify-content: center;
@@ -86,20 +86,20 @@ body {
 .nav-item {
     position: relative;
     flex: 1;
-    min-width: 180px;
-    max-width: 200px;
+    min-width: 270px;
+    max-width: 300px;
 }
 
 .nav-link {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 15px 10px;
+    gap: 12px;
+    padding: 22px 15px;
     color: #001F5B;
     text-decoration: none;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     transition: all 0.3s ease;
@@ -192,12 +192,12 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 50px;
-    height: 50px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     text-decoration: none;
     transition: all 0.3s ease;
-    font-size: 1.8rem;
+    font-size: 3.6rem;
 }
 
 .social-link.instagram {
@@ -578,44 +578,61 @@ body {
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
     .header-container {
         max-width: 100%;
-        padding: 0 15px;
+        padding: 0 20px;
+        min-height: 160px;
     }
     
     .nav-item {
-        min-width: 150px;
-        max-width: 180px;
+        min-width: 200px;
+        max-width: 250px;
     }
     
     .nav-link {
-        font-size: 0.8rem;
-        padding: 12px 8px;
+        font-size: 1rem;
+        padding: 18px 12px;
+    }
+    
+    .logo-image {
+        height: 140px;
+        max-width: 180px;
+    }
+    
+    .logotipo-image {
+        height: 120px;
+        max-width: 400px;
+    }
+    
+    .social-link {
+        width: 80px;
+        height: 80px;
+        font-size: 2.8rem;
     }
 }
 
 @media (max-width: 1024px) {
     .header-container {
         flex-direction: column;
-        gap: 15px;
+        gap: 20px;
         padding: 0 15px;
         min-height: auto;
     }
     
     .brand {
         justify-content: center;
-        min-height: 70px;
+        min-height: 120px;
     }
     
     .logo-image {
-        height: 70px;
-        max-width: 90px;
+        height: 120px;
+        max-width: 150px;
     }
     
     .logotipo-image {
-        height: 60px;
-        max-width: 200px;
+        height: 100px;
+        max-width: 300px;
     }
     
     .main-navigation {
@@ -626,18 +643,23 @@ body {
     .nav-menu {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 6px;
+        gap: 8px;
     }
     
     .nav-item {
-        min-width: 140px;
-        max-width: 160px;
+        min-width: 180px;
+        max-width: 220px;
+    }
+    
+    .nav-link {
+        font-size: 0.9rem;
+        padding: 15px 10px;
     }
     
     .social-link {
-        width: 45px;
-        height: 45px;
-        font-size: 1.6rem;
+        width: 60px;
+        height: 60px;
+        font-size: 2.2rem;
     }
     
     .events-grid {
@@ -654,41 +676,41 @@ body {
 @media (max-width: 768px) {
     .header-container {
         padding: 0 10px;
-        gap: 10px;
+        gap: 15px;
     }
     
     .brand {
         flex-direction: row;
-        gap: 15px;
+        gap: 20px;
         text-align: center;
         justify-content: center;
-        min-height: 60px;
+        min-height: 100px;
     }
     
     .logo-image {
-        height: 60px;
-        max-width: 80px;
+        height: 100px;
+        max-width: 120px;
     }
     
     .logotipo-image {
-        height: 50px;
-        max-width: 150px;
+        height: 80px;
+        max-width: 200px;
     }
     
     .nav-item {
-        min-width: 120px;
-        max-width: 140px;
+        min-width: 150px;
+        max-width: 180px;
     }
     
     .nav-link {
-        font-size: 0.75rem;
-        padding: 10px 6px;
+        font-size: 0.8rem;
+        padding: 12px 8px;
     }
     
     .social-link {
-        width: 40px;
-        height: 40px;
-        font-size: 1.4rem;
+        width: 50px;
+        height: 50px;
+        font-size: 1.8rem;
     }
     
     .nav-menu {
@@ -763,35 +785,35 @@ body {
     
     .brand {
         flex-direction: row;
-        gap: 10px;
+        gap: 15px;
         justify-content: center;
-        min-height: 50px;
+        min-height: 80px;
     }
     
     .logo-image {
-        height: 50px;
-        max-width: 70px;
+        height: 80px;
+        max-width: 100px;
     }
     
     .logotipo-image {
-        height: 45px;
-        max-width: 120px;
+        height: 70px;
+        max-width: 150px;
     }
     
     .nav-item {
-        min-width: 100px;
-        max-width: 120px;
+        min-width: 120px;
+        max-width: 150px;
     }
     
     .nav-link {
-        font-size: 0.7rem;
-        padding: 8px 4px;
+        font-size: 0.75rem;
+        padding: 10px 6px;
     }
     
     .social-link {
-        width: 35px;
-        height: 35px;
-        font-size: 1.2rem;
+        width: 45px;
+        height: 45px;
+        font-size: 1.6rem;
     }
     
     .social-media {
