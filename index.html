@@ -10,76 +10,37 @@
 </head>
 <body>
     <!-- Header Section -->
-    <header class="header">
-        <div class="header-container">
-            <!-- Brand Section -->
-            <div class="brand">
-                <img src="assets/img/logo-montana.png" alt="Logo La Montaña" class="logo-image">
-                <img src="assets/img/logotipo-montana.png" alt="LA MONTAÑA Parque Hípico" class="logotipo-image">
-            </div>
+    <header class="site-header">
+        <div class="header-inner">
+            <!-- Logo a la izquierda -->
+            <a href="#inicio" class="brand">
+                <img src="assets/img/logo-montana.png" alt="Parque Hípico La Montaña" class="brand__icon" />
+                <img src="assets/img/logotipo-montana.png" alt="La Montaña · Parque Hípico" class="brand__wordmark" />
+            </a>
 
-            <!-- Navigation Menu -->
-            <nav class="main-navigation">
-                <ul class="nav-menu">
-                    <li class="nav-item dropdown">
-                        <a href="#" class="nav-link">Parque Hípico <i class="fas fa-chevron-right"></i></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="#vision-mision">Visión y misión</a></li>
-                            <li><a href="#caracteristicas">Características del parque</a></li>
-                            <li><a href="#ubicacion">Ubicación</a></li>
-                            <li><a href="#seguridad">Seguridad</a></li>
-                            <li><a href="#estacionamientos">Estacionamientos</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a href="#" class="nav-link">Carreras a la Chilena <i class="fas fa-chevron-right"></i></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="#fechas-disponibles">Fechas disponibles</a></li>
-                            <li><a href="#inscripciones">Inscripciones</a></li>
-                            <li><a href="#premios">Premios</a></li>
-                            <li><a href="#apuestas">Apuestas</a></li>
-                            <li><a href="#ultimos-ganadores">Últimos ganadores</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a href="#" class="nav-link">Entretención todo Público <i class="fas fa-chevron-right"></i></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="#experiencia-hipica">Experiencia hípica</a></li>
-                            <li><a href="#gastronomia">Gastronomía</a></li>
-                            <li><a href="#entorno-familiar">Entorno familiar</a></li>
-                            <li><a href="#musica">Música</a></li>
-                            <li><a href="#tiendas">Tiendas</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a href="#" class="nav-link">Centro de Eventos <i class="fas fa-chevron-right"></i></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="#tipos-evento">Tipos de evento</a></li>
-                            <li><a href="#que-ofrecemos">Qué ofrecemos</a></li>
-                            <li><a href="#cotizar">Cotizar</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a href="#" class="nav-link">Únete a los eventos <i class="fas fa-chevron-right"></i></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="#artistas">Artistas</a></li>
-                            <li><a href="#oferta-culinaria">Oferta culinaria</a></li>
-                            <li><a href="#comercio">Comercio</a></li>
-                            <li><a href="#patrocinios">Patrocinios</a></li>
-                            <li><a href="#otros">Otros</a></li>
-                        </ul>
-                    </li>
-                </ul>
+            <!-- Nav en UNA SOLA FILA -->
+            <nav class="top-nav" aria-label="Secciones principales">
+                <a href="#parque" class="nav-pill">
+                    <span class="label">Parque&nbsp;Hípico</span>
+                </a>
+                <a href="#carreras" class="nav-pill">
+                    <span class="label">Carreras<wbr> a la<wbr> Chilena</span>
+                </a>
+                <a href="#entretencion" class="nav-pill">
+                    <span class="label">Entretención<wbr> todo<wbr> Público</span>
+                </a>
+                <a href="#eventos" class="nav-pill">
+                    <span class="label">Centro<wbr> de<wbr> Eventos</span>
+                </a>
+                <a href="#unete" class="nav-pill">
+                    <span class="label">Únete<wbr> a los<wbr> eventos</span>
+                </a>
             </nav>
 
-            <!-- Social Media Links -->
-            <div class="social-media">
-                <a href="https://www.instagram.com/parquehipicolamontana/" target="_blank" class="social-link instagram">
-                    <i class="fab fa-instagram"></i>
-                </a>
-                <a href="https://www.facebook.com/parquehipico/" target="_blank" class="social-link facebook">
-                    <i class="fab fa-facebook"></i>
-                </a>
+            <!-- Redes a la derecha -->
+            <div class="socials">
+                <a class="socials__item socials__ig" href="https://www.instagram.com/parquehipicolamontana/" target="_blank" rel="noopener" aria-label="Instagram oficial"></a>
+                <a class="socials__item socials__fb" href="https://www.facebook.com/parquehipico/" target="_blank" rel="noopener" aria-label="Facebook oficial"></a>
             </div>
         </div>
     </header>
