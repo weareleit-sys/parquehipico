@@ -22,7 +22,7 @@ body {
 /* Header Styles */
 .header {
     background-color: #FFD700;
-    padding: 15px 0;
+    padding: 25px 0;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     position: sticky;
     top: 0;
@@ -32,33 +32,36 @@ body {
 .header-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 10px;
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    gap: 40px;
+    gap: 30px;
 }
 
 /* Brand Section */
 .brand {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 25px;
     flex: 0 0 auto;
     margin-right: auto;
     padding-left: 0;
+    min-height: 120px;
 }
 
 .logo-image {
-    height: 80px;
+    height: 120px;
     width: auto;
-    max-width: 120px;
+    max-width: 150px;
+    object-fit: contain;
 }
 
 .logotipo-image {
-    height: 70px;
+    height: 100px;
     width: auto;
-    max-width: 200px;
+    max-width: 300px;
+    object-fit: contain;
 }
 
 /* Navigation Menu */
@@ -67,6 +70,7 @@ body {
     display: flex;
     justify-content: center;
     margin: 0 auto;
+    align-items: center;
 }
 
 .nav-menu {
@@ -565,12 +569,24 @@ body {
 @media (max-width: 1024px) {
     .header-container {
         flex-direction: column;
-        gap: 20px;
+        gap: 15px;
+        padding: 0 15px;
     }
     
     .brand {
-        justify-content: flex-start;
+        justify-content: center;
         margin-right: 0;
+        min-height: 100px;
+    }
+    
+    .logo-image {
+        height: 100px;
+        max-width: 120px;
+    }
+    
+    .logotipo-image {
+        height: 80px;
+        max-width: 250px;
     }
     
     .main-navigation {
@@ -595,23 +611,25 @@ body {
 
 @media (max-width: 768px) {
     .header-container {
-        padding: 0 15px;
+        padding: 0 10px;
     }
     
     .brand {
-        flex-direction: column;
-        gap: 10px;
+        flex-direction: row;
+        gap: 15px;
         text-align: center;
+        justify-content: center;
+        min-height: 80px;
     }
     
     .logo-image {
-        height: 60px;
-        max-width: 90px;
+        height: 70px;
+        max-width: 100px;
     }
     
     .logotipo-image {
-        height: 50px;
-        max-width: 150px;
+        height: 60px;
+        max-width: 180px;
     }
     
     .nav-menu {
@@ -685,18 +703,20 @@ body {
     }
     
     .brand {
-        flex-direction: column;
-        gap: 8px;
+        flex-direction: row;
+        gap: 10px;
+        justify-content: center;
+        min-height: 60px;
     }
     
     .logo-image {
         height: 50px;
-        max-width: 80px;
+        max-width: 70px;
     }
     
     .logotipo-image {
         height: 45px;
-        max-width: 120px;
+        max-width: 140px;
     }
     
     .social-media {
