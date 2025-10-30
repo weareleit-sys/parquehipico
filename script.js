@@ -117,10 +117,6 @@ function initCalendar() {
             const dayHeader = document.createElement('div');
             dayHeader.className = 'calendar-day-header';
             dayHeader.textContent = day;
-            dayHeader.style.fontWeight = '700';
-            dayHeader.style.color = '#001F5B';
-            dayHeader.style.textAlign = 'center';
-            dayHeader.style.padding = '10px 0';
             calendarGrid.appendChild(dayHeader);
         });
 
