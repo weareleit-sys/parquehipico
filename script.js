@@ -107,15 +107,17 @@ function initCalendar() {
     // Sample events data (in real implementation, this would come from a database)
     const eventsData = {
         2025: {
-            9: { // October (0-indexed)
-                15: { title: 'Gran Carrera de Primavera', type: 'main' },
-                22: { title: 'Campeonato Nacional', type: 'championship' },
-                29: { title: 'Festival Hípico Familiar', type: 'family' }
+            10: { // November (0-indexed)
+                30: { title: 'Clásico de Noviembre', type: 'regular' }
             },
-            10: { // November
-                5: { title: 'Carrera de Noviembre', type: 'regular' },
-                12: { title: 'Gran Premio', type: 'main' },
-                19: { title: 'Día del Caballo', type: 'special' }
+            11: { // December
+                13: { title: 'Copa Diciembre', type: 'special' },
+                31: { title: 'Gran Cierre de Año', type: 'main' }
+            }
+        },
+        2026: {
+            0: { // January
+                1: { title: 'Apertura de Año Nuevo', type: 'special' }
             }
         }
     };
@@ -456,3 +458,64 @@ if (typeof module !== 'undefined' && module.exports) {
         initEventHandlers
     };
 }
+
+// === Próximas Fechas: rotación en grupos de 3 ===
+(function() {
+    const wrapper = document.querySelector('.upcoming-events');
+    const list = wrapper?.querySelector('.events-list');
+    if (!wrapper || !list) return;
+
+    // Contenedor accesible (anuncia cambios)
+    list.setAttribute('aria-live', 'polite');
+
+    // 1) Tomar eventos y ordenarlos por fecha
+    let items = Array.from(list.querySelectorAll('.event-item'));
+    items = items
+        .map(el => ({ el, date: new Date(el.dataset.date) }))
+        .filter(({ date }) => !isNaN(date))
+        .sort((a, b) => a.date - b.date);
+
+    const today = new Date();
+    const baseDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const futuros = items.filter(({ date }) => date >= baseDate);
+
+    const base = futuros.length ? futuros : items;
+
+    // 2) Chunk en grupos de 3
+    const chunks = [];
+    for (let i = 0; i < base.length; i += 3) {
+        chunks.push(base.slice(i, i + 3));
+    }
+    if (!chunks.length) return;
+
+    // 3) Función para renderizar un chunk
+    function renderChunk(idx) {
+        list.innerHTML = '';
+        (chunks[idx] || []).forEach(({ el }) => list.appendChild(el));
+    }
+
+    let idx = 0;
+    renderChunk(idx);
+
+    // 4) Rotación automática (10s), pausa en hover/visibility
+    let timer = null;
+    function start() {
+        if (chunks.length <= 1) return; // no rotar si <=3 eventos
+        stop();
+        timer = setInterval(() => {
+            idx = (idx + 1) % chunks.length;
+            renderChunk(idx);
+        }, 10000);
+    }
+    function stop() {
+        if (timer) clearInterval(timer);
+        timer = null;
+    }
+
+    wrapper.addEventListener('mouseenter', stop);
+    wrapper.addEventListener('mouseleave', start);
+    window.addEventListener('visibilitychange', () => {
+        document.hidden ? stop() : start();
+    });
+    start();
+})();
