@@ -10,16 +10,15 @@
 </head>
 <body>
     <!-- Header Section -->
-    <header class="header">
+    <header class="header" role="banner">
         <div class="header-container">
             <!-- Brand Section -->
             <div class="brand">
                 <img src="assets/img/logo-montana.png" alt="Logo La Montaña" class="logo-image">
-                <img src="assets/img/logotipo-montana.png" alt="LA MONTAÑA Parque Hípico" class="logotipo-image">
             </div>
 
             <!-- Navigation Menu -->
-            <nav class="main-navigation">
+            <nav class="main-navigation" aria-label="Navegación principal">
                 <ul class="nav-menu">
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link">Parque Hípico <i class="fas fa-chevron-right"></i></a>
@@ -73,12 +72,15 @@
             </nav>
 
             <!-- Social Media Links -->
-            <div class="social-media">
-                <a href="https://www.instagram.com/parquehipicolamontana/" target="_blank" class="social-link instagram">
+            <div class="social-media" aria-label="Redes sociales">
+                <a href="https://www.instagram.com/parquehipicolamontana/" target="_blank" class="social-link instagram" aria-label="Instagram de Parque Hípico La Montaña" rel="noopener noreferrer">
                     <i class="fab fa-instagram"></i>
                 </a>
-                <a href="https://www.facebook.com/parquehipico/" target="_blank" class="social-link facebook">
+                <a href="https://www.facebook.com/parquehipico/" target="_blank" class="social-link facebook" aria-label="Facebook de Parque Hípico La Montaña" rel="noopener noreferrer">
                     <i class="fab fa-facebook"></i>
+                </a>
+                <a href="https://www.tiktok.com/@haras.as7?_t=ZM-90zAh0vzCIO&_r=1" target="_blank" class="social-link tiktok" aria-label="TikTok de Parque Hípico La Montaña" rel="noopener noreferrer">
+                    <i class="fab fa-tiktok"></i>
                 </a>
             </div>
         </div>
@@ -87,31 +89,34 @@
     <!-- Main Content -->
     <main>
         <!-- Carousel Banner Section -->
-        <section class="carousel-banner">
+        <section class="carousel-banner" aria-label="Destacados">
             <div class="carousel-container">
                 <div class="carousel-slide active">
-                    <div class="slide-image" style="background-image: url('https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=1920&h=600&fit=crop')"></div>
+                    <div class="slide-image" data-bg="https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=1920&h=1080&fit=crop"></div>
                     <div class="slide-content">
                         <h2>Gran Carrera de Primavera</h2>
                         <p>15 de Octubre 2025</p>
+                        <a href="#" class="slide-cta" role="button">Ver evento</a>
                     </div>
                 </div>
                 <div class="carousel-slide">
-                    <div class="slide-image" style="background-image: url('https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1920&h=600&fit=crop')"></div>
+                    <div class="slide-image" data-bg="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1920&h=1080&fit=crop"></div>
                     <div class="slide-content">
                         <h2>Campeonato Nacional</h2>
                         <p>22 de Octubre 2025</p>
+                        <a href="#" class="slide-cta" role="button">Ver evento</a>
                     </div>
                 </div>
                 <div class="carousel-slide">
-                    <div class="slide-image" style="background-image: url('https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=1920&h=600&fit=crop')"></div>
+                    <div class="slide-image" data-bg="https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=1920&h=1080&fit=crop"></div>
                     <div class="slide-content">
                         <h2>Festival Hípico Familiar</h2>
                         <p>29 de Octubre 2025</p>
+                        <a href="#" class="slide-cta" role="button">Ver evento</a>
                     </div>
                 </div>
             </div>
-            <div class="carousel-indicators">
+            <div class="carousel-indicators" role="tablist" aria-label="Selector de diapositivas">
                 <span class="indicator active" data-slide="0"></span>
                 <span class="indicator" data-slide="1"></span>
                 <span class="indicator" data-slide="2"></span>

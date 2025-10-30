@@ -15,6 +15,13 @@ document.addEventListener('DOMContentLoaded', function() {
 function initCarousel() {
     const slides = document.querySelectorAll('.carousel-slide');
     const indicators = document.querySelectorAll('.indicator');
+    // Apply background images from data attributes to avoid inline styles in HTML
+    document.querySelectorAll('.slide-image').forEach(el => {
+        const bg = el.getAttribute('data-bg');
+        if (bg) {
+            el.style.backgroundImage = `url('${bg}')`;
+        }
+    });
     let currentSlide = 0;
     let slideInterval;
 
@@ -28,29 +35,45 @@ function initCarousel() {
     function nextSlide() {
         slides[currentSlide].classList.remove('active');
         indicators[currentSlide].classList.remove('active');
+        indicators[currentSlide].setAttribute('aria-selected', 'false');
         
         currentSlide = (currentSlide + 1) % slides.length;
         
         slides[currentSlide].classList.add('active');
         indicators[currentSlide].classList.add('active');
+        indicators[currentSlide].setAttribute('aria-selected', 'true');
     }
 
     function goToSlide(slideIndex) {
         slides[currentSlide].classList.remove('active');
         indicators[currentSlide].classList.remove('active');
+        indicators[currentSlide].setAttribute('aria-selected', 'false');
         
         currentSlide = slideIndex;
         
         slides[currentSlide].classList.add('active');
         indicators[currentSlide].classList.add('active');
+        indicators[currentSlide].setAttribute('aria-selected', 'true');
     }
 
     // Indicator click handlers
     indicators.forEach((indicator, index) => {
+        indicator.setAttribute('role', 'tab');
+        indicator.setAttribute('aria-label', `Diapositiva ${index + 1}`);
+        indicator.setAttribute('tabindex', '0');
+        indicator.setAttribute('aria-selected', indicator.classList.contains('active') ? 'true' : 'false');
         indicator.addEventListener('click', () => {
             clearInterval(slideInterval);
             goToSlide(index);
             startCarousel();
+        });
+        indicator.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                clearInterval(slideInterval);
+                goToSlide(index);
+                startCarousel();
+            }
         });
     });
 
