@@ -111,8 +111,8 @@ function initCalendar() {
         // Clear previous calendar
         calendarGrid.innerHTML = '';
 
-        // Add day headers
-        const dayHeaders = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        // Add day headers - Starting from Monday
+        const dayHeaders = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
         dayHeaders.forEach(day => {
             const dayHeader = document.createElement('div');
             dayHeader.className = 'calendar-day-header';
@@ -128,10 +128,14 @@ function initCalendar() {
         const firstDay = new Date(currentYear, currentMonth, 1);
         const lastDay = new Date(currentYear, currentMonth + 1, 0);
         const daysInMonth = lastDay.getDate();
-        const startingDay = firstDay.getDay();
+        const startingDay = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
+
+        // Adjust starting day for Monday-first calendar
+        // If Sunday (0), show 6 empty cells; if Monday (1), show 0; if Tuesday (2), show 1; etc.
+        const mondayFirstStartingDay = startingDay === 0 ? 6 : startingDay - 1;
 
         // Add empty cells for days before month starts
-        for (let i = 0; i < startingDay; i++) {
+        for (let i = 0; i < mondayFirstStartingDay; i++) {
             const emptyDay = document.createElement('div');
             emptyDay.className = 'calendar-day other-month';
             emptyDay.textContent = '';
@@ -259,26 +263,28 @@ function initCalendar() {
 
 // Navigation Menu Functionality
 function initNavigation() {
-    const dropdowns = document.querySelectorAll('.dropdown');
-    
-    dropdowns.forEach(dropdown => {
-        const menu = dropdown.querySelector('.dropdown-menu');
-        
-        if (menu) {
-            // Show dropdown on hover
-            dropdown.addEventListener('mouseenter', () => {
-                menu.style.opacity = '1';
-                menu.style.visibility = 'visible';
-                menu.style.transform = 'translateY(0)';
-            });
+    // ELIMINADO: Todo el código de hover - ahora se maneja solo con CSS
+    console.log('Navigation initialized - hover handled by CSS only');
+
+    // Handle dropdown menu clicks
+    const dropdownLinks = document.querySelectorAll('.dropdown-menu a');
+    dropdownLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const linkText = link.textContent.trim();
+            console.log(`Dropdown link clicked: ${linkText}`);
             
-            // Hide dropdown on mouse leave
-            dropdown.addEventListener('mouseleave', () => {
-                menu.style.opacity = '0';
-                menu.style.visibility = 'hidden';
-                menu.style.transform = 'translateY(-10px)';
-            });
-        }
+            // Show loading state
+            const originalText = link.textContent;
+            link.textContent = 'Cargando...';
+            link.style.pointerEvents = 'none';
+            
+            setTimeout(() => {
+                link.textContent = originalText;
+                link.style.pointerEvents = 'auto';
+                alert(`Navegando a: ${linkText}\n\nEsta sección se implementará en la versión completa.`);
+            }, 1000);
+        });
     });
 
     // Mobile menu toggle (if hamburger menu is added later)
@@ -312,8 +318,8 @@ function initEventHandlers() {
         link.addEventListener('click', (e) => {
             const platform = link.classList.contains('instagram') ? 'Instagram' : 'Facebook';
             console.log(`Opening ${platform} profile...`);
+        });
     });
-});
 
     // Navigation links
     const navLinks = document.querySelectorAll('.nav-link, .dropdown-menu a');
@@ -333,8 +339,8 @@ function initEventHandlers() {
                 link.style.pointerEvents = 'auto';
                 alert(`Navegando a: ${linkText}\n\nEsta sección se implementará en la versión completa.`);
             }, 1000);
+        });
     });
-});
 
     // Summary section links
     const summaryLinks = document.querySelectorAll('.summary-column a');

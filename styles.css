@@ -5,12 +5,80 @@
     box-sizing: border-box;
 }
 
+/* Ocultar barras de desplazamiento específicamente en header y menús */
+.site-header,
+.header-inner,
+.top-nav,
+.dropdown,
+.dropdown-menu,
+.nav-item,
+.nav-pill {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.site-header::-webkit-scrollbar,
+.header-inner::-webkit-scrollbar,
+.top-nav::-webkit-scrollbar,
+.dropdown::-webkit-scrollbar,
+.dropdown-menu::-webkit-scrollbar,
+.nav-item::-webkit-scrollbar,
+.nav-pill::-webkit-scrollbar {
+    display: none !important;
+    width: 0px !important;
+    height: 0px !important;
+}
+
 body {
     font-family: 'Poppins', sans-serif;
     line-height: 1.6;
     color: #001F5B;
     background-color: #ffffff;
     overflow-x: hidden;
+}
+
+/* Mantener scrollbar en body y html para poder navegar la página */
+body, html {
+    scrollbar-width: thin;
+    -ms-overflow-style: scrollbar;
+}
+
+body::-webkit-scrollbar, html::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+body::-webkit-scrollbar-thumb, html::-webkit-scrollbar-thumb {
+    background: #777;
+    border-radius: 4px;
+}
+
+/* FORZAR: Ocultar todas las barras de desplazamiento en el header */
+.site-header *,
+.site-header *::before,
+.site-header *::after,
+.header-inner *,
+.top-nav *,
+.dropdown *,
+.dropdown-menu *,
+.nav-item *,
+.nav-pill * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.site-header *::-webkit-scrollbar,
+.header-inner *::-webkit-scrollbar,
+.top-nav *::-webkit-scrollbar,
+.dropdown *::-webkit-scrollbar,
+.dropdown-menu *::-webkit-scrollbar,
+.nav-item *::-webkit-scrollbar,
+.nav-pill *::-webkit-scrollbar {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
 }
 
 .container {
@@ -21,23 +89,26 @@ body {
 
 /* Header base */
 .site-header {
-    background: #FFD700; /* amarillo brillante */
+    background: linear-gradient(135deg, #FFD700 0%, #FFE55C 100%); /* gradiente sutil */
     position: sticky;
     top: 0;
-    z-index: 1000;
-    border-bottom: 2px solid #000; /* refuerza separación */
+    z-index: 10000 !important;
+    border-bottom: 3px solid #000;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+    backdrop-filter: blur(10px);
 }
 
 .header-inner {
     max-width: 1280px;
     margin: 0 auto;
-    padding: 10px 16px;
+    padding: 15px 20px;
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    gap: 16px;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    gap: 24px;
+    min-height: 100px;
+    position: relative;
+    z-index: 10001;
 }
 
 /* Marca (logo + wordmark) */
@@ -48,8 +119,14 @@ body {
     text-decoration: none;
 }
 .brand__icon {
-    height: 84px;   /* antes 56px → +50% */
+    height: 90px;   /* Optimizado para mejor visibilidad */
     width: auto;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.1));
+    transition: transform 0.3s ease;
+}
+
+.brand__icon:hover {
+    transform: scale(1.05);
 }
 
 /* NAV en una sola fila */
@@ -61,40 +138,86 @@ body {
     flex-wrap: nowrap;
     overflow-x: auto;
     overscroll-behavior-inline: contain;
-    scrollbar-width: thin;
-    padding-bottom: 4px; /* espacio para scroll */
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    padding-bottom: 4px;
+    position: relative;
+    z-index: 10002;
 }
 
-.top-nav::-webkit-scrollbar { height: 6px; }
-.top-nav::-webkit-scrollbar-thumb { background: #777; border-radius: 3px; }
+/* Ocultar scrollbar en la navegación */
+.top-nav::-webkit-scrollbar {
+    display: none !important;
+    height: 0px !important;
+    width: 0px !important;
+}
+
+.top-nav::-webkit-scrollbar-thumb {
+    display: none !important;
+}
+
+.top-nav::-webkit-scrollbar-track {
+    display: none !important;
+}
+
+/* Nav item container */
+.nav-item {
+    position: relative;
+    flex: 0 0 auto;
+    z-index: 10002;
+    margin-right: 8px;
+}
+
+.nav-item:last-child {
+    margin-right: 0;
+}
 
 /* Píldoras */
 .nav-pill {
     flex: 0 0 auto;                 /* NO crecer, NO encoger */
-    max-width: 210px;               /* controla casillas largas */
+    max-width: 180px;               /* 189px - 5% = 179.55px ≈ 180px */
     border: 2px solid #000;
-    border-radius: 10px;
-    padding: 12px 14px;
+    border-radius: 12px;
+    padding: 11px 13px;             /* 12px-5% ≈ 11px, 14px-5% ≈ 13px */
     background: #FFD700;
-    box-shadow: 0 2px 0 #000;
+    box-shadow: 0 3px 0 #000, 0 2px 8px rgba(0, 0, 0, 0.1);
     color: #001F5B;                 /* azul intenso */
     text-decoration: none;
     font-weight: 800;               /* negrita */
-    font-size: clamp(12px, 1.1vw + 0.2rem, 14px);
+    font-size: clamp(12px, 1.1vw + 0.2rem, 14px); /* TEXTO MANTIENE EL MISMO TAMAÑO */
     line-height: 1.1;               /* deja espacio para 2 líneas */
     display: grid;
     place-items: center;
     text-align: center;
-    transition: transform .12s ease, box-shadow .12s ease, background .12s ease, color .12s ease, border-color .12s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: visible !important;
 }
+
+/* ELIMINADO: Efecto ::before que causaba overlap visual
+.nav-pill::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.nav-pill:hover::before {
+    left: 100%;
+}
+*/
 
 .nav-pill:hover,
 .nav-pill:focus-visible {
     background: #FF0000;
     color: #fff;
     border-color: #000;
-    box-shadow: 0 2px 0 #000, 0 0 0 3px rgba(0,0,0,.08) inset;
-    transform: translateY(-1px);
+    box-shadow: 0 4px 0 #000, 0 6px 20px rgba(255, 0, 0, 0.3), 0 0 0 3px rgba(0,0,0,.08) inset;
+    transform: translateY(-2px) scale(1.02);
 }
 
 /* Permite quiebre limpio dentro de la casilla */
@@ -113,24 +236,171 @@ body {
     margin-left: auto; /* por si cambiamos layout */
 }
 .socials__item {
-    width: 66px;    /* antes 44px → +50% */
-    height: 66px;
-    background-size: 60% 60%;
+    width: 70px;    /* Optimizado para mejor visibilidad */
+    height: 70px;
+    background-size: 65% 65%;
     background-position: center;
     background-repeat: no-repeat;
     border-radius: 50%;
-    border: 2px solid #000;
-    box-shadow: 0 2px 0 #000;
-    transition: transform .15s ease, box-shadow .15s ease;
+    border: 3px solid #000;
+    box-shadow: 0 3px 0 #000, 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.socials__item::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s ease;
+}
+
+.socials__item:hover::before {
+    width: 100%;
+    height: 100%;
 }
 
 .socials__item:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 4px 0 #000;
+    transform: translateY(-3px) scale(1.08);
+    box-shadow: 0 5px 0 #000, 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
 .socials__ig { background-color: #E1306C; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 24 24" fill="%23fff"><path d="M7 2C4.243 2 2 4.243 2 7v10c0 2.757 2.243 5 5 5h10c2.757 0 5-2.243 5-5V7c0-2.757-2.243-5-5-5H7zm0 2h10c1.654 0 3 1.346 3 3v10c0 1.654-1.346 3-3 3H7c-1.654 0-3-1.346-3-3V7c0-1.654 1.346-3 3-3zm11 1a1 1 0 000 2 1 1 0 000-2zM12 7a5 5 0 100 10 5 5 0 000-10zm0 2a3 3 0 110 6 3 3 0 010-6z"/></svg>'); }
 .socials__fb { background-color: #1877F2; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 24 24" fill="%23fff"><path d="M22 12a10 10 0 10-11.6 9.9v-7h-2.2V12h2.2V9.7c0-2.1 1.3-3.2 3.2-3.2.9 0 1.8.2 1.8.2v2h-1c-1 0-1.3.6-1.3 1.2V12h2.3l-.4 2.9h-1.9v7A10 10 0 0022 12z"/></svg>'); }
+
+/* Dropdown Menu Styles */
+.dropdown {
+    position: relative;
+    z-index: 10003 !important;
+}
+
+/* Z-index específico para cada dropdown */
+.dropdown:nth-child(1) { z-index: 10004 !important; }
+.dropdown:nth-child(2) { z-index: 10005 !important; }
+.dropdown:nth-child(3) { z-index: 10006 !important; }
+.dropdown:nth-child(4) { z-index: 10007 !important; }
+.dropdown:nth-child(5) { z-index: 10008 !important; }
+
+.dropdown:nth-child(1) .dropdown-menu { z-index: 10004 !important; }
+.dropdown:nth-child(2) .dropdown-menu { z-index: 10005 !important; }
+.dropdown:nth-child(3) .dropdown-menu { z-index: 10006 !important; }
+.dropdown:nth-child(4) .dropdown-menu { z-index: 10007 !important; }
+.dropdown:nth-child(5) .dropdown-menu { z-index: 10008 !important; }
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #f5f5f5;
+    border: 2px solid #000;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.1);
+    min-width: 220px;
+    z-index: 9999 !important;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 8px;
+    padding: 8px 0;
+    overflow: visible !important;
+    max-height: none !important;
+    width: auto;
+    white-space: nowrap;
+    pointer-events: none;
+    display: block;
+}
+
+/* DEBUG: Hacer visible TEMPORALMENTE el PRIMER dropdown para probar */
+/* DESCOMENTAR LAS SIGUIENTES LÍNEAS PARA VER EL MENÚ SIEMPRE VISIBLE */
+/*
+.dropdown:nth-child(1) .dropdown-menu {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+    pointer-events: auto !important;
+}
+*/
+
+/* Ocultar completamente las barras de desplazamiento en los menús */
+.dropdown-menu::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+.dropdown-menu {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+}
+
+/* HOVER SIMPLE Y DIRECTO - SOLO CSS */
+.nav-item.dropdown:hover .dropdown-menu,
+.top-nav .nav-item:hover .dropdown-menu,
+.dropdown:hover .dropdown-menu {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+    pointer-events: auto !important;
+    display: block !important;
+}
+
+/* ELIMINADO: Regla .show ya no necesaria - solo CSS hover */
+
+/* Asegurar que en desktop los menús funcionen correctamente */
+@media (min-width: 769px) {
+    .dropdown-menu {
+        position: absolute !important;
+    }
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 12px 20px;
+    color: #001F5B !important;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f0f0f0;
+    position: relative;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+.dropdown-menu a:last-child {
+    border-bottom: none;
+}
+
+.dropdown-menu a:hover {
+    background: #FFD700;
+    color: #001F5B !important;
+    padding-left: 25px;
+    font-weight: 700;
+}
+
+.dropdown-menu a::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: #FF0000;
+    transition: width 0.3s ease;
+    z-index: -1;
+}
+
+.dropdown-menu a:hover::before {
+    width: 4px;
+}
 
 /* Carousel Banner */
 .carousel-banner {
@@ -138,6 +408,17 @@ body {
     height: 500px;
     overflow: hidden;
     margin-top: 0;
+    z-index: 1;
+}
+
+.main-content {
+    position: relative;
+    z-index: 1;
+}
+
+.container {
+    position: relative;
+    z-index: 1;
 }
 
 .carousel-container {
@@ -672,6 +953,7 @@ body {
         border-radius: 25px;
     }
     
+    /* ELIMINADO: Regla que anulaba el comportamiento de dropdowns
     .dropdown-menu {
         position: static;
         opacity: 1;
@@ -683,6 +965,7 @@ body {
         margin: 0;
         border-radius: 0;
     }
+    */
     
     .carousel-banner {
         height: 300px;
@@ -862,18 +1145,101 @@ html {
 
 /* Responsivo para el nuevo header */
 @media (max-width: 1140px) {
-    .brand__icon { height: 72px; } /* 84px * 0.857 */
-    .nav-pill { max-width: 190px; padding: 10px 12px; }
-    .socials__item { width: 56px; height: 56px; } /* 66px * 0.848 */
+    .header-inner {
+        gap: 20px;
+        padding: 12px 18px;
+        min-height: 90px;
+    }
+    .brand__icon { height: 80px; }
+    .nav-pill { 
+        max-width: 162px;  /* 180px - 5% ≈ 171px - 5% ≈ 162px */
+        padding: 9px 11px; /* 11px-5% ≈ 10px, 13px-5% ≈ 12px - 5% ≈ 9px, 11px */
+        font-size: clamp(11px, 1.2vw + 0.3rem, 13px); /* TEXTO MANTIENE EL MISMO TAMAÑO */
+    }
+    .socials__item { width: 60px; height: 60px; }
 }
 
 @media (max-width: 900px) {
-    /* Menú sigue siendo UNA fila: se hace deslizable */
-    .nav-pill { max-width: 180px; }
+    .header-inner {
+        gap: 16px;
+        padding: 10px 16px;
+        min-height: 85px;
+    }
+    .nav-pill { 
+        max-width: 154px;  /* 162px - 5% ≈ 154px */
+        padding: 7px 9px; /* 8px-5% ≈ 7px, 10px-5% ≈ 9px */
+    }
+    .top-nav {
+        gap: 8px;
+    }
 }
 
 @media (max-width: 720px) {
-    .brand__icon { height: 60px; } /* Mantiene proporción */
-    .nav-pill { max-width: 170px; font-size: clamp(11px, 2.5vw, 13px); }
-    .socials__item { width: 50px; height: 50px; } /* Mantiene proporción */
+    .header-inner {
+        grid-template-columns: auto 1fr;
+        gap: 12px;
+        padding: 8px 12px;
+        min-height: 80px;
+    }
+    .brand__icon { height: 70px; }
+    .nav-pill { 
+        max-width: 137px;  /* 144px - 5% ≈ 137px */
+        font-size: clamp(10px, 2.5vw, 12px); /* TEXTO MANTIENE EL MISMO TAMAÑO */
+        padding: 5px 7px;  /* 6px-5% ≈ 5px, 8px-5% ≈ 7px */
+    }
+    .socials__item { width: 55px; height: 55px; }
+    .socials {
+        grid-column: 1 / -1;
+        justify-self: center;
+        margin-top: 8px;
+    }
+    
+    /* Dropdown adjustments for mobile */
+    .dropdown-menu {
+        min-width: 200px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-10px);
+        overflow: visible !important;
+        max-height: none !important;
+    }
+    
+    .dropdown:hover .dropdown-menu {
+        transform: translateX(-50%) translateY(0);
+        overflow: visible !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-inner {
+        padding: 6px 10px;
+        min-height: 75px;
+    }
+    .brand__icon { height: 60px; }
+    .nav-pill { 
+        max-width: 120px;  /* 126px - 5% ≈ 120px */
+        font-size: clamp(9px, 2.8vw, 11px); /* TEXTO MANTIENE EL MISMO TAMAÑO */
+        padding: 3px 5px;  /* 4px-5% ≈ 3px, 6px-5% ≈ 5px */
+    }
+    .socials__item { width: 50px; height: 50px; }
+    
+    /* Dropdown adjustments for very small screens */
+    .dropdown-menu {
+        min-width: 180px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-10px);
+        font-size: 13px;
+        overflow: visible !important;
+        max-height: none !important;
+    }
+    
+    .dropdown:hover .dropdown-menu {
+        transform: translateX(-50%) translateY(0);
+        overflow: visible !important;
+    }
+    
+    .dropdown-menu a {
+        padding: 10px 15px;
+        font-size: 13px;
+        overflow: visible;
+    }
 }
