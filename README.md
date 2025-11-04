@@ -1,65 +1,97 @@
 # Parque Hípico La Montaña
 
-Sitio web oficial de Parque Hípico La Montaña - Un lugar mágico donde la naturaleza y la equitación se encuentran.
+Sitio oficial del **Parque Hípico La Montaña** — un espacio para vivir la hípica, la entretención familiar y los grandes eventos en la Araucanía.
 
-## 🐎 Sobre el Proyecto
+## 🐎 Sobre el proyecto
 
-Este es el sitio web oficial de Parque Hípico La Montaña, diseñado para mostrar nuestros servicios de equitación, paseos a caballo, actividades familiares y campamentos. El sitio está construido con tecnologías web modernas y es completamente responsivo.
+Este repositorio contiene la **landing institucional** del Parque Hípico La Montaña.  
+Está desarrollada en **HTML + CSS + JavaScript**, es **responsive**, y está preparada para desplegarse en **Cloudflare Pages**.
 
-## ✨ Características
+## ✨ Funcionalidades principales
 
-- **Diseño Responsivo**: Optimizado para dispositivos móviles, tablets y desktop
-- **Navegación Suave**: Scroll suave entre secciones
-- **Animaciones**: Efectos visuales atractivos al hacer scroll
-- **Formulario de Contacto**: Sistema de contacto funcional con validación
-- **Galería de Imágenes**: Muestra visual de nuestras instalaciones
-- **Menú Móvil**: Navegación adaptada para dispositivos móviles
+- **Header con mega-menú** (5 casillas):
+  - **Parque Hípico** (Visión y misión, Características del parque, Ubicación, Seguridad, Estacionamientos)
+  - **Carreras** (Fechas disponibles, Inscripciones, Premios, Apuestas, Últimos ganadores)
+  - **Entretención** (Experiencia hípica, Gastronomía, Entorno familiar, Música, Tiendas)
+  - **Renta Eventos** (Tipos de evento, Qué ofrecemos, Cotizar)
+  - **Colabora con Nosotros** (Artistas, Oferta culinaria, Comercio, Patrocinios, Otros)
+- **Redes sociales** en el encabezado (Instagram y Facebook con sus colores y enlaces oficiales).
+- **Carrusel de eventos** (auto-rotación cada 5s, con leyenda).
+- **Calendario interactivo**:
+  - Navegación de meses (anterior/siguiente)
+  - Fechas con evento resaltadas en **rojo** y clicables
+- **Próximas fechas**: lista automática de los **3** próximos eventos.
+- **Resumen de secciones** (bloques tipo footer) con enlaces internos.
+- **Footer institucional** con información de contacto, copyright y enlaces legales.
 
-## 🛠️ Tecnologías Utilizadas
+## 🎨 Identidad visual
 
-- **HTML5**: Estructura semántica y accesible
-- **CSS3**: Estilos modernos con Flexbox y Grid
-- **JavaScript**: Interactividad y funcionalidades dinámicas
-- **Google Fonts**: Tipografía Open Sans para mejor legibilidad
+- **Fondo principal:** Amarillo brillante `#FFD700`
+- **Texto:** Azul intenso `#001F5B`
+- **Acentos / hover / eventos:** Rojo brillante `#FF0000`
+- **Estructura y secciones:** Grises `#333333` / `#777777`
+- **Tipografía:** `Montserrat` (Google Fonts)
 
-## 📁 Estructura del Proyecto
+## 🛠️ Tecnologías
+
+- **HTML5** (semántico y accesible)
+- **CSS3** (Flexbox + Grid)
+- **JavaScript** (carrusel, calendario, próximas fechas)
+- **Cloudflare Pages** (deploy)
+
+## 📁 Estructura
 
 ```
 parquehipico/
-├── index.html          # Página principal
-├── styles.css          # Estilos CSS
-├── script.js           # Funcionalidades JavaScript
-└── README.md           # Documentación del proyecto
+├── index.html # Estructura principal (header, carrusel, secciones y footer)
+├── styles.css # Estilos (colores institucionales, layout responsive)
+├── script.js # Carrusel, calendario y próximas fechas
+└── README.md # Este documento
 ```
 
-## 🚀 Cómo Usar
+## 🚀 Uso local
 
-1. Abre el archivo `index.html` en tu navegador web
-2. Navega por las diferentes secciones usando el menú
-3. En dispositivos móviles, usa el menú hamburguesa
-4. Completa el formulario de contacto para más información
+1. Clona el repo y abre el proyecto:
+   ```bash
+   git clone https://github.com/weareleit-sys/parquehipico.git
+   cd parquehipico
+   ```
+2. Abre `index.html` en tu navegador.
 
-## 📱 Secciones del Sitio
+El calendario trae ejemplos de eventos en `script.js` dentro del objeto `EVENTS`.
+Formato de fecha: YYYY-MM-DD.
 
-- **Inicio**: Página de bienvenida con hero section
-- **Servicios**: Nuestros servicios de equitación y actividades
-- **Galería**: Imágenes de nuestras instalaciones
-- **Contacto**: Información de contacto y formulario
+```js
+const EVENTS = {
+  "2025-10-12": { title: "Jornada de Carreras", url: "#evento-carreras-12oct" },
+  // ...
+};
+```
 
-## 🎨 Características de Diseño
+## ☁️ Deploy (Cloudflare Pages)
 
-- **Paleta de Colores**: Verde natural (#2c5530) que refleja la naturaleza
-- **Tipografía**: Open Sans para mejor legibilidad
-- **Imágenes**: Fotos de alta calidad de Unsplash
-- **Animaciones**: Transiciones suaves y efectos hover
+Este proyecto está listo para desplegarse con Cloudflare Pages:
 
-## 📞 Contacto
+- Conecta el repositorio en Cloudflare Pages.
+- Configura la rama `main` como producción.
+- No requiere build (sitio estático).
+- Cada git push a `main` publica automáticamente.
 
-- **Dirección**: Carretera Principal, Km 15, La Montaña, Colombia
-- **Teléfono**: +57 (1) 234-5678
-- **Email**: info@parquehipicolamontana.com
-- **Horarios**: Lunes a Domingo: 8:00 AM - 6:00 PM
+## 🔗 Redes oficiales
+
+- Instagram:  
+  https://www.instagram.com/parquehipicolamontana/  
+  https://www.instagram.com/parque_hipico_/
+- Facebook:  
+  https://www.facebook.com/parquehipico/
+
+## 📍 Contacto
+
+- **Dirección:** NANCAHUE, S-743, PC G, LONCOCHE, Loncoche, Araucanía, Chile
+- **Teléfono:** +56 9 7163 6195
+- **Email:** parquehipicolamontana@gmail.com
 
 ## 📄 Licencia
 
-© 2024 Parque Hípico La Montaña. Todos los derechos reservados.
+© 2025 Parque Hípico La Montaña. Desarrollado por Eleit.  
+Todos los derechos reservados.

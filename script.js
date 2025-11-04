@@ -252,7 +252,8 @@ function initCalendar() {
     }
 
     function showDayDetails(day, month, year) {
-        alert(`Día ${day}/${month}/${year}\n\nNo hay eventos programados para esta fecha.`);
+        // No hay eventos programados para esta fecha
+        console.log(`Día ${day}/${month}/${year} - No hay eventos programados`);
     }
 
     // Month navigation
@@ -287,27 +288,6 @@ function initNavigation() {
     // ELIMINADO: Todo el código de hover - ahora se maneja solo con CSS
     console.log('Navigation initialized - hover handled by CSS only');
 
-    // Handle dropdown menu clicks
-    const dropdownLinks = document.querySelectorAll('.dropdown-menu a');
-    dropdownLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const linkText = link.textContent.trim();
-            console.log(`Dropdown link clicked: ${linkText}`);
-            
-            // Show loading state
-            const originalText = link.textContent;
-            link.textContent = 'Cargando...';
-            link.style.pointerEvents = 'none';
-            
-            setTimeout(() => {
-                link.textContent = originalText;
-                link.style.pointerEvents = 'auto';
-                alert(`Navegando a: ${linkText}\n\nEsta sección se implementará en la versión completa.`);
-            }, 1000);
-        });
-    });
-
     // Mobile menu toggle (if hamburger menu is added later)
     const hamburger = document.querySelector('.hamburger');
     const navMenu = document.querySelector('.nav-menu');
@@ -322,66 +302,14 @@ function initNavigation() {
 
 // Event Handlers for Interactive Elements
 function initEventHandlers() {
-    // "Ver más" buttons in upcoming events
-    const verMasButtons = document.querySelectorAll('.btn-ver-mas');
-    verMasButtons.forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            const eventItem = button.closest('.event-item');
-            const eventTitle = eventItem.querySelector('h4').textContent;
-            alert(`Abriendo detalles de: ${eventTitle}\n\nEsta funcionalidad se implementará en la versión completa del sitio.`);
-        });
-    });
-
-    // Social media links
+    // Social media links - solo log para debugging
     const socialLinks = document.querySelectorAll('.social-link');
     socialLinks.forEach(link => {
         link.addEventListener('click', (e) => {
-            const platform = link.classList.contains('instagram') ? 'Instagram' : 'Facebook';
+            const platform = link.classList.contains('instagram') ? 'Instagram' : 
+                            link.classList.contains('facebook') ? 'Facebook' : 
+                            link.classList.contains('tiktok') ? 'TikTok' : 'Social';
             console.log(`Opening ${platform} profile...`);
-        });
-    });
-
-    // Navigation links
-    const navLinks = document.querySelectorAll('.nav-link, .dropdown-menu a');
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const linkText = link.textContent.trim();
-            console.log(`Navigating to: ${linkText}`);
-            
-            // Show loading state
-            const originalText = link.textContent;
-            link.textContent = 'Cargando...';
-            link.style.pointerEvents = 'none';
-            
-            setTimeout(() => {
-                link.textContent = originalText;
-                link.style.pointerEvents = 'auto';
-                alert(`Navegando a: ${linkText}\n\nEsta sección se implementará en la versión completa.`);
-            }, 1000);
-        });
-    });
-
-    // Summary section links
-    const summaryLinks = document.querySelectorAll('.summary-column a');
-    summaryLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const linkText = link.textContent;
-            console.log(`Summary link clicked: ${linkText}`);
-            alert(`Navegando a: ${linkText}\n\nEsta funcionalidad se implementará en la versión completa.`);
-        });
-    });
-
-    // Footer links
-    const footerLinks = document.querySelectorAll('.footer-link');
-    footerLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const linkText = link.textContent;
-            console.log(`Footer link clicked: ${linkText}`);
-            alert(`Abriendo: ${linkText}\n\nEsta funcionalidad se implementará en la versión completa.`);
         });
     });
 }
@@ -459,63 +387,196 @@ if (typeof module !== 'undefined' && module.exports) {
     };
 }
 
-// === Próximas Fechas: rotación en grupos de 3 ===
+// === Próximas Fechas: rotación en grupos de 3 + controles manuales ===
 (function() {
     const wrapper = document.querySelector('.upcoming-events');
     const list = wrapper?.querySelector('.events-list');
-    if (!wrapper || !list) return;
+    const btnPrev = wrapper?.querySelector('.events-prev');
+    const btnNext = wrapper?.querySelector('.events-next');
+    if (!wrapper || !list || !btnPrev || !btnNext) return;
 
-    // Contenedor accesible (anuncia cambios)
-    list.setAttribute('aria-live', 'polite');
-
-    // 1) Tomar eventos y ordenarlos por fecha
-    let items = Array.from(list.querySelectorAll('.event-item'));
-    items = items
+    // 1) Obtener y ordenar eventos por fecha (requiere data-date="YYYY-MM-DD")
+    let items = Array.from(list.querySelectorAll('.event-item'))
         .map(el => ({ el, date: new Date(el.dataset.date) }))
         .filter(({ date }) => !isNaN(date))
         .sort((a, b) => a.date - b.date);
 
     const today = new Date();
-    const baseDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const futuros = items.filter(({ date }) => date >= baseDate);
-
+    const futuros = items.filter(({ date }) => date >= new Date(today.getFullYear(), today.getMonth(), today.getDate()));
     const base = futuros.length ? futuros : items;
+    if (!base.length) return;
 
     // 2) Chunk en grupos de 3
     const chunks = [];
     for (let i = 0; i < base.length; i += 3) {
         chunks.push(base.slice(i, i + 3));
     }
-    if (!chunks.length) return;
 
-    // 3) Función para renderizar un chunk
-    function renderChunk(idx) {
+    // 3) Renderizador
+    let idx = 0;
+    function renderChunk(i) {
         list.innerHTML = '';
-        (chunks[idx] || []).forEach(({ el }) => list.appendChild(el));
+        (chunks[i] || []).forEach(({ el }) => list.appendChild(el));
     }
 
-    let idx = 0;
     renderChunk(idx);
 
-    // 4) Rotación automática (10s), pausa en hover/visibility
+    // 4) Timer 20s con pausa/reinicio
     let timer = null;
+    const INTERVALO_MS = 20000; // 20s
+
     function start() {
         if (chunks.length <= 1) return; // no rotar si <=3 eventos
         stop();
         timer = setInterval(() => {
             idx = (idx + 1) % chunks.length;
             renderChunk(idx);
-        }, 10000);
+        }, INTERVALO_MS);
     }
+
     function stop() {
         if (timer) clearInterval(timer);
         timer = null;
     }
 
+    function restart() {
+        stop();
+        start();
+    }
+
+    // 5) Controles manuales (mismo comportamiento que calendario)
+    btnNext.addEventListener('click', () => {
+        idx = (idx + 1) % chunks.length;
+        renderChunk(idx);
+        restart();
+    });
+
+    btnPrev.addEventListener('click', () => {
+        idx = (idx - 1 + chunks.length) % chunks.length;
+        renderChunk(idx);
+        restart();
+    });
+
+    // Accesibilidad con teclado
+    [btnPrev, btnNext].forEach(btn => {
+        btn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                btn.click();
+            }
+        });
+    });
+
+    // Pausa en hover y tab focus
     wrapper.addEventListener('mouseenter', stop);
     wrapper.addEventListener('mouseleave', start);
-    window.addEventListener('visibilitychange', () => {
+    wrapper.addEventListener('focusin', stop);
+    wrapper.addEventListener('focusout', start);
+
+    // Pausa si la pestaña no está visible
+    document.addEventListener('visibilitychange', () => {
         document.hidden ? stop() : start();
     });
+
     start();
+})();
+
+// === Navegación limpia (sin alerts) + scroll suave a secciones ===
+document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+
+    const href = a.getAttribute('href');
+
+    // Enlaces deshabilitados
+    if (a.dataset.disabled === 'true') {
+        e.preventDefault();
+        return;
+    }
+
+    // Ancla MISMA página (#...)
+    if (href && href.startsWith('#') && href.length > 1) {
+        e.preventDefault();
+        const el = document.querySelector(href);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // Cierra dropdowns si aplica
+            const dropdown = a.closest('.dropdown');
+            if (dropdown) {
+                const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+                if (dropdownMenu) {
+                    dropdownMenu.style.opacity = '0';
+                    dropdownMenu.style.visibility = 'hidden';
+                    dropdownMenu.style.transform = 'translateY(-10px)';
+                }
+            }
+        }
+        return;
+    }
+
+    // Enlaces a OTRA página con hash (/parquehipico/#id): dejar fluir
+    // El navegador manejará la navegación y el hash se resolverá al cargar
+});
+
+// Manejar scroll al hash cuando la página carga con hash en la URL
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.hash) {
+        const target = document.querySelector(window.location.hash);
+        if (target) {
+            setTimeout(() => {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+    }
+});
+
+// === DEV HELPERS para abrir con file:// ===
+(function () {
+    const isFile = location.protocol === 'file:';
+    if (!isFile) return; // en producción no hace nada
+
+    // 1) Reescribir ENLACES absolutos "/algo" -> "algo"
+    //   Ejemplo: <a href="/parquehipico/#vision"> -> "parquehipico/#vision"
+    document.querySelectorAll('a[href^="/"]').forEach(a => {
+        const href = a.getAttribute('href');
+        // Quita el primer "/" solamente
+        a.setAttribute('href', href.replace(/^\//, ''));
+    });
+
+    // 2) Reescribir ASSETS absolutos a relativos y agregar cache-busting
+    const bust = `dev=${Date.now()}`;
+
+    // <link rel="stylesheet" href="/styles.css">
+    document.querySelectorAll('link[rel="stylesheet"][href^="/"]').forEach(link => {
+        const clean = link.getAttribute('href').replace(/^\//, '');
+        const sep = clean.includes('?') ? '&' : '?';
+        link.setAttribute('href', `${clean}${sep}${bust}`);
+    });
+
+    // <script src="/script.js">
+    document.querySelectorAll('script[src^="/"]').forEach(scr => {
+        const clean = scr.getAttribute('src').replace(/^\//, '');
+        const sep = clean.includes('?') ? '&' : '?';
+        scr.setAttribute('src', `${clean}${sep}${bust}`);
+    });
+
+    // <img src="/assets/..."> y backgrounds inline si los usas
+    document.querySelectorAll('img[src^="/"]').forEach(img => {
+        const clean = img.getAttribute('src').replace(/^\//, '');
+        img.setAttribute('src', clean);
+    });
+
+    // 3) Mejora UX: botón oculto para "forzar recarga sin caché"
+    //    Presiona Ctrl+Alt+R para recargar con nuevo bust
+    window.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.altKey && (e.key === 'r' || e.key === 'R')) {
+            const url = new URL(location.href);
+            url.searchParams.set('dev', Date.now().toString());
+            location.href = url.toString();
+        }
+    });
+
+    // 4) Enlaces internos "#id" siguen haciendo scroll suave
+    //    (si ya tienes un handler, no cambies nada)
 })();

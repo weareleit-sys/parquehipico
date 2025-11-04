@@ -14,58 +14,60 @@
         <div class="header-container">
             <!-- Brand Section -->
             <div class="brand">
-                <img src="assets/img/logo-montana.png" alt="Logo La Montaña" class="logo-image">
+                <a href="/">
+                    <img src="assets/img/logo-montana.png" alt="Logo La Montaña" class="logo-image">
+                </a>
             </div>
 
             <!-- Navigation Menu -->
             <nav class="main-navigation" aria-label="Navegación principal">
                 <ul class="nav-menu">
                     <li class="nav-item dropdown">
-                        <a href="#" class="nav-link">Parque Hípico <i class="fas fa-chevron-right"></i></a>
+                        <a href="/parquehipico/" class="nav-link">Parque Hípico <i class="fas fa-chevron-right"></i></a>
                         <ul class="dropdown-menu">
-                            <li><a href="#vision-mision">Visión y misión</a></li>
-                            <li><a href="#caracteristicas">Características del parque</a></li>
-                            <li><a href="#ubicacion">Ubicación</a></li>
-                            <li><a href="#seguridad">Seguridad</a></li>
-                            <li><a href="#estacionamientos">Estacionamientos</a></li>
+                            <li><a href="/parquehipico/#vision">Visión y Misión</a></li>
+                            <li><a href="/parquehipico/#caracteristicas">Características del parque</a></li>
+                            <li><a href="/parquehipico/#ubicacion">Ubicación y accesos</a></li>
+                            <li><a href="/parquehipico/#seguridad">Seguridad y normas</a></li>
+                            <li><a href="/parquehipico/#estacionamientos">Estacionamientos</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link">Carreras a la Chilena <i class="fas fa-chevron-right"></i></a>
                         <ul class="dropdown-menu">
-                            <li><a href="#fechas-disponibles">Fechas disponibles</a></li>
-                            <li><a href="#inscripciones">Inscripciones</a></li>
-                            <li><a href="#premios">Premios</a></li>
-                            <li><a href="#apuestas">Apuestas</a></li>
-                            <li><a href="#ultimos-ganadores">Últimos ganadores</a></li>
+                            <li><a href="#fechas-disponibles" data-disabled="true">Fechas disponibles</a></li>
+                            <li><a href="#inscripciones" data-disabled="true">Inscripciones</a></li>
+                            <li><a href="#premios" data-disabled="true">Premios</a></li>
+                            <li><a href="#apuestas" data-disabled="true">Apuestas</a></li>
+                            <li><a href="#ultimos-ganadores" data-disabled="true">Últimos ganadores</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link">Entretención todo Público <i class="fas fa-chevron-right"></i></a>
                         <ul class="dropdown-menu">
-                            <li><a href="#experiencia-hipica">Experiencia hípica</a></li>
-                            <li><a href="#gastronomia">Gastronomía</a></li>
-                            <li><a href="#entorno-familiar">Entorno familiar</a></li>
-                            <li><a href="#musica">Música</a></li>
-                            <li><a href="#tiendas">Tiendas</a></li>
+                            <li><a href="#experiencia-hipica" data-disabled="true">Experiencia hípica</a></li>
+                            <li><a href="#gastronomia" data-disabled="true">Gastronomía</a></li>
+                            <li><a href="#entorno-familiar" data-disabled="true">Entorno familiar</a></li>
+                            <li><a href="#musica" data-disabled="true">Música</a></li>
+                            <li><a href="#tiendas" data-disabled="true">Tiendas</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link">Centro de Eventos <i class="fas fa-chevron-right"></i></a>
                         <ul class="dropdown-menu">
-                            <li><a href="#tipos-evento">Tipos de evento</a></li>
-                            <li><a href="#que-ofrecemos">Qué ofrecemos</a></li>
-                            <li><a href="#cotizar">Cotizar</a></li>
+                            <li><a href="#tipos-evento" data-disabled="true">Tipos de evento</a></li>
+                            <li><a href="#que-ofrecemos" data-disabled="true">Qué ofrecemos</a></li>
+                            <li><a href="#cotizar" data-disabled="true">Cotizar</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link">Únete a los eventos <i class="fas fa-chevron-right"></i></a>
                         <ul class="dropdown-menu">
-                            <li><a href="#artistas">Artistas</a></li>
-                            <li><a href="#oferta-culinaria">Oferta culinaria</a></li>
-                            <li><a href="#comercio">Comercio</a></li>
-                            <li><a href="#patrocinios">Patrocinios</a></li>
-                            <li><a href="#otros">Otros</a></li>
+                            <li><a href="#artistas" data-disabled="true">Artistas</a></li>
+                            <li><a href="#oferta-culinaria" data-disabled="true">Oferta culinaria</a></li>
+                            <li><a href="#comercio" data-disabled="true">Comercio</a></li>
+                            <li><a href="#patrocinios" data-disabled="true">Patrocinios</a></li>
+                            <li><a href="#otros" data-disabled="true">Otros</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -145,8 +147,17 @@
 
                     <!-- Upcoming Events -->
                     <div class="upcoming-events">
-                    <h3>Próximas Fechas</h3>
-                    <div class="events-list">
+                        <div class="upcoming-header">
+                            <button class="events-nav events-prev" aria-label="Ver eventos anteriores" type="button">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <h3>Próximas Fechas</h3>
+                            <button class="events-nav events-next" aria-label="Ver eventos siguientes" type="button">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <hr class="section-underline" />
+                        <div class="events-list" aria-live="polite">
                         <div class="event-item" data-date="2025-11-30">
                             <div class="event-date">
                                 <span class="day">30</span>
@@ -204,49 +215,49 @@
                     <div class="summary-column">
                         <h4>Parque Hípico</h4>
                         <ul>
-                            <li><a href="#vision-mision">Visión y misión</a></li>
-                            <li><a href="#caracteristicas">Características del parque</a></li>
-                            <li><a href="#ubicacion">Ubicación</a></li>
-                            <li><a href="#seguridad">Seguridad</a></li>
-                            <li><a href="#estacionamientos">Estacionamientos</a></li>
+                            <li><a href="/parquehipico/#vision">Visión y misión</a></li>
+                            <li><a href="/parquehipico/#caracteristicas">Características del parque</a></li>
+                            <li><a href="/parquehipico/#ubicacion">Ubicación</a></li>
+                            <li><a href="/parquehipico/#seguridad">Seguridad</a></li>
+                            <li><a href="/parquehipico/#estacionamientos">Estacionamientos</a></li>
                         </ul>
                     </div>
                     <div class="summary-column">
                         <h4>Carreras</h4>
                         <ul>
-                            <li><a href="#fechas-disponibles">Fechas disponibles</a></li>
-                            <li><a href="#inscripciones">Inscripciones</a></li>
-                            <li><a href="#premios">Premios</a></li>
-                            <li><a href="#apuestas">Apuestas</a></li>
-                            <li><a href="#ultimos-ganadores">Últimos ganadores</a></li>
+                            <li><a href="#fechas-disponibles" data-disabled="true">Fechas disponibles</a></li>
+                            <li><a href="#inscripciones" data-disabled="true">Inscripciones</a></li>
+                            <li><a href="#premios" data-disabled="true">Premios</a></li>
+                            <li><a href="#apuestas" data-disabled="true">Apuestas</a></li>
+                            <li><a href="#ultimos-ganadores" data-disabled="true">Últimos ganadores</a></li>
                         </ul>
                     </div>
                     <div class="summary-column">
                         <h4>Entretención</h4>
                         <ul>
-                            <li><a href="#experiencia-hipica">Experiencia hípica</a></li>
-                            <li><a href="#gastronomia">Gastronomía</a></li>
-                            <li><a href="#entorno-familiar">Entorno familiar</a></li>
-                            <li><a href="#musica">Música</a></li>
-                            <li><a href="#tiendas">Tiendas</a></li>
+                            <li><a href="#experiencia-hipica" data-disabled="true">Experiencia hípica</a></li>
+                            <li><a href="#gastronomia" data-disabled="true">Gastronomía</a></li>
+                            <li><a href="#entorno-familiar" data-disabled="true">Entorno familiar</a></li>
+                            <li><a href="#musica" data-disabled="true">Música</a></li>
+                            <li><a href="#tiendas" data-disabled="true">Tiendas</a></li>
                         </ul>
                     </div>
                     <div class="summary-column">
                         <h4>Renta Eventos</h4>
                         <ul>
-                            <li><a href="#tipos-evento">Tipos de evento</a></li>
-                            <li><a href="#que-ofrecemos">Qué ofrecemos</a></li>
-                            <li><a href="#cotizar">Cotizar</a></li>
+                            <li><a href="#tipos-evento" data-disabled="true">Tipos de evento</a></li>
+                            <li><a href="#que-ofrecemos" data-disabled="true">Qué ofrecemos</a></li>
+                            <li><a href="#cotizar" data-disabled="true">Cotizar</a></li>
                         </ul>
                     </div>
                     <div class="summary-column">
                         <h4>Colabora con Nosotros</h4>
                         <ul>
-                            <li><a href="#artistas">Artistas</a></li>
-                            <li><a href="#oferta-culinaria">Oferta culinaria</a></li>
-                            <li><a href="#comercio">Comercio</a></li>
-                            <li><a href="#patrocinios">Patrocinios</a></li>
-                            <li><a href="#otros">Otros</a></li>
+                            <li><a href="#artistas" data-disabled="true">Artistas</a></li>
+                            <li><a href="#oferta-culinaria" data-disabled="true">Oferta culinaria</a></li>
+                            <li><a href="#comercio" data-disabled="true">Comercio</a></li>
+                            <li><a href="#patrocinios" data-disabled="true">Patrocinios</a></li>
+                            <li><a href="#otros" data-disabled="true">Otros</a></li>
                         </ul>
                     </div>
                 </div>
@@ -265,8 +276,8 @@
                     <p><strong>Copyright:</strong> © 2025 Parque Hípico La Montaña. Desarrollado por Eleit.</p>
                 </div>
                 <div class="footer-links-bottom">
-                    <a href="#terminos" class="footer-link">Términos de uso y privacidad</a>
-                    <a href="#denuncias" class="footer-link">Denuncias</a>
+                    <a href="#terminos" class="footer-link" data-disabled="true">Términos de uso y privacidad</a>
+                    <a href="#denuncias" class="footer-link" data-disabled="true">Denuncias</a>
                 </div>
             </div>
         </div>
