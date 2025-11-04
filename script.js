@@ -494,12 +494,23 @@ document.addEventListener('click', (e) => {
         return;
     }
 
-    // Ancla MISMA página (#...)
+    // Ancla MISMA página (#...) - scroll fix offset
     if (href && href.startsWith('#') && href.length > 1) {
         e.preventDefault();
         const el = document.querySelector(href);
         if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Calcular offset del header sticky (aprox. 100-120px)
+            const header = document.querySelector('.header');
+            const headerHeight = header ? header.offsetHeight : 100;
+            const offset = headerHeight + 20; // Espacio adicional
+            
+            const elementPosition = el.getBoundingClientRect().top + window.pageYOffset;
+            const offsetPosition = elementPosition - offset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
             
             // Cierra dropdowns si aplica
             const dropdown = a.closest('.dropdown');
@@ -519,13 +530,24 @@ document.addEventListener('click', (e) => {
     // El navegador manejará la navegación y el hash se resolverá al cargar
 });
 
-// Manejar scroll al hash cuando la página carga con hash en la URL
+// Manejar scroll al hash cuando la página carga con hash en la URL - scroll fix offset
 document.addEventListener('DOMContentLoaded', () => {
     if (window.location.hash) {
         const target = document.querySelector(window.location.hash);
         if (target) {
             setTimeout(() => {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Calcular offset del header sticky
+                const header = document.querySelector('.header');
+                const headerHeight = header ? header.offsetHeight : 100;
+                const offset = headerHeight + 20;
+                
+                const elementPosition = target.getBoundingClientRect().top + window.pageYOffset;
+                const offsetPosition = elementPosition - offset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
             }, 100);
         }
     }
