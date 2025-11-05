@@ -285,8 +285,169 @@ function initCalendar() {
 
 // Navigation Menu Functionality
 function initNavigation() {
-    // ELIMINADO: Todo el código de hover - ahora se maneja solo con CSS
-    console.log('Navigation initialized - hover handled by CSS only');
+    // Dropdowns: Soporte para hover (CSS) y click (JS)
+    const dropdowns = document.querySelectorAll('.nav-item.dropdown');
+    
+    dropdowns.forEach(dropdown => {
+        const navLink = dropdown.querySelector('.nav-link');
+        const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+        const dropdownLinks = dropdownMenu.querySelectorAll('a');
+        
+        let isOpen = false;
+        
+        // Toggle dropdown con click (solo si hay enlaces en el dropdown)
+        navLink.addEventListener('click', (e) => {
+            // Solo prevenir navegación si el dropdown tiene enlaces
+            // Permitir navegación normal si no hay dropdown items
+            if (dropdownLinks.length > 0) {
+                // Si el dropdown está abierto y clickeamos de nuevo, cerrar
+                // Si está cerrado, abrir
+                if (isOpen) {
+                    e.preventDefault();
+                    isOpen = false;
+                    dropdownMenu.style.opacity = '0';
+                    dropdownMenu.style.visibility = 'hidden';
+                    dropdownMenu.style.transform = 'translateY(-10px)';
+                    dropdown.classList.remove('open');
+                } else {
+                    e.preventDefault();
+                    isOpen = true;
+                    
+                    // Cerrar otros dropdowns
+                    dropdowns.forEach(other => {
+                        if (other !== dropdown) {
+                            const otherMenu = other.querySelector('.dropdown-menu');
+                            if (otherMenu) {
+                                otherMenu.style.opacity = '0';
+                                otherMenu.style.visibility = 'hidden';
+                                otherMenu.style.transform = 'translateY(-10px)';
+                                other.classList.remove('open');
+                            }
+                        }
+                    });
+                    
+                    // Abrir dropdown actual
+                    dropdownMenu.style.opacity = '1';
+                    dropdownMenu.style.visibility = 'visible';
+                    dropdownMenu.style.transform = 'translateY(0)';
+                    dropdown.classList.add('open');
+                    // Focus en el primer enlace
+                    dropdownLinks[0].focus();
+                }
+            }
+        });
+        
+        // Sincronizar estado cuando hover abre el dropdown (desktop)
+        dropdown.addEventListener('mouseenter', () => {
+            if (dropdownMenu.style.opacity === '1' || getComputedStyle(dropdownMenu).opacity === '1') {
+                isOpen = true;
+                dropdown.classList.add('open');
+            }
+        });
+        
+        dropdown.addEventListener('mouseleave', () => {
+            // Si no hay focus, cerrar
+            if (!dropdown.querySelector(':focus')) {
+                isOpen = false;
+                dropdown.classList.remove('open');
+            }
+        });
+        
+        // Navegación por teclado en dropdowns
+        navLink.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                navLink.click();
+            }
+            
+            if (e.key === 'ArrowDown' && !isOpen) {
+                e.preventDefault();
+                navLink.click();
+                dropdownLinks[0]?.focus();
+            }
+        });
+        
+        // Navegación con Tab y flechas en enlaces del dropdown
+        dropdownLinks.forEach((link, index) => {
+            // Añadir tabindex para navegación por teclado
+            link.setAttribute('tabindex', '0');
+            
+            link.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    // El click se manejará automáticamente
+                    // Cerrar dropdown después del click
+                    setTimeout(() => {
+                        isOpen = false;
+                        dropdownMenu.style.opacity = '0';
+                        dropdownMenu.style.visibility = 'hidden';
+                        dropdownMenu.style.transform = 'translateY(-10px)';
+                        dropdown.classList.remove('open');
+                    }, 100);
+                }
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const nextLink = dropdownLinks[index + 1] || dropdownLinks[0];
+                    nextLink.focus();
+                }
+                
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const prevLink = dropdownLinks[index - 1] || dropdownLinks[dropdownLinks.length - 1];
+                    prevLink.focus();
+                }
+                
+                if (e.key === 'Escape') {
+                    isOpen = false;
+                    dropdownMenu.style.opacity = '0';
+                    dropdownMenu.style.visibility = 'hidden';
+                    dropdownMenu.style.transform = 'translateY(-10px)';
+                    dropdown.classList.remove('open');
+                    navLink.focus();
+                }
+            });
+            
+            // Cerrar dropdown al hacer click en ancla
+            link.addEventListener('click', () => {
+                isOpen = false;
+                dropdownMenu.style.opacity = '0';
+                dropdownMenu.style.visibility = 'hidden';
+                dropdownMenu.style.transform = 'translateY(-10px)';
+                dropdown.classList.remove('open');
+            });
+        });
+    });
+
+    // Cierre por click fuera (click-away) - simplificado
+    document.addEventListener('click', (e) => {
+        const ddOpen = document.querySelector('.nav-item.dropdown.open');
+        if (!ddOpen) return;
+        if (!ddOpen.contains(e.target)) {
+            const dropdownMenu = ddOpen.querySelector('.dropdown-menu');
+            if (dropdownMenu) {
+                dropdownMenu.style.opacity = '0';
+                dropdownMenu.style.visibility = 'hidden';
+                dropdownMenu.style.transform = 'translateY(-10px)';
+            }
+            ddOpen.classList.remove('open');
+        }
+    });
+    
+    // Cerrar dropdowns al hacer click en cualquier enlace del dropdown (UX mejorada)
+    document.querySelectorAll('.dropdown-menu a, .dropdown-item').forEach(a => {
+        a.addEventListener('click', () => {
+            // Cierra cualquier dropdown abierto (si usas clase open)
+            document.querySelectorAll('.nav-item.dropdown.open').forEach(d => {
+                const dropdownMenu = d.querySelector('.dropdown-menu');
+                if (dropdownMenu) {
+                    dropdownMenu.style.opacity = '0';
+                    dropdownMenu.style.visibility = 'hidden';
+                    dropdownMenu.style.transform = 'translateY(-10px)';
+                }
+                d.classList.remove('open');
+            });
+        });
+    });
 
     // Mobile menu toggle (if hamburger menu is added later)
     const hamburger = document.querySelector('.hamburger');
@@ -481,6 +642,22 @@ if (typeof module !== 'undefined' && module.exports) {
     start();
 })();
 
+// Función para obtener offset dinámico del header
+const getOffset = () => {
+    const header = document.querySelector('.header');
+    return (header?.offsetHeight || 0) + 12;
+};
+
+// Actualizar CSS custom property para scroll-margin-top
+const updateScrollMargin = () => {
+    const offset = getOffset();
+    document.documentElement.style.setProperty('--header-offset', `${offset}px`);
+};
+
+// Actualizar scroll-margin al cargar y al redimensionar
+updateScrollMargin();
+window.addEventListener('resize', debounce(updateScrollMargin, 100));
+
 // === Navegación limpia (sin alerts) + scroll suave a secciones ===
 document.addEventListener('click', (e) => {
     const a = e.target.closest('a[href]');
@@ -499,10 +676,8 @@ document.addEventListener('click', (e) => {
         e.preventDefault();
         const el = document.querySelector(href);
         if (el) {
-            // Calcular offset del header sticky (aprox. 100-120px)
-            const header = document.querySelector('.header');
-            const headerHeight = header ? header.offsetHeight : 100;
-            const offset = headerHeight + 20; // Espacio adicional
+            // Calcular offset dinámico del header
+            const offset = getOffset();
             
             const elementPosition = el.getBoundingClientRect().top + window.pageYOffset;
             const offsetPosition = elementPosition - offset;
@@ -520,6 +695,7 @@ document.addEventListener('click', (e) => {
                     dropdownMenu.style.opacity = '0';
                     dropdownMenu.style.visibility = 'hidden';
                     dropdownMenu.style.transform = 'translateY(-10px)';
+                    dropdown.classList.remove('open');
                 }
             }
         }
@@ -536,10 +712,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const target = document.querySelector(window.location.hash);
         if (target) {
             setTimeout(() => {
-                // Calcular offset del header sticky
-                const header = document.querySelector('.header');
-                const headerHeight = header ? header.offsetHeight : 100;
-                const offset = headerHeight + 20;
+                // Calcular offset dinámico del header
+                const offset = getOffset();
                 
                 const elementPosition = target.getBoundingClientRect().top + window.pageYOffset;
                 const offsetPosition = elementPosition - offset;
@@ -552,6 +726,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+// Smooth scroll con offset dinámico del header para enlaces del subnav
+(function () {
+    document.querySelectorAll('.subnav a[href^="#"]').forEach(a => {
+        a.addEventListener('click', e => {
+            const id = a.getAttribute('href');
+            const el = document.querySelector(id);
+            if (!el) return;
+
+            e.preventDefault();
+            // Calcular offset dinámico antes de cada scroll
+            const offset = getOffset();
+            const top = el.getBoundingClientRect().top + window.scrollY - offset;
+            window.scrollTo({ top, behavior: 'smooth' });
+
+            // Cierra dropdowns si están abiertos
+            document.querySelectorAll('.nav-item.dropdown.open')
+                .forEach(d => {
+                    const dropdownMenu = d.querySelector('.dropdown-menu');
+                    if (dropdownMenu) {
+                        dropdownMenu.style.opacity = '0';
+                        dropdownMenu.style.visibility = 'hidden';
+                        dropdownMenu.style.transform = 'translateY(-10px)';
+                    }
+                    d.classList.remove('open');
+                });
+        });
+        
+        // Navegación por teclado: Enter activa smooth scroll
+        a.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                a.click();
+            }
+        });
+    });
+})();
 
 // === DEV HELPERS para abrir con file:// ===
 (function () {

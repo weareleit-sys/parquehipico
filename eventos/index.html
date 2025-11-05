@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="canonical" href="https://www.parquehipico.cl/eventos/">     
-    <meta name="description" content="Centro de Eventos en Parque Hípico La Montaña: eventos corporativos, matrimonios, eventos familiares con servicios completos.">
+    <meta name="description" content="Centro de Eventos en Parque Hípico La Montaña: tipos de eventos, servicios y cotización.">
     <meta name="robots" content="index,follow">
 </head>
 <body>
@@ -55,22 +55,25 @@
                             <li><a href="/entretencion/#tiendas">Tiendas</a></li>
                         </ul>
                     </li>
+                    <!-- CENTRO DE EVENTOS -->
                     <li class="nav-item dropdown">
                         <a href="/eventos/" class="nav-link">Centro de Eventos <i class="fas fa-chevron-right"></i></a>
                         <ul class="dropdown-menu">
-                            <li><a href="/eventos/#tipos">Tipos de eventos</a></li>
-                            <li><a href="/eventos/#ofrecemos">Qué ofrecemos</a></li>
-                            <li><a href="/eventos/#cotizar">Cotiza aquí</a></li>
+                            <li><a href="/eventos/#tipos" class="dropdown-item">Tipos de eventos</a></li>
+                            <li><a href="/eventos/#ofrecemos" class="dropdown-item">Qué ofrecemos</a></li>
+                            <li><a href="/eventos/#cotizar" class="dropdown-item">Cotiza aquí</a></li>
                         </ul>
                     </li>
+                    <!-- ÚNETE A LOS EVENTOS -->
                     <li class="nav-item dropdown">
-                        <a href="#" class="nav-link">Únete a los eventos <i class="fas fa-chevron-right"></i></a>
+                        <a href="/unete/" class="nav-link">Únete a los eventos <i class="fas fa-chevron-right"></i></a>
                         <ul class="dropdown-menu">
-                            <li><a href="../index.html#artistas" data-disabled="true">Artistas</a></li>
-                            <li><a href="../index.html#oferta-culinaria" data-disabled="true">Oferta culinaria</a></li>
-                            <li><a href="../index.html#comercio" data-disabled="true">Comercio</a></li>
-                            <li><a href="../index.html#patrocinios" data-disabled="true">Patrocinios</a></li>
-                            <li><a href="../index.html#otros" data-disabled="true">Otros</a></li>
+                            <li><a href="/unete/#artistas" class="dropdown-item">Artistas</a></li>
+                            <li><a href="/unete/#culinaria" class="dropdown-item">Oferta culinaria</a></li>
+                            <li><a href="/unete/#comercio" class="dropdown-item">Comercio</a></li>
+                            <li><a href="/unete/#patrocinios" class="dropdown-item">Patrocinios</a></li>
+                            <li><a href="/unete/#otros" class="dropdown-item">Otros</a></li>
+                            <li><a href="/unete/#postula" class="dropdown-item">Postula</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -93,24 +96,24 @@
 
     <!-- Main Content -->
     <main>
-        <!-- Masthead -->
+        <!-- Masthead principal -->
         <section class="page-masthead" aria-label="Encabezado Centro de Eventos">
             <div class="container masthead-inner">
-                <h1 class="masthead-pill">CENTRO DE EVENTOS</h1>       
+                <h1 class="masthead-pill">CENTRO DE EVENTOS</h1>
                 <p class="masthead-phrase">El lugar ideal para celebrar, compartir y crear momentos únicos en La Montaña.</p>
             </div>
         </section>
 
-        <!-- Sub-nav interno -->
-        <nav class="subnav container" aria-label="Subsecciones de Centro de Eventos">            
+        <!-- Subnavegación (píldoras) -->
+        <nav class="subnav container" aria-label="Subsecciones de Centro de Eventos">
             <a class="pill" href="#tipos">Tipos de eventos</a>
             <a class="pill" href="#ofrecemos">Qué ofrecemos</a>
-            <a class="pill" href="#cotizar">Cotiza aquí</a>       
+            <a class="pill" href="#cotizar">Cotiza aquí</a>
         </nav>
 
-        <!-- Sección: Tipos de eventos -->
-        <section id="tipos" class="section section-alt category-section section-box" aria-labelledby="tipos-title">
-            <div class="container">
+        <div class="container">
+            <!-- Tipos de eventos -->
+            <section id="tipos" class="category-section section-box" aria-labelledby="tipos-title">
                 <header class="section-head">
                     <h2 id="tipos-title">Tipos de eventos</h2>
                     <p class="lead">En el Parque Hípico La Montaña contamos con amplios espacios adaptables para diferentes tipos de celebraciones y actividades.</p>
@@ -130,12 +133,10 @@
                         <p>Cumpleaños, aniversarios y encuentros especiales con infraestructura segura y acogedora.</p>
                     </article>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Sección: Qué ofrecemos -->
-        <section id="ofrecemos" class="section category-section section-box" aria-labelledby="ofrecemos-title">
-            <div class="container">
+            <!-- Qué ofrecemos -->
+            <section id="ofrecemos" class="section section-alt category-section section-box" aria-labelledby="ofrecemos-title">
                 <header class="section-head">
                     <h2 id="ofrecemos-title">Qué ofrecemos</h2>
                     <p class="lead">Un servicio integral para asegurar el éxito de tu evento, con el sello de calidad del Parque Hípico La Montaña.</p>
@@ -147,58 +148,57 @@
                     <li>Amplios estacionamientos y zonas de acceso controlado.</li>
                     <li>Escenario, sonido e iluminación para presentaciones en vivo.</li>
                     <li>Apoyo logístico, seguridad y limpieza integral.</li>
-                    <li>Ambientación y decoración personalizada según tu evento.</li>
+                    <li>Personal capacitado para asistencia durante todo el evento.</li>
+                    <li>Opciones de decoración y mobiliario.</li>
                 </ul>
-            </div>
-        </section>
+            </section>
 
-        <!-- Sección: Cotiza aquí -->
-        <section id="cotizar" class="section section-alt category-section section-box" aria-labelledby="cotizar-title">
-            <div class="container">
+            <!-- Cotiza aquí -->
+            <section id="cotizar" class="category-section section-box" aria-labelledby="cotizar-title">
                 <header class="section-head">
                     <h2 id="cotizar-title">Cotiza aquí</h2>
-                    <p class="lead">Completa el formulario y nos pondremos en contacto contigo para ofrecerte la mejor propuesta para tu evento.</p>
+                    <p class="lead">Cuéntanos sobre tu evento y te enviaremos una propuesta personalizada.</p>
                 </header>
 
-                <form class="contact-form" action="#" method="POST">
+                <form class="contact-form">
                     <div class="form-group">
-                        <label for="nombre">Nombre completo *</label>
+                        <label for="nombre">Nombre completo:</label>
                         <input type="text" id="nombre" name="nombre" required>
                     </div>
                     <div class="form-group">
-                        <label for="email">Email *</label>
+                        <label for="email">Email:</label>
                         <input type="email" id="email" name="email" required>
                     </div>
                     <div class="form-group">
-                        <label for="telefono">Teléfono *</label>
-                        <input type="tel" id="telefono" name="telefono" required>
+                        <label for="telefono">Teléfono:</label>
+                        <input type="tel" id="telefono" name="telefono">
                     </div>
                     <div class="form-group">
-                        <label for="tipo-evento">Tipo de evento *</label>
-                        <select id="tipo-evento" name="tipo-evento" required>
-                            <option value="">Selecciona un tipo</option>
-                            <option value="corporativo">Evento corporativo</option>
+                        <label for="tipo-evento">Tipo de evento:</label>
+                        <select id="tipo-evento" name="tipo-evento">
+                            <option value="">Selecciona</option>
+                            <option value="corporativo">Corporativo</option>
                             <option value="matrimonio">Matrimonio</option>
-                            <option value="familiar">Evento familiar</option>
+                            <option value="familiar">Familiar</option>
                             <option value="otro">Otro</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="fecha">Fecha tentativa</label>
+                        <label for="fecha">Fecha preferente:</label>
                         <input type="date" id="fecha" name="fecha">
                     </div>
                     <div class="form-group">
-                        <label for="asistentes">Número aproximado de asistentes</label>
-                        <input type="number" id="asistentes" name="asistentes" min="1">
+                        <label for="invitados">Número de invitados (aprox.):</label>
+                        <input type="number" id="invitados" name="invitados" min="1">
                     </div>
-                    <div class="form-group">
-                        <label for="mensaje">Mensaje o consulta adicional</label>
+                    <div class="form-group full-width">
+                        <label for="mensaje">Mensaje / Detalles adicionales:</label>
                         <textarea id="mensaje" name="mensaje" rows="5"></textarea>
                     </div>
-                    <button type="submit" class="btn-primary">Enviar solicitud</button>
+                    <button type="submit" class="btn-primary">Enviar Cotización</button>
                 </form>
-            </div>
-        </section>
+            </section>
+        </div>
     </main>
 
     <!-- Footer -->
@@ -222,3 +222,5 @@
     <script src="../script.js"></script>
 </body>
 </html>
+
+
