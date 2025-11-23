@@ -1,5 +1,5 @@
-import { getEventoPorId } from '../../data/eventos';
-import CompraTickets from '../../components/CompraTickets';
+import { getEventoPorId } from '../data/eventos';
+import CompraTickets from '../components/CompraTickets';
 import { notFound } from 'next/navigation';
 
 export default function EventoDetallePage({ params }: { params: { id: string } }) {
