@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parque Hípico La Montaña | Centro de Eventos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .photo-placeholder {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            color: white;
+            border: 3px dashed rgba(255, 255, 255, 0.5);
+            min-height: 300px;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50">
+    <!-- HEADER -->
+    <header class="fixed top-0 w-full z-50 bg-slate-950/95 backdrop-blur-md border-b border-white/10 shadow-lg">
+        <div class="container mx-auto px-4 h-20 flex items-center justify-between max-w-7xl">
+            <a href="#inicio" class="flex items-center gap-3 group">
+                <div
+                    class="relative w-10 h-10 md:w-12 md:h-12 bg-white rounded-full overflow-hidden border-2 border-amber-600">
+                    <img src="./public/logo-main.jpg" alt="Logo" class="w-full h-full object-cover">
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-white font-bold leading-none tracking-wide uppercase text-xs md:text-sm">Parque
+                        Hípico</span>
+                    <span class="text-amber-500 font-serif text-base md:text-lg leading-none">La Montaña</span>
+                </div>
+            </a>
+            <nav class="hidden md:flex items-center gap-8">
+                <a href="#inicio"
+                    class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Inicio</a>
+                <a href="#eventos"
+                    class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Eventos</a>
+                <a href="#arrienda"
+                    class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Arrienda el Parque</a>
+                <a href="#nosotros"
+                    class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Nosotros</a>
+            </nav>
+            <a href="https://wa.me/56971636195" target="_blank"
+                class="hidden md:inline-flex items-center justify-center px-6 py-2 text-sm font-bold text-slate-900 bg-amber-500 rounded hover:bg-white hover:text-amber-600 shadow-md">Cotizar</a>
+        </div>
+    </header>
+
+    <!-- HERO MEJORADO -->
+    <section id="inicio" class="relative min-h-screen w-full flex items-center justify-center overflow-hidden pt-20">
+        <div class="absolute inset-0 z-0">
+            <img src="./public/hero-bg.jpg" alt="Parque Hípico" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-slate-950/60"></div>
+        </div>
+
+        <div class="relative z-20 container mx-auto px-4 text-center md:text-left max-w-7xl py-20">
+            <div class="max-w-4xl mx-auto md:mx-0 mb-20">
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+                    El Centro de Eventos <br>
+                    <span class="text-amber-500">más Versátil del Sur de Chile</span>
+                </h1>
+                <p class="text-lg md:text-xl text-slate-100 mb-10 max-w-2xl font-light">
+                    Capacidad para 5.000 personas. 3 Hectáreas. Infraestructura para Festivales, Ferias y Carreras.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start mb-16">
+                    <a href="#arrienda"
+                        class="bg-amber-600 hover:bg-amber-700 text-white font-semibold py-4 px-8 rounded shadow-lg transition-all transform hover:scale-105 flex items-center justify-center">
+                        Arrienda el Parque
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </a>
+                    <a href="#eventos"
+                        class="bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold py-4 px-8 rounded transition-all flex items-center justify-center">
+                        Ver Próximos Eventos
+                    </a>
+                </div>
+            </div>
+
+            <!-- ESTADÍSTICAS REUBICADAS -->
+            <div
+                class="grid grid-cols-3 gap-4 max-w-4xl mx-auto bg-slate-950/40 backdrop-blur-md rounded-lg p-6 border border-white/10">
+                <div class="text-center">
+                    <p class="text-3xl font-bold text-white">5.000</p>
+                    <p class="text-xs md:text-sm text-slate-300 uppercase tracking-wider">Capacidad</p>
+                </div>
+                <div class="border-l border-white/20 text-center">
+                    <p class="text-3xl font-bold text-white">3</p>
+                    <p class="text-xs md:text-sm text-slate-300 uppercase tracking-wider">Hectáreas</p>
+                </div>
+                <div class="border-l border-white/20 text-center">
+                    <p class="text-3xl font-bold text-amber-500">24/7</p>
+                    <p class="text-xs md:text-sm text-slate-300 uppercase tracking-wider">Seguridad</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRÓXIMOS EVENTOS -->
+    <section id="eventos" class="py-20 bg-white">
+        <div class="container mx-auto px-4 max-w-7xl">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Próximos Eventos</h2>
+                <p class="text-lg text-slate-600">Compra tus entradas online</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Evento 1 -->
+                <div
+                    class="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-slate-200">
+                    <div class="photo-placeholder" style="min-height: 200px;">
+                        <div>
+                            <p class="font-bold">📸 FOTO EVENTO</p>
+                            <p class="text-xs mt-2">Imagen promocional del evento</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full">30 NOV</span>
+                            <span class="text-slate-500 text-sm">20:00 hrs</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-900 mb-2">Festival de Verano</h3>
+                        <p class="text-slate-600 mb-4">Celebra el inicio del verano con música en vivo, food trucks y
+                            actividades para toda la familia.</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-2xl font-bold text-amber-600">Desde $15.000</span>
+                            <span class="text-sm text-slate-500">Entradas disponibles</span>
+                        </div>
+                        <a href="#comprar-tickets" onclick="abrirCompraTickets('Festival de Verano', '30 NOV', 15000)"
+                            class="block w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 px-6 rounded text-center transition-all">
+                            Comprar Entradas
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Evento 2 -->
+                <div
+                    class="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-slate-200">
+                    <div class="photo-placeholder" style="min-height: 200px;">
+                        <div>
+                            <p class="font-bold">📸 FOTO EVENTO</p>
+                            <p class="text-xs mt-2">Imagen promocional del evento</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full">20 DIC</span>
+                            <span class="text-slate-500 text-sm">19:00 hrs</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-900 mb-2">Noche de Carreras</h3>
+                        <p class="text-slate-600 mb-4">Carreras a la chilena con los mejores ejemplares de la región.
+                            Incluye zona gastronómica y entretenimiento.</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-2xl font-bold text-amber-600">Desde $8.000</span>
+                            <span class="text-sm text-slate-500">Entradas disponibles</span>
+                        </div>
+                        <a href="#comprar-tickets" onclick="abrirCompraTickets('Noche de Carreras', '20 DIC', 8000)"
+                            class="block w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 px-6 rounded text-center transition-all">
+                            Comprar Entradas
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Evento 3 -->
+                <div
+                    class="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-slate-200">
+                    <div class="photo-placeholder" style="min-height: 200px;">
+                        <div>
+                            <p class="font-bold">📸 FOTO EVENTO</p>
+                            <p class="text-xs mt-2">Imagen promocional del evento</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">31 DIC</span>
+                            <span class="text-slate-500 text-sm">22:00 hrs</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-900 mb-2">Fiesta de Año Nuevo</h3>
+                        <p class="text-slate-600 mb-4">Despide el año con música, cena buffet, barra libre y fuegos
+                            artificiales a medianoche.</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-2xl font-bold text-amber-600">Desde $35.000</span>
+                            <span class="text-sm text-red-500">Últimas entradas</span>
+                        </div>
+                        <a href="#comprar-tickets" onclick="abrirCompraTickets('Fiesta de Año Nuevo', '31 DIC', 35000)"
+                            class="block w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 px-6 rounded text-center transition-all">
+                            Comprar Entradas
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL COMPRA TICKETS -->
+    <div id="modalTickets" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-slate-200 flex items-center justify-between">
+                <h3 class="text-2xl font-bold text-slate-900" id="modalTitulo">Comprar Entradas</h3>
+                <button onclick="cerrarModal()" class="text-slate-400 hover:text-slate-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <!-- Paso 1: Selección de entradas -->
+                <div id="paso1" class="space-y-6">
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-semibold text-slate-900">Entrada General</span>
+                            <span class="text-2xl font-bold text-amber-600" id="precioEntrada">$15.000</span>
+                        </div>
+                        <p class="text-sm text-slate-600 mb-4">Acceso general al evento</p>
+                        <div class="flex items-center gap-4">
+                            <label class="text-sm font-medium text-slate-700">Cantidad:</label>
+                            <div class="flex items-center gap-3">
+                                <button onclick="cambiarCantidad(-1)"
+                                    class="w-10 h-10 bg-slate-200 hover:bg-slate-300 rounded-full flex items-center justify-center font-bold">-</button>
+                                <span class="text-xl font-bold w-8 text-center" id="cantidad">1</span>
+                                <button onclick="cambiarCantidad(1)"
+                                    class="w-10 h-10 bg-slate-200 hover:bg-slate-300 rounded-full flex items-center justify-center font-bold">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border-t border-slate-200 pt-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-lg font-semibold">Total:</span>
+                            <span class="text-3xl font-bold text-amber-600" id="totalPrecio">$15.000</span>
+                        </div>
+                        <button onclick="irPaso2()"
+                            class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 px-6 rounded transition-all">
+                            Continuar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Paso 2: Datos del comprador -->
+                <div id="paso2" class="hidden space-y-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Nombre Completo *</label>
+                            <input type="text" id="nombre"
+                                class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                placeholder="Juan Pérez">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Email *</label>
+                            <input type="email" id="email"
+                                class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                placeholder="juan@ejemplo.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Teléfono (WhatsApp) *</label>
+                            <input type="tel" id="telefono"
+                                class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                placeholder="+56 9 1234 5678">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">RUT *</label>
+                            <input type="text" id="rut"
+                                class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                placeholder="12.345.678-9">
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <button onclick="volverPaso1()"
+                            class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-4 px-6 rounded transition-all">
+                            Volver
+                        </button>
+                        <button onclick="irPaso3()"
+                            class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 px-6 rounded transition-all">
+                            Continuar al Pago
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Paso 3: Confirmación -->
+                <div id="paso3" class="hidden space-y-6">
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+                        <svg class="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h4 class="text-2xl font-bold text-slate-900 mb-2">¡Reserva Confirmada!</h4>
+                        <p class="text-slate-600 mb-4">Recibirás tus entradas por email y WhatsApp</p>
+                        <p class="text-sm text-slate-500">En el futuro, aquí se integrará el pago con MercadoPago o Flow
+                        </p>
+                    </div>
+                    <button onclick="cerrarModal()"
+                        class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 px-6 rounded transition-all">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TIPOS DE EVENTOS -->
+    <section class="py-20 bg-slate-50">
+        <div class="container mx-auto px-4 max-w-7xl">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Tipos de Eventos</h2>
+                <p class="text-lg text-slate-600">Amplios espacios adaptables para diferentes celebraciones</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8 mb-16">
+                <div class="bg-white p-8 rounded-lg shadow-lg">
+                    <div class="w-16 h-16 bg-amber-500 rounded-lg flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-4">Eventos Corporativos</h3>
+                    <p class="text-slate-600">Reuniones, lanzamientos y capacitaciones en un entorno natural y
+                        profesional.</p>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-lg">
+                    <div class="w-16 h-16 bg-amber-500 rounded-lg flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-4">Matrimonios</h3>
+                    <p class="text-slate-600">Ceremonias y recepciones rodeadas de naturaleza, con opciones
+                        gastronómicas y música en vivo.</p>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-lg">
+                    <div class="w-16 h-16 bg-amber-500 rounded-lg flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-4">Eventos Familiares</h3>
+                    <p class="text-slate-600">Cumpleaños, aniversarios y encuentros especiales con infraestructura
+                        segura y acogedora.</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg p-8 shadow-lg">
+                <h3 class="text-3xl font-bold text-slate-900 mb-8 text-center">Qué Ofrecemos</h3>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="flex items-start gap-4">
+                        <svg class="w-6 h-6 text-amber-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        <div>
+                            <h4 class="font-bold text-slate-900 mb-1">Espacios Flexibles</h4>
+                            <p class="text-sm text-slate-600">Salones y áreas al aire libre con capacidad hasta 5.000
+                                personas</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <svg class="w-6 h-6 text-amber-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        <div>
+                            <h4 class="font-bold text-slate-900 mb-1">Gastronomía</h4>
+                            <p class="text-sm text-slate-600">Gastronomía local, food trucks y banquetería profesional
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <svg class="w-6 h-6 text-amber-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        <div>
+                            <h4 class="font-bold text-slate-900 mb-1">Estacionamientos</h4>
+                            <p class="text-sm text-slate-600">Amplios estacionamientos y zonas de acceso controlado</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <svg class="w-6 h-6 text-amber-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        <div>
+                            <h4 class="font-bold text-slate-900 mb-1">Sonido e Iluminación</h4>
+                            <p class="text-sm text-slate-600">Escenario, sonido e iluminación para presentaciones en
+                                vivo</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <svg class="w-6 h-6 text-amber-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        <div>
+                            <h4 class="font-bold text-slate-900 mb-1">Apoyo Logístico</h4>
+                            <p class="text-sm text-slate-600">Apoyo logístico, seguridad y limpieza integral</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <svg class="w-6 h-6 text-amber-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        <div>
+                            <h4 class="font-bold text-slate-900 mb-1">Personal Capacitado</h4>
+                            <p class="text-sm text-slate-600">Personal capacitado para asistencia durante todo el evento
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 text-white py-12">
+        <div class="container mx-auto px-4 max-w-7xl">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="text-lg font-bold mb-4 text-amber-500">El Parque</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#inicio" class="text-slate-400 hover:text-white">Inicio</a></li>
+                        <li><a href="#eventos" class="text-slate-400 hover:text-white">Eventos</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4 text-amber-500">Contacto</h3>
+                    <ul class="space-y-2">
+                        <li class="text-slate-400">Tel: <a href="tel:+56971636195" class="hover:text-white">+56 9 7163
+                                6195</a></li>
+                        <li class="text-slate-400">Email: <a href="mailto:parquehipicolamontana@gmail.com"
+                                class="hover:text-white">parquehipicolamontana@gmail.com</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-white/10 pt-8 text-center text-slate-400">
+                <p>© 2025 Parque Hípico La Montaña</p>
+            </div>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/56971636195" target="_blank"
+        class="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-lg transition-all transform hover:scale-110">
+        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+            <path
+                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+        </svg>
+    </a>
+
+    <script>
+        let eventoActual = {};
+        let cantidad = 1;
+
+        function abrirCompraTickets(nombre, fecha, precio) {
+            eventoActual = { nombre, fecha, precio };
+            cantidad = 1;
+            document.getElementById('modalTitulo').textContent = nombre;
+            document.getElementById('precioEntrada').textContent = '$' + precio.toLocaleString('es-CL');
+            document.getElementById('cantidad').textContent = '1';
+            document.getElementById('totalPrecio').textContent = '$' + precio.toLocaleString('es-CL');
+            document.getElementById('modalTickets').classList.remove('hidden');
+            document.getElementById('paso1').classList.remove('hidden');
+            document.getElementById('paso2').classList.add('hidden');
+            document.getElementById('paso3').classList.add('hidden');
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalTickets').classList.add('hidden');
+        }
+
+        function cambiarCantidad(delta) {
+            cantidad = Math.max(1, Math.min(10, cantidad + delta));
+            document.getElementById('cantidad').textContent = cantidad;
+            const total = eventoActual.precio * cantidad;
+            document.getElementById('totalPrecio').textContent = '$' + total.toLocaleString('es-CL');
+        }
+
+        function irPaso2() {
+            document.getElementById('paso1').classList.add('hidden');
+            document.getElementById('paso2').classList.remove('hidden');
+        }
+
+        function volverPaso1() {
+            document.getElementById('paso2').classList.add('hidden');
+            document.getElementById('paso1').classList.remove('hidden');
+        }
+
+        function irPaso3() {
+            const nombre = document.getElementById('nombre').value;
+            const email = document.getElementById('email').value;
+            const telefono = document.getElementById('telefono').value;
+            const rut = document.getElementById('rut').value;
+
+            if (!nombre || !email || !telefono || !rut) {
+                alert('Por favor completa todos los campos');
+                return;
+            }
+
+            document.getElementById('paso2').classList.add('hidden');
+            document.getElementById('paso3').classList.remove('hidden');
+        }
+    </script>
+</body>
+
+</html>

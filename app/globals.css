@@ -1,0 +1,238 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   GLOBALS - Estilos globales para Next.js
+   ============================================ */
+
+/* Variables CSS */
+:root {
+  /* === COLORES === */
+  --amarillo: #FFD700;
+  --amarillo-pill: #FFE55C;
+  --negro: #1B1B1B;
+  --azul: #0F3270;
+  --azul-opaque: rgba(15, 50, 112, 0.88);
+  --rojo: #FF0000;
+  --fondo-claro: #fdf8f0;
+  --fondo-gris: #f8f9fa;
+  --blanco: #ffffff;
+  
+  /* === REDES SOCIALES === */
+  --instagram: #E1306C;
+  --facebook: #1877F2;
+  --tiktok: #000000;
+  --youtube: #FF0000;
+  --whatsapp: #25D366;
+  
+  /* === ESPACIADO === */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 40px;
+  --spacing-3xl: 60px;
+  
+  /* === TIPOGRAFÍA === */
+  --font-poppins: 'Poppins', sans-serif;
+  --font-montserrat: 'Montserrat', sans-serif;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+  
+  /* === PESOS === */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* === BORDES === */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+  --border-radius-full: 999px;
+  
+  /* === SOMBRAS === */
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 10px 30px rgba(0, 0, 0, 0.2);
+  
+  /* === TRANSICIONES === */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.6s ease;
+  
+  /* === Z-INDEX === */
+  --z-header: 9999;
+  --z-dropdown: 10020;
+  --z-modal: 2000;
+}
+
+/* === RESET === */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-poppins);
+  line-height: 1.6;
+  color: var(--negro);
+  background-color: var(--fondo-claro);
+  overflow-x: hidden;
+}
+
+/* === CONTENEDOR === */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  overflow: visible;
+}
+
+/* === ENLACES === */
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: all var(--transition-normal) ease;
+}
+
+/* === BOTONES === */
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+/* === IMÁGENES === */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* === TIPOGRAFÍA === */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
+  margin-bottom: var(--spacing-md);
+}
+
+h1 { font-size: var(--font-size-5xl); }
+h2 { font-size: var(--font-size-4xl); }
+h3 { font-size: var(--font-size-3xl); }
+h4 { font-size: var(--font-size-2xl); }
+h5 { font-size: var(--font-size-xl); }
+h6 { font-size: var(--font-size-lg); }
+
+p {
+  margin-bottom: var(--spacing-md);
+  line-height: 1.6;
+}
+
+/* === SCROLL MARGIN === */
+[id] {
+  scroll-margin-top: 96px;
+}
+
+/* === ANIMACIONES === */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === ACCESIBILIDAD === */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1280px) {
+  .container {
+    padding: 0 18px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 15px;
+  }
+  
+  h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); }
+  h2 { font-size: clamp(1.25rem, 4vw, 2rem); }
+  h3 { font-size: clamp(1rem, 3vw, 1.5rem); }
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 0 12px;
+  }
+  
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+  h3 { font-size: 1.1rem; }
+  p { font-size: 0.95rem; }
+}
+
+/* === PREFERS REDUCED MOTION === */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* === PRINT STYLES === */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .no-print {
+    display: none;
+  }
+}
+

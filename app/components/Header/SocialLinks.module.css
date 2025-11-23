@@ -1,0 +1,62 @@
+.socialMedia {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.socialLink {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all var(--transition-normal) ease;
+  font-size: 1.4rem;
+  border: 3px solid var(--negro);
+  color: var(--blanco);
+}
+
+.instagram {
+  background: var(--instagram);
+}
+
+.facebook {
+  background: var(--facebook);
+}
+
+.tiktok {
+  background: var(--tiktok);
+}
+
+.youtube {
+  background: var(--youtube);
+}
+
+.socialLink:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 640px) {
+  .socialMedia {
+    gap: 10px;
+  }
+  
+  .socialLink {
+    width: 36px;
+    height: 36px;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .socialLink {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+}
+

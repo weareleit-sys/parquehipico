@@ -1,0 +1,240 @@
+.feedbackSection {
+  margin-top: var(--spacing-3xl);
+  padding: var(--spacing-2xl);
+  background: white;
+  border: 3px solid var(--amarillo);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.header {
+  margin-bottom: var(--spacing-2xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 3px solid var(--amarillo);
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--azul);
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Mensaje de éxito */
+.successMessage {
+  background: #e8f5e9;
+  border: 2px solid #4caf50;
+  border-radius: 10px;
+  padding: var(--spacing-2xl);
+  text-align: center;
+}
+
+.successContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.successIcon {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.successMessage h3 {
+  font-size: 1.3rem;
+  color: #2e7d32;
+  margin: 0;
+  font-weight: 700;
+}
+
+.successMessage p {
+  font-size: 0.95rem;
+  color: #558b2f;
+  margin: 0;
+}
+
+/* Formulario */
+.feedbackForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl);
+}
+
+.ratingSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.ratingLabel {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--azul);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.required {
+  color: #ff0000;
+  font-weight: 700;
+}
+
+.optional {
+  color: #999;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.starsContainer {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.starButton {
+  background: none;
+  border: none;
+  font-size: 2.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.3;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.starButton:hover {
+  opacity: 0.7;
+  transform: scale(1.1);
+  background: rgba(255, 215, 0, 0.2);
+}
+
+.starButton.active {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.ratingText {
+  display: inline-block;
+  font-size: 0.9rem;
+  color: var(--amarillo);
+  font-weight: 700;
+  background: var(--azul);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  margin-top: var(--spacing-sm);
+}
+
+.commentSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.commentLabel {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--azul);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.textarea {
+  padding: var(--spacing-md);
+  border: 2px solid var(--amarillo);
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9rem;
+  color: var(--negro);
+  background: white;
+  resize: vertical;
+  transition: all 0.3s ease;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px rgba(15, 50, 112, 0.1);
+}
+
+.textarea::placeholder {
+  color: #ccc;
+}
+
+.charCounter {
+  font-size: 0.8rem;
+  color: #999;
+  text-align: right;
+  font-weight: 500;
+}
+
+.submitButton {
+  background: var(--amarillo);
+  color: var(--negro);
+  border: 3px solid var(--negro);
+  padding: 14px 24px;
+  border-radius: 18px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--negro);
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 300px;
+  margin: var(--spacing-md) auto 0;
+  letter-spacing: 0.5px;
+}
+
+.submitButton:hover {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--negro);
+}
+
+.submitButton:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 var(--negro);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .feedbackSection {
+    padding: var(--spacing-lg);
+  }
+
+  .title {
+    font-size: 1.4rem;
+  }
+
+  .starsContainer {
+    gap: var(--spacing-sm);
+  }
+
+  .starButton {
+    font-size: 2rem;
+    padding: 4px;
+  }
+
+  .submitButton {
+    width: 100%;
+    max-width: none;
+  }
+
+  .successMessage {
+    padding: var(--spacing-lg);
+  }
+}
+
+
+
+

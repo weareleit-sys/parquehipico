@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parque Hípico La Montaña | Recinto de Eventos Masivos del Sur de Chile</title>
+    <meta name="description"
+        content="El mejor parque hípico de la región. Eventos masivos, arriendo de espacios y entretención familiar.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .font-montserrat {
+            font-family: 'Montserrat', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50">
+    <!-- HEADER -->
+    <header class="fixed top-0 w-full z-50 bg-slate-950/95 backdrop-blur-md border-b border-white/10 shadow-lg">
+        <div class="container mx-auto px-4 h-20 flex items-center justify-between max-w-7xl">
+            <!-- Logo -->
+            <a href="#inicio" class="flex items-center gap-3 group">
+                <div
+                    class="relative w-10 h-10 md:w-12 md:h-12 bg-white rounded-full overflow-hidden border-2 border-amber-600 group-hover:border-white transition-colors">
+                    <img src="./public/logo-main.jpg" alt="Logo Parque Hípico" class="w-full h-full object-cover">
+                </div>
+                <div class="flex flex-col">
+                    <span
+                        class="text-white font-bold leading-none tracking-wide uppercase text-xs md:text-sm group-hover:text-amber-400 transition-colors">Parque
+                        Hípico</span>
+                    <span
+                        class="text-amber-500 font-serif text-base md:text-lg leading-none group-hover:text-white transition-colors">La
+                        Montaña</span>
+                </div>
+            </a>
+
+            <!-- Navegación Desktop -->
+            <nav class="hidden md:flex items-center gap-8">
+                <a href="#inicio"
+                    class="text-sm font-medium text-slate-300 hover:text-white transition-colors hover:border-b border-amber-500 pb-1">Inicio</a>
+                <a href="#eventos"
+                    class="text-sm font-medium text-slate-300 hover:text-white transition-colors hover:border-b border-amber-500 pb-1">Eventos</a>
+                <a href="#arrienda"
+                    class="text-sm font-medium text-slate-300 hover:text-white transition-colors hover:border-b border-amber-500 pb-1">Arrienda
+                    el Parque</a>
+                <a href="#nosotros"
+                    class="text-sm font-medium text-slate-300 hover:text-white transition-colors hover:border-b border-amber-500 pb-1">Nosotros</a>
+                <a href="#unete"
+                    class="text-sm font-medium text-slate-300 hover:text-white transition-colors hover:border-b border-amber-500 pb-1">Únete</a>
+            </nav>
+
+            <!-- Botón CTA Desktop -->
+            <a href="https://wa.me/56971636195?text=Hola,%20me%20interesa%20conocer%20más%20sobre%20el%20Parque%20Hípico%20La%20Montaña"
+                target="_blank"
+                class="hidden md:inline-flex items-center justify-center px-6 py-2 text-sm font-bold text-slate-900 transition-all bg-amber-500 rounded hover:bg-white hover:text-amber-600 shadow-md transform hover:-translate-y-0.5">
+                Cotizar
+            </a>
+
+            <!-- Menú Móvil -->
+            <button onclick="toggleMenu()" class="md:hidden text-white p-2 hover:text-amber-500 transition-colors">
+                <svg id="menuIcon" class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                    </path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Menú Móvil Desplegable -->
+        <div id="mobileMenu" class="hidden md:hidden bg-slate-950 border-b border-white/10">
+            <nav class="flex flex-col p-6 gap-4">
+                <a href="#inicio" onclick="toggleMenu()"
+                    class="text-lg font-medium text-slate-300 hover:text-amber-500 border-b border-white/5 pb-2">Inicio</a>
+                <a href="#eventos" onclick="toggleMenu()"
+                    class="text-lg font-medium text-slate-300 hover:text-amber-500 border-b border-white/5 pb-2">Eventos</a>
+                <a href="#arrienda" onclick="toggleMenu()"
+                    class="text-lg font-medium text-slate-300 hover:text-amber-500 border-b border-white/5 pb-2">Arrienda
+                    el Parque</a>
+                <a href="#nosotros" onclick="toggleMenu()"
+                    class="text-lg font-medium text-slate-300 hover:text-amber-500 border-b border-white/5 pb-2">Nosotros</a>
+                <a href="#unete" onclick="toggleMenu()"
+                    class="text-lg font-medium text-slate-300 hover:text-amber-500 border-b border-white/5 pb-2">Únete</a>
+                <a href="https://wa.me/56971636195" target="_blank"
+                    class="mt-4 text-center w-full py-3 text-base font-bold text-slate-900 bg-amber-500 rounded hover:bg-white hover:text-amber-600 transition-colors">Cotizar
+                    Evento</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section id="inicio" class="relative h-screen w-full flex items-center justify-center overflow-hidden">
+        <!-- Imagen de Fondo -->
+        <div class="absolute inset-0 z-0">
+            <img src="./public/hero-bg.jpg" alt="Carrera en Parque Hípico La Montaña"
+                class="w-full h-full object-cover">
+            <!-- Overlay -->
+            <div class="absolute inset-0 bg-slate-950/60"></div>
+        </div>
+
+        <!-- Contenido Principal -->
+        <div class="relative z-20 container mx-auto px-4 text-center md:text-left pt-20 max-w-7xl">
+            <div class="max-w-4xl mx-auto md:mx-0">
+                <h1
+                    class="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight tracking-tight drop-shadow-lg">
+                    El Recinto de Eventos Masivos <br>
+                    <span class="text-amber-500">más Versátil del Sur de Chile</span>
+                </h1>
+
+                <p class="text-lg md:text-xl text-slate-100 mb-10 max-w-2xl font-light leading-relaxed drop-shadow-md">
+                    Capacidad para 5.000 personas. 3 Hectáreas. Infraestructura para Festivales, Ferias y Carreras.
+                </p>
+
+                <!-- Botones -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                    <a href="#arrienda"
+                        class="bg-amber-600 hover:bg-amber-700 text-white font-semibold py-4 px-8 rounded shadow-lg transition-all transform hover:scale-105 flex items-center justify-center border border-amber-500">
+                        Arrienda el Parque
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </a>
+
+                    <a href="https://wa.me/56971636195?text=Hola,%20necesito%20información%20sobre%20el%20Parque%20Hípico%20La%20Montaña"
+                        target="_blank"
+                        class="bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold py-4 px-8 rounded transition-all flex items-center justify-center">
+                        Contactar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="absolute bottom-0 w-full border-t border-white/10 bg-slate-950/40 backdrop-blur-md z-20">
+            <div class="container mx-auto px-4 py-6 max-w-7xl">
+                <div class="grid grid-cols-3 gap-4 text-center md:text-left">
+                    <div>
+                        <p class="text-3xl font-bold text-white">5.000</p>
+                        <p class="text-xs md:text-sm text-slate-300 uppercase tracking-wider">Capacidad Personas</p>
+                    </div>
+                    <div class="border-l border-white/20 pl-4 md:pl-8">
+                        <p class="text-3xl font-bold text-white">3</p>
+                        <p class="text-xs md:text-sm text-slate-300 uppercase tracking-wider">Hectáreas</p>
+                    </div>
+                    <div class="border-l border-white/20 pl-4 md:pl-8">
+                        <p class="text-3xl font-bold text-amber-500">24/7</p>
+                        <p class="text-xs md:text-sm text-slate-300 uppercase tracking-wider">Seguridad</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NUESTROS SERVICIOS -->
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-4 max-w-7xl">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Nuestros Servicios</h2>
+                <p class="text-lg text-slate-600 max-w-2xl mx-auto">Infraestructura profesional para productoras y
+                    experiencias únicas para familias</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Servicio 1 -->
+                <div class="bg-slate-50 rounded-lg p-8 hover:shadow-xl transition-shadow border border-slate-200">
+                    <div class="w-16 h-16 bg-amber-500 rounded-lg flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-4">Producción de Eventos</h3>
+                    <p class="text-slate-600 mb-6">Espacios modulares para festivales, conciertos y eventos
+                        corporativos. Infraestructura completa: escenario, backstage, electricidad trifásica.</p>
+                    <a href="#arrienda"
+                        class="text-amber-600 hover:text-amber-700 font-semibold inline-flex items-center">
+                        Ver especificaciones técnicas
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                            </path>
+                        </svg>
+                    </a>
+                </div>
+
+                <!-- Servicio 2 -->
+                <div class="bg-slate-50 rounded-lg p-8 hover:shadow-xl transition-shadow border border-slate-200">
+                    <div class="w-16 h-16 bg-amber-500 rounded-lg flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-4">Arriendo de Espacios</h3>
+                    <p class="text-slate-600 mb-6">30.000 m² disponibles. Zonas diferenciadas: público, VIP, backstage.
+                        Perímetro controlado y acceso para camiones.</p>
+                    <a href="#arrienda"
+                        class="text-amber-600 hover:text-amber-700 font-semibold inline-flex items-center">
+                        Solicitar cotización
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                            </path>
+                        </svg>
+                    </a>
+                </div>
+
+                <!-- Servicio 3 -->
+                <div class="bg-slate-50 rounded-lg p-8 hover:shadow-xl transition-shadow border border-slate-200">
+                    <div class="w-16 h-16 bg-amber-500 rounded-lg flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-4">Hípica Deportiva</h3>
+                    <p class="text-slate-600 mb-6">Carreras a la Chilena profesionales. Calendario oficial, resultados
+                        históricos y reglamento. El parque pone la cancha.</p>
+                    <a href="#eventos"
+                        class="text-amber-600 hover:text-amber-700 font-semibold inline-flex items-center">
+                        Ver calendario
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                            </path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRÓXIMOS EVENTOS -->
+    <section id="eventos" class="py-20 bg-slate-50">
+        <div class="container mx-auto px-4 max-w-7xl">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Próximos Eventos</h2>
+                <p class="text-lg text-slate-600">Calendario público de eventos y carreras</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Evento 1 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="bg-gradient-to-r from-amber-500 to-amber-600 p-6 text-white">
+                        <div class="text-sm font-semibold uppercase tracking-wider mb-2">Noviembre 2025</div>
+                        <h3 class="text-2xl font-bold">Clásico de Noviembre</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-slate-600 mb-4">Último domingo de noviembre</p>
+                        <p class="text-slate-700">Competencia clásica de carreras a la chilena con los mejores
+                            ejemplares de la región.</p>
+                    </div>
+                </div>
+
+                <!-- Evento 2 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="bg-gradient-to-r from-amber-500 to-amber-600 p-6 text-white">
+                        <div class="text-sm font-semibold uppercase tracking-wider mb-2">Diciembre 2025</div>
+                        <h3 class="text-2xl font-bold">Copa Diciembre</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-slate-600 mb-4">Competencia especial de fin de año</p>
+                        <p class="text-slate-700">Evento especial para despedir el año con las mejores carreras y
+                            premiaciones.</p>
+                    </div>
+                </div>
+
+                <!-- Evento 3 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="bg-gradient-to-r from-amber-500 to-amber-600 p-6 text-white">
+                        <div class="text-sm font-semibold uppercase tracking-wider mb-2">Diciembre 2025</div>
+                        <h3 class="text-2xl font-bold">Gran Cierre de Año</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-slate-600 mb-4">Despedimos la temporada</p>
+                        <p class="text-slate-700">Evento de clausura con actividades familiares y las últimas carreras
+                            del año.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ARRIENDA EL PARQUE -->
+    <section id="arrienda" class="py-20 bg-slate-900 text-white">
+        <div class="container mx-auto px-4 max-w-7xl">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6">¿Eres Productora de Eventos?</h2>
+                    <p class="text-xl text-slate-300 mb-8">Tenemos la infraestructura que necesitas. Capacidad
+                        certificada, electricidad trifásica, accesos para camiones y perímetro controlado.</p>
+
+                    <div class="space-y-4 mb-8">
+                        <div class="flex items-start gap-4">
+                            <svg class="w-6 h-6 text-amber-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <div>
+                                <h4 class="font-semibold text-lg mb-1">Capacidad Certificada</h4>
+                                <p class="text-slate-400">Hasta 5.000 personas con todas las medidas de seguridad</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <svg class="w-6 h-6 text-amber-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <div>
+                                <h4 class="font-semibold text-lg mb-1">Infraestructura Completa</h4>
+                                <p class="text-slate-400">Escenario, backstage, electricidad trifásica y más</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <svg class="w-6 h-6 text-amber-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <div>
+                                <h4 class="font-semibold text-lg mb-1">Acceso Logístico</h4>
+                                <p class="text-slate-400">Entrada para camiones y perímetro controlado</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="#"
+                            class="bg-amber-600 hover:bg-amber-700 text-white font-semibold py-4 px-8 rounded shadow-lg transition-all transform hover:scale-105 text-center">
+                            Ver especificaciones técnicas
+                        </a>
+                        <a href="https://wa.me/56971636195?text=Hola,%20soy%20productora%20y%20necesito%20información%20sobre%20arriendo%20del%20Parque%20Hípico%20La%20Montaña"
+                            target="_blank"
+                            class="bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold py-4 px-8 rounded transition-all text-center">
+                            Contactar directo
+                        </a>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+                        <div class="text-4xl font-bold text-amber-500 mb-2">30.000</div>
+                        <div class="text-slate-300">m² disponibles</div>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+                        <div class="text-4xl font-bold text-amber-500 mb-2">24/7</div>
+                        <div class="text-slate-300">Seguridad</div>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+                        <div class="text-4xl font-bold text-amber-500 mb-2">VIP</div>
+                        <div class="text-slate-300">Zonas diferenciadas</div>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+                        <div class="text-4xl font-bold text-amber-500 mb-2">3⚡</div>
+                        <div class="text-slate-300">Electricidad trifásica</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NOSOTROS -->
+    <section id="nosotros" class="py-20 bg-white">
+        <div class="container mx-auto px-4 max-w-7xl">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-4xl md:text-5xl font-bold text-slate-900 mb-6">Sobre Nosotros</h2>
+                <p class="text-xl text-slate-600 mb-8 leading-relaxed">
+                    Somos el recinto de eventos masivos y hípica más versátil del sur de Chile. Con más de 3 hectáreas
+                    de infraestructura profesional, nos especializamos en la producción de eventos de gran envergadura,
+                    desde festivales y conciertos hasta carreras a la chilena tradicionales.
+                </p>
+                <p class="text-lg text-slate-600 leading-relaxed">
+                    Ubicados en Loncoche, Región de la Araucanía, contamos con capacidad certificada para 5.000
+                    personas, electricidad trifásica, accesos logísticos para camiones y un perímetro completamente
+                    controlado. Nuestro compromiso es ofrecer espacios seguros y profesionales tanto para productoras de
+                    eventos como para familias que buscan entretenimiento de calidad.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ÚNETE -->
+    <section id="unete" class="py-20 bg-gradient-to-r from-amber-500 to-amber-600 text-white">
+        <div class="container mx-auto px-4 max-w-7xl text-center">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">Únete a Nuestra Comunidad</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto">
+                Forma parte de la familia del Parque Hípico La Montaña. Recibe noticias sobre próximos eventos, ofertas
+                especiales y mucho más.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+                <input type="email" placeholder="Tu correo electrónico"
+                    class="flex-1 px-6 py-4 rounded text-slate-900 focus:outline-none focus:ring-2 focus:ring-white">
+                <button
+                    class="bg-slate-900 hover:bg-slate-800 text-white font-semibold py-4 px-8 rounded transition-all">
+                    Suscribirse
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 text-white py-12">
+        <div class="container mx-auto px-4 max-w-7xl">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <!-- Columna 1 -->
+                <div>
+                    <h3 class="text-lg font-bold mb-4 text-amber-500">El Parque</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#inicio" class="text-slate-400 hover:text-white transition-colors">Inicio</a></li>
+                        <li><a href="#nosotros" class="text-slate-400 hover:text-white transition-colors">Nosotros</a>
+                        </li>
+                        <li><a href="#eventos" class="text-slate-400 hover:text-white transition-colors">Eventos</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Columna 2 -->
+                <div>
+                    <h3 class="text-lg font-bold mb-4 text-amber-500">Productoras y Eventos</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#arrienda" class="text-slate-400 hover:text-white transition-colors">Arrienda el
+                                Parque</a></li>
+                        <li><a href="#eventos" class="text-slate-400 hover:text-white transition-colors">Calendario</a>
+                        </li>
+                        <li><a href="https://maps.google.com/?q=NANCAHUE,+S-743,+PC+G,+LONCOCHE" target="_blank"
+                                class="text-slate-400 hover:text-white transition-colors">Cómo llegar</a></li>
+                    </ul>
+                </div>
+
+                <!-- Columna 3 -->
+                <div>
+                    <h3 class="text-lg font-bold mb-4 text-amber-500">Contacto</h3>
+                    <ul class="space-y-2">
+                        <li class="text-slate-400">Teléfono: <a href="tel:+56971636195"
+                                class="hover:text-white transition-colors">+56 9 7163 6195</a></li>
+                        <li class="text-slate-400">Email: <a href="mailto:parquehipicolamontana@gmail.com"
+                                class="hover:text-white transition-colors">parquehipicolamontana@gmail.com</a></li>
+                        <li class="text-slate-400">Loncoche, Araucanía, Chile</li>
+                    </ul>
+                </div>
+
+                <!-- Columna 4 -->
+                <div>
+                    <h3 class="text-lg font-bold mb-4 text-amber-500">Síguenos</h3>
+                    <div class="flex gap-4">
+                        <a href="#"
+                            class="w-10 h-10 bg-white/10 hover:bg-amber-500 rounded-full flex items-center justify-center transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                            </svg>
+                        </a>
+                        <a href="#"
+                            class="w-10 h-10 bg-white/10 hover:bg-amber-500 rounded-full flex items-center justify-center transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-white/10 pt-8 text-center text-slate-400">
+                <p>© 2025 Parque Hípico La Montaña. Desarrollado por Eleit.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Botón WhatsApp Flotante -->
+    <a href="https://wa.me/56971636195?text=Hola,%20necesito%20información%20sobre%20el%20Parque%20Hípico%20La%20Montaña"
+        target="_blank"
+        class="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-lg transition-all transform hover:scale-110">
+        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+            <path
+                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+        </svg>
+    </a>
+
+    <script>
+        function toggleMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const icon = document.getElementById('menuIcon');
+
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+            } else {
+                menu.classList.add('hidden');
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
+            }
+        }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    // Cerrar menú móvil si está abierto
+                    const menu = document.getElementById('mobileMenu');
+                    if (!menu.classList.contains('hidden')) {
+                        toggleMenu();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
