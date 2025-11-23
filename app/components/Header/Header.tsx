@@ -10,22 +10,12 @@ export default function Header() {
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <header className="fixed top-0 w-full z-50 bg-slate-950/90 backdrop-blur-md border-b border-white/10 shadow-lg">
+    <header className="fixed top-0 w-full z-50 bg-slate-950/95 backdrop-blur-md border-b border-white/10 shadow-lg">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between max-w-7xl">
         {/* Logo */}
         <Link href="/inicio" className="flex items-center gap-3 group" onClick={closeMenu}>
-          <div className="relative w-10 h-10 md:w-12 md:h-12">
-            {/* 📸 FOTO NECESARIA: logo-main.jpg
-                Descripción: Logo del Parque Hípico La Montaña
-                Especificaciones:
-                - Formato: JPG o PNG con fondo transparente
-                - Tamaño: 200x200px mínimo
-                - Contenido: Logo oficial del parque
-                - Ubicación: /public/logo-main.jpg
-            */}
-            <div className="w-full h-full bg-white rounded-full overflow-hidden border-2 border-amber-600 group-hover:border-white transition-colors flex items-center justify-center">
-              <span className="text-xs font-bold text-amber-600">LOGO</span>
-            </div>
+          <div className="relative w-10 h-10 md:w-12 md:h-12 bg-white rounded-full overflow-hidden border-2 border-amber-600 group-hover:border-white transition-colors">
+            <img src="/logo-main.jpg" alt="Logo Parque Hípico" className="w-full h-full object-cover" />
           </div>
           <div className="flex flex-col">
             <span className="text-white font-bold leading-none tracking-wide uppercase text-xs md:text-sm group-hover:text-amber-400 transition-colors">
