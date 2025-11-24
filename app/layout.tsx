@@ -1,41 +1,36 @@
 import type { Metadata } from "next";
 import { Poppins, Montserrat } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header/Header";
-import Footer from "@/components/Footer/Footer";
-import FloatingWhatsAppButton from "@/components/FloatingWhatsAppButton/FloatingWhatsAppButton";
 
+// Configuración de fuentes para que Next las optimice
 const poppins = Poppins({
-  variable: "--font-poppins",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-poppins", // Variable CSS para Tailwind
+  display: "swap",
 });
 
 const montserrat = Montserrat({
-  variable: "--font-montserrat",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "700", "800"],
+  variable: "--font-montserrat",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Parque Hípico La Montaña - Sitio Oficial",
-  description: "El lugar ideal para disfrutar de tradición, adrenalina y diversión en familia",
-  keywords: "parque hípico, carreras de caballos, eventos, entretenimiento, Chile",
+  title: "Parque Hípico La Montaña",
+  description: "El mejor centro de eventos y equitación.",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <html lang="es">
-      <body className={`${poppins.variable} ${montserrat.variable}`}>
-        <Header />
+    <html lang="es" className="scroll-smooth">
+      <body className={`${poppins.variable} ${montserrat.variable} font-sans antialiased bg-slate-50 text-slate-900`}>
         {children}
-        <Footer />
-        {/* Botón flotante de WhatsApp - Global en todas las páginas */}
-        <FloatingWhatsAppButton />
       </body>
     </html>
   );

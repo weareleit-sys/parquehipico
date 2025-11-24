@@ -18,14 +18,14 @@
   --fondo-claro: #fdf8f0;
   --fondo-gris: #f8f9fa;
   --blanco: #ffffff;
-  
+
   /* === REDES SOCIALES === */
   --instagram: #E1306C;
   --facebook: #1877F2;
   --tiktok: #000000;
   --youtube: #FF0000;
   --whatsapp: #25D366;
-  
+
   /* === ESPACIADO === */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -34,7 +34,7 @@
   --spacing-xl: 32px;
   --spacing-2xl: 40px;
   --spacing-3xl: 60px;
-  
+
   /* === TIPOGRAFÍA === */
   --font-poppins: 'Poppins', sans-serif;
   --font-montserrat: 'Montserrat', sans-serif;
@@ -46,32 +46,32 @@
   --font-size-3xl: 1.875rem;
   --font-size-4xl: 2.25rem;
   --font-size-5xl: 3rem;
-  
+
   /* === PESOS === */
   --font-weight-light: 300;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  
+
   /* === BORDES === */
   --border-radius-sm: 4px;
   --border-radius-md: 8px;
   --border-radius-lg: 12px;
   --border-radius-xl: 16px;
   --border-radius-full: 999px;
-  
+
   /* === SOMBRAS === */
   --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
   --shadow-xl: 0 10px 30px rgba(0, 0, 0, 0.2);
-  
+
   /* === TRANSICIONES === */
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
   --transition-slow: 0.6s ease;
-  
+
   /* === Z-INDEX === */
   --z-header: 9999;
   --z-dropdown: 10020;
@@ -130,18 +130,40 @@ img {
 }
 
 /* === TIPOGRAFÍA === */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: var(--font-weight-bold);
   line-height: 1.2;
   margin-bottom: var(--spacing-md);
 }
 
-h1 { font-size: var(--font-size-5xl); }
-h2 { font-size: var(--font-size-4xl); }
-h3 { font-size: var(--font-size-3xl); }
-h4 { font-size: var(--font-size-2xl); }
-h5 { font-size: var(--font-size-xl); }
-h6 { font-size: var(--font-size-lg); }
+h1 {
+  font-size: var(--font-size-5xl);
+}
+
+h2 {
+  font-size: var(--font-size-4xl);
+}
+
+h3 {
+  font-size: var(--font-size-3xl);
+}
+
+h4 {
+  font-size: var(--font-size-2xl);
+}
+
+h5 {
+  font-size: var(--font-size-xl);
+}
+
+h6 {
+  font-size: var(--font-size-lg);
+}
 
 p {
   margin-bottom: var(--spacing-md);
@@ -159,6 +181,7 @@ p {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -195,25 +218,45 @@ p {
   .container {
     padding: 0 15px;
   }
-  
-  h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); }
-  h2 { font-size: clamp(1.25rem, 4vw, 2rem); }
-  h3 { font-size: clamp(1rem, 3vw, 1.5rem); }
+
+  h1 {
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+  }
+
+  h2 {
+    font-size: clamp(1.25rem, 4vw, 2rem);
+  }
+
+  h3 {
+    font-size: clamp(1rem, 3vw, 1.5rem);
+  }
 }
 
 @media (max-width: 640px) {
   .container {
     padding: 0 12px;
   }
-  
-  h1 { font-size: 1.5rem; }
-  h2 { font-size: 1.25rem; }
-  h3 { font-size: 1.1rem; }
-  p { font-size: 0.95rem; }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+  }
+
+  p {
+    font-size: 0.95rem;
+  }
 }
 
 /* === PREFERS REDUCED MOTION === */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -236,3 +279,16 @@ p {
   }
 }
 
+
+/* === CUSTOM COMPONENTS === */
+.photo-placeholder {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  color: white;
+  border: 3px dashed rgba(255, 255, 255, 0.5);
+  min-height: 300px;
+}
