@@ -4,21 +4,19 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FaBars, FaTimes, FaWhatsapp } from 'react-icons/fa';
 
-// 1. CONFIGURACIÓN CENTRALIZADA DE ENLACES
-// Aquí controlamos exactamente a dónde va cada botón
+// 1. CONFIGURACIÓN DE ENLACES (Ahora incluye Únete)
 const navLinks = [
     { name: 'Inicio', href: '/inicio' },
-    { name: 'Eventos', href: '/eventos' },   // ✅ Conectado a tu nueva página
-    { name: 'Arrienda', href: '/arrienda' }, // ✅ Conectado a tu nueva página B2B
-    { name: 'Nosotros', href: '/inicio#nosotros' }, // Placeholder: Ancla a la home por ahora
-    { name: 'Únete', href: '/unete' }, // ✅ Conectado a la página de Únete
+    { name: 'Eventos', href: '/eventos' },
+    { name: 'Arrienda', href: '/arrienda' },
+    { name: 'Nosotros', href: '/nosotros' }, // 👈 ¡ACTUALIZADO!
+    { name: 'Únete', href: '/unete' },
 ];
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
 
-    // Detectar Scroll
     useEffect(() => {
         const handleScroll = () => {
             if (window.scrollY > 50) {
@@ -39,7 +37,7 @@ const Navbar = () => {
         <nav className={navClasses}>
             <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
 
-                {/* --- LOGO --- */}
+                {/* LOGO */}
                 <Link href="/inicio" className="flex items-center group z-50 relative" onClick={() => setIsOpen(false)}>
                     <div className="relative w-10 h-10 md:w-14 md:h-14 flex items-center justify-center mr-3 transition-transform group-hover:scale-105">
                         <img src="/logo-main.png" alt="Parque Hípico Logo" className="w-full h-full object-contain drop-shadow-md" />
@@ -50,7 +48,7 @@ const Navbar = () => {
                     </div>
                 </Link>
 
-                {/* --- MENÚ DE ESCRITORIO --- */}
+                {/* MENÚ DE ESCRITORIO */}
                 <div className="hidden lg:flex space-x-8 items-center">
                     {navLinks.map((item) => (
                         <Link
@@ -63,7 +61,6 @@ const Navbar = () => {
                         </Link>
                     ))}
 
-                    {/* Botón COTIZAR -> Directo a WhatsApp (Mejor conversión que una página vacía) */}
                     <a
                         href="https://wa.me/56971636195?text=Hola,%20quisiera%20cotizar%20un%20evento%20en%20el%20Parque"
                         target="_blank"
@@ -75,7 +72,7 @@ const Navbar = () => {
                     </a>
                 </div>
 
-                {/* --- BOTÓN HAMBURGUESA --- */}
+                {/* BOTÓN MÓVIL */}
                 <button
                     className="lg:hidden text-white z-50 focus:outline-none p-2 bg-slate-800/50 rounded-full backdrop-blur-sm border border-white/10"
                     onClick={() => setIsOpen(!isOpen)}
@@ -83,7 +80,7 @@ const Navbar = () => {
                     {isOpen ? <FaTimes size={24} className="text-amber-500" /> : <FaBars size={24} />}
                 </button>
 
-                {/* --- MENÚ MÓVIL --- */}
+                {/* MENÚ MÓVIL OVERLAY */}
                 <div className={`fixed inset-0 bg-slate-950 z-40 flex flex-col justify-center items-center transition-all duration-500 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
 
                     <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500 rounded-full blur-[100px] opacity-10 pointer-events-none"></div>
