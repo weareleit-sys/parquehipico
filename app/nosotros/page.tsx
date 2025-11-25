@@ -1,4 +1,4 @@
-import { FaMapMarkedAlt, FaShieldAlt, FaCar, FaLayerGroup, FaHistory, FaRoute, FaPhoneAlt, FaEnvelope } from 'react-icons/fa';
+import { FaMapMarkedAlt, FaShieldAlt, FaCar, FaLayerGroup, FaHistory, FaRoute } from 'react-icons/fa';
 
 export const metadata = {
     title: 'Nosotros | Parque Hípico La Montaña',
