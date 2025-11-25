@@ -1,25 +1,17 @@
 import type { Metadata } from "next";
-import { Poppins, Montserrat } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-// Configuración de fuentes para que Next las optimice
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-poppins", // Variable CSS para Tailwind
-  display: "swap",
-});
+// Importamos los componentes globales
+import Navbar from "./components/Header/Navbar";
+import Footer from "./components/Footer/Footer";
+import FloatingWhatsApp from "./components/UI/FloatingWhatsApp";
 
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  weight: ["400", "500", "700", "800"],
-  variable: "--font-montserrat",
-  display: "swap",
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Parque Hípico La Montaña",
-  description: "El mejor centro de eventos y equitación.",
+  description: "El epicentro de eventos y tradición en Villarrica.",
 };
 
 export default function RootLayout({
@@ -28,11 +20,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="scroll-smooth">
-      <body className={`${poppins.variable} ${montserrat.variable} font-sans antialiased bg-slate-50 text-slate-900`}>
+    <html lang="es">
+      <body className={`${inter.className} bg-slate-950 text-white antialiased`}>
+
+        {/* 1. NAVBAR GLOBAL (Siempre visible arriba) */}
+        <Navbar />
+
+        {/* 2. CONTENIDO DE CADA PÁGINA */}
         {children}
+
+        {/* 3. ELEMENTOS GLOBALES (Footer y botón flotante) */}
+        <Footer />
+        <FloatingWhatsApp />
+
       </body>
     </html>
   );
 }
-

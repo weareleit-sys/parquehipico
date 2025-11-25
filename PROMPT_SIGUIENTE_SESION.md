@@ -1,37 +1,45 @@
-# PROMPT DE CONTEXTO: PROYECTO PARQUE HÍPICO (Rescate Visual)
+# PROMPT DE CONTEXTO: PARQUE HÍPICO (Fase de Consolidación y Expansión)
 
 **Rol:** Eres un Arquitecto Frontend Senior y Director de Arte.
-**Objetivo Crítico:** Lograr que la aplicación Next.js se vea **VISUALMENTE IDÉNTICA** al archivo de referencia `preview-modular-completo.html`.
+**Objetivo:** Expandir el "Rescate Visual" a las páginas interiores y perfeccionar la experiencia de usuario (UX/UI).
 
 ---
 
-## 1. Estado Actual del Proyecto
-*   **Stack:** Next.js 14 (App Router), TypeScript, Tailwind CSS.
-*   **Progreso Visual:**
-    *   ✅ **Hero:** Implementado (Estrategia pragmática con `<img>` tag).
-    *   ✅ **Galería:** Implementada (Componente monolítico).
-    *   ✅ **Calendario:** Implementado (Tarjetas con sombras y badges de fecha).
-    *   ✅ **Arrienda/Servicios:** Implementado (Diseño premium con SVGs inline).
-    *   ⚠️ **Footer:** El componente `app/components/Footer/Footer.tsx` YA EXISTE, pero falta integrarlo en `app/(sections)/inicio/page.tsx`.
-*   **Estado Técnico (CRÍTICO):**
-    *   Se arregló un problema grave donde Tailwind no cargaba.
-    *   **NO TOCAR:** `tailwind.config.ts` (tiene una configuración "catch-all" vital) ni `postcss.config.js` (creado manualmente).
-    *   **Servidor:** Se corre con `npm run dev`.
-    *   **Visualización:** Se debe acceder a `http://localhost:3000/inicio` (la raíz `/` a veces da 404 por redirección fallida).
+## 1. Estado Actual del Proyecto (✅ Hitos Completados)
+*   **Homepage (`/inicio`):**
+    *   ✅ **Hero:** Limpio, sin botones redundantes.
+    *   ✅ **Servicios/Arrienda:** Diseño premium implementado.
+    *   ✅ **Galería & Calendario:** Modo oscuro (Dark Mode) aplicado y consistente.
+    *   ✅ **Floating WhatsApp:** Implementado con efecto de pulso y tooltip.
+    *   ✅ **Footer:** Integrado, enlaces sociales actualizados, imports limpios.
+*   **Infraestructura:**
+    *   ✅ **Routing:** Redirección automática de `/` a `/inicio` en `app/page.tsx`.
+    *   ✅ **Limpieza:** Archivos basura (`pagerespaldo.tsx`) eliminados.
+    *   ✅ **Build:** `npm run build` exitoso. Desplegado en Vercel.
 
-## 2. Metodología de Trabajo ("Visual Rescue")
-1.  **Prioridad Absoluta:** Lo que se ve en pantalla manda. Si el código es "feo" pero el pixel es perfecto, se aprueba. Refactorizamos después.
-2.  **Componentes Monolíticos:** Copiamos bloques grandes de HTML del preview a componentes React (ej: `Galeria.tsx`). No atomizamos (botones, títulos) todavía.
-3.  **Verificación:** Cada cambio se verifica visualmente en `localhost:3000/inicio`.
+## 2. Stack Tecnológico
+*   **Core:** Next.js 14 (App Router), TypeScript.
+*   **Estilos:** Tailwind CSS (Configuración "catch-all" en `tailwind.config.ts` - NO TOCAR).
+*   **Iconos:** `react-icons` (FaWhatsapp, FaInstagram, etc.).
 
-## 3. Tareas Inmediatas (Tu Misión)
-1.  **Integrar Footer:** Importar y colocar `<Footer />` en `app/(sections)/inicio/page.tsx`.
-2.  **Auditoría Móvil:** Revisar que el menú hamburguesa y las grids (col-span) funcionen bien en tamaño móvil.
-3.  **Sección "Nosotros" / "Únete":** Si el usuario lo pide, implementar siguiendo la misma lógica (copiar HTML -> Componente Monolítico -> Integrar).
+## 3. Próximos Pasos (Tu Misión)
+
+### A. Verificación de Producción
+1.  Revisar la URL de Vercel (cuando el usuario la provea).
+2.  Asegurar que los assets (imágenes) carguen correctamente en producción.
+
+### B. Desarrollo de Páginas Interiores
+Actualmente, la navegación apunta a rutas como `/eventos`, `/arrienda`, `/nosotros`.
+*   **Acción:** Verificar si estas páginas tienen contenido real o son placeholders.
+*   **Meta:** Aplicar el mismo estándar de diseño "Premium Dark" de la Home a estas secciones.
+    *   *Referencia:* Usar `preview-modular-completo.html` (o similares) como guía visual.
+
+### C. Optimización (Fase 2)
+*   **Imágenes:** Evaluar migración progresiva de `<img>` a `next/image` para LCP (Largest Contentful Paint).
+*   **SEO:** Agregar metadatos dinámicos en `layout.tsx` o `page.tsx`.
 
 ---
 
 **Instrucción para la IA:**
-Por favor, analiza los archivos existentes en `app/components/` y `app/(sections)/inicio/page.tsx`.
-Tu primera acción debe ser **Integrar el Footer** para cerrar la estructura de la Landing Page.
-NO cambies configuraciones de Tailwind ni PostCSS sin autorización explícita.
+Tu punto de partida es la carpeta `app/(sections)`.
+Revisa el contenido de `eventos/page.tsx` o `arrienda/page.tsx`. Si están vacíos o básicos, tu tarea es **construirlos** usando los componentes ya creados (Navbar, Footer, FloatingWhatsApp) y creando nuevos componentes específicos para esas secciones, manteniendo la estética oscura y elegante.

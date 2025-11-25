@@ -1,24 +1,36 @@
-import { eventos } from './data/eventos';
-import EventoCard from './components/EventoCard';
+import { eventos } from './data';
+import EventoCard from '../../components/Eventos/EventoCard';
+import { FaCalendarCheck } from 'react-icons/fa';
 
 export const metadata = {
-    title: 'Eventos | Parque Hípico La Montaña',
-    description: 'Descubre todos los eventos próximos en el Parque Hípico La Montaña. Compra tus entradas online.',
+    title: 'Cartelera | Parque Hípico La Montaña',
+    description: 'Próximas carreras, fiestas y eventos en Villarrica.',
 };
 
 export default function EventosPage() {
     return (
-        <main className="pt-20">
+        // Mantenemos el padding-top (pt-24) para que el Navbar fijo no tape el contenido
+        <main className="min-h-screen bg-slate-950 pt-24">
+
             {/* Hero de Eventos */}
-            <section className="py-20 bg-gradient-to-r from-amber-500 to-amber-600 text-white">
-                <div className="container mx-auto px-4 max-w-7xl text-center">
-                    <h1 className="text-4xl md:text-6xl font-bold mb-4">Todos los Eventos</h1>
-                    <p className="text-xl mb-8">Compra tus entradas online y asegura tu lugar</p>
+            <section className="relative py-24 bg-slate-900 border-b border-slate-800">
+                <div className="absolute inset-0 bg-[url('/pattern-dark.png')] opacity-5"></div>
+                <div className="container mx-auto px-4 max-w-7xl text-center relative z-10">
+                    <span className="text-amber-500 font-bold tracking-widest uppercase text-sm mb-2 block">
+                        Temporada 2025
+                    </span>
+                    <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6">
+                        Cartelera Oficial
+                    </h1>
+                    <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+                        Compra tus e-tickets de forma segura o reserva tus entradas para las carreras.
+                        <span className="block mt-2 text-slate-500 text-sm">Operado por Parque Hípico La Montaña SpA</span>
+                    </p>
                 </div>
             </section>
 
-            {/* Listado de Eventos */}
-            <section className="py-20 bg-white">
+            {/* Grid de Eventos */}
+            <section className="py-20">
                 <div className="container mx-auto px-4 max-w-7xl">
                     {eventos.length > 0 ? (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -27,9 +39,9 @@ export default function EventosPage() {
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-20">
-                            <p className="text-xl text-slate-600">No hay eventos programados en este momento</p>
-                            <p className="text-slate-500 mt-2">Vuelve pronto para ver nuestros próximos eventos</p>
+                        <div className="text-center py-20 bg-slate-900/50 rounded-2xl border border-slate-800 border-dashed">
+                            <FaCalendarCheck className="mx-auto text-6xl text-slate-700 mb-4" />
+                            <p className="text-xl text-slate-400">Pronto anunciaremos nuevas fechas.</p>
                         </div>
                     )}
                 </div>
