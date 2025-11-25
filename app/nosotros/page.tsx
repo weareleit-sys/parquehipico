@@ -108,14 +108,7 @@ export default function NosotrosPage() {
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-4 mt-8 pt-8 border-t border-slate-900">
-                                <a href="tel:+56971636195" className="flex items-center gap-3 text-white hover:text-amber-500 transition-colors">
-                                    <FaPhoneAlt /> +56 9 7163 6195
-                                </a>
-                                <a href="mailto:contacto@parquehipico.cl" className="flex items-center gap-3 text-white hover:text-amber-500 transition-colors">
-                                    <FaEnvelope /> contacto@parquehipico.cl
-                                </a>
-                            </div>
+
                         </div>
 
                         {/* Columna Derecha: Mapa Google Maps */}
