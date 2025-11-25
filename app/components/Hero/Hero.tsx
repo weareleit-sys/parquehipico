@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaWhatsapp } from 'react-icons/fa'; // Removed unused import
+// Removed unused import
 
 const Hero = () => {
     return (
