@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { FaCalendarAlt, FaMusic, FaTicketAlt, FaWhatsapp, FaCreditCard, FaMinus, FaPlus, FaInfoCircle } from 'react-icons/fa';
+import { FaCalendarAlt, FaMusic, FaTicketAlt, FaWhatsapp, FaCreditCard, FaMinus, FaPlus } from 'react-icons/fa';
 import { Evento } from '../../eventos/data';
 
 interface EventoProps {

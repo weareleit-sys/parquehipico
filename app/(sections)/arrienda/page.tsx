@@ -1,4 +1,4 @@
-import { FaBriefcase, FaHeart, FaUsers, FaCheck, FaWhatsapp } from 'react-icons/fa';
+import { FaBriefcase, FaHeart, FaUsers, FaWhatsapp } from 'react-icons/fa';
 
 export const metadata = {
     title: 'Productoras & Arriendos | Parque Hípico La Montaña',
