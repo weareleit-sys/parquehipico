@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { supabase } from '@/app/lib/supabaseClient'
+import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 
 export default function GuestListPage() {
@@ -18,7 +18,7 @@ export default function GuestListPage() {
 
         try {
             // Buscar por nombre (case insensitive ilike) O por ID parcial
-            const { data, error } = await supabase
+            const { data } = await supabase
                 .from('tickets')
                 .select('*')
                 .or(`nombre_cliente.ilike.%${searchTerm}%,codigo_qr.ilike.%${searchTerm}%`)

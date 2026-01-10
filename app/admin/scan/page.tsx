@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
-import { supabase } from '@/app/lib/supabaseClient'
+import { supabase } from '@/lib/supabaseClient'
 import { Html5QrcodeScanner } from 'html5-qrcode'
 import Link from 'next/link'
 
@@ -46,7 +46,7 @@ export default function ScanPage() {
         }
     }, [])
 
-    const onScanSuccess = async (decodedText: string, decodedResult: any) => {
+    const onScanSuccess = async (decodedText: string) => {
         // Evitar procesar el mismo código muchas veces seguidas en milisegundos
         if (decodedText === lastScannedCode) return
         setLastScannedCode(decodedText)
@@ -109,7 +109,7 @@ export default function ScanPage() {
         setTimeout(() => setLastScannedCode(null), 3000)
     }
 
-    const onScanFailure = (error: any) => {
+    const onScanFailure = () => {
         // No hacer nada, es ruidoso
         // console.warn(`Code scan error = ${error}`)
     }
@@ -140,8 +140,8 @@ export default function ScanPage() {
                 {/* Resultado */}
                 {scanStatus !== 'idle' && (
                     <div className={`w-full max-w-sm p-6 rounded-xl shadow-2xl animate-fade-in text-center border-4 ${scanStatus === 'success' ? 'bg-green-600 border-green-400' :
-                            scanStatus === 'warning' ? 'bg-yellow-600 border-yellow-400' :
-                                'bg-red-600 border-red-400'
+                        scanStatus === 'warning' ? 'bg-yellow-600 border-yellow-400' :
+                            'bg-red-600 border-red-400'
                         }`}>
                         <h2 className="text-3xl font-extrabold mb-2">{message}</h2>
 

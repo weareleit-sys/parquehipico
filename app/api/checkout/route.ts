@@ -17,30 +17,31 @@ export async function POST(req: NextRequest) {
 
         const body = await req.json();
 
-        const preference = new Preference(client);
+        // URL base dinámica (Producción o Local)
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://parquehipico.cl';
 
-        const result = await preference.create({
+        const result = await new Preference(client).create({
             body: {
                 items: [
                     {
-                        id: 'entrada-general',
-                        title: body.title || 'Entrada Parque Hípico',
-                        quantity: 1,
-                        unit_price: Number(body.price) || 5000,
+                        id: body.id,
+                        title: body.title,
+                        quantity: body.quantity,
+                        unit_price: Number(body.unit_price),
                         currency_id: 'CLP',
                     },
                 ],
-                // 👇 IMPORTANTE: Puse el puerto 3001 porque vi en tu foto que estás ahí
-                back_urls: {
-                    success: 'http://localhost:3000/compra-exitosa',
-                    failure: 'http://localhost:3000/compra-fallida',
-                    pending: 'http://localhost:3000/compra-pendiente',
-                },
-                // auto_return: 'approved',
                 payer: {
-                    email: `test_user_${Math.floor(Math.random() * 1000000)}@test.com`, // Email aleatorio de prueba
-                    name: body.name,
-                }
+                    email: body.email || 'test_user_123456@testuser.com', // Email real del comprador o fallback
+                    name: body.name || 'Usuario', // Nombre real del comprador
+                    surname: 'Pago'
+                },
+                back_urls: {
+                    success: `${baseUrl}/compra-exitosa`,
+                    failure: `${baseUrl}/test-pago?status=failure`,
+                    pending: `${baseUrl}/test-pago?status=pending`,
+                },
+                auto_return: 'approved',
             },
         });
 

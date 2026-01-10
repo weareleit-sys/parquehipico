@@ -69,7 +69,7 @@ export const eventos: Evento[] = [
         features: ["Cena Romántica", "Música en Vivo", "Fiesta Bailable"],
         imagen: "/eventos/san-valentin-2025.png",
         destacado: true,
-        estado: "proximamente",
+        estado: "disponible",
         tipoVenta: 'ticket'
     }
 ];
