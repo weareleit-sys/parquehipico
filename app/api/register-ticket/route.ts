@@ -4,10 +4,11 @@ import { Resend } from 'resend';
 import TicketEmail from '@/components/emails/TicketEmail';
 import { render } from '@react-email/render';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(request: Request) {
     try {
+        // Initialize Resend with runtime environment variable
+        const resend = new Resend(process.env.RESEND_API_KEY);
+
         const body = await request.json();
         const { email, attendees, payment_id, total, eventName } = body;
 
