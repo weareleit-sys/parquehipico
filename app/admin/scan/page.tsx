@@ -1,4 +1,7 @@
 'use client'
+
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useState, useRef } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { Html5QrcodeScanner } from 'html5-qrcode'
