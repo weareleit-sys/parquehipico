@@ -52,11 +52,16 @@ export async function POST(request: NextRequest) {
 
         console.log(`Enviando correo a ${email} para ${nombre}`);
 
-        // Renderizar el email a HTML
+        // Renderizar el email a HTML usando la estructura correcta
         const emailHtml = await render(
             TicketEmail({
-                nombreInvitado: nombre,
-                qrCode: qrCode,
+                tickets: [
+                    {
+                        nombre: nombre,
+                        qr: qrCode
+                    }
+                ],
+                eventName: 'Evento Parque Hípico'
             })
         );
 

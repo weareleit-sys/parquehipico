@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import QRCode from 'qrcode';
 
 export default function TestEmailPage() {
     const [email, setEmail] = useState('');
