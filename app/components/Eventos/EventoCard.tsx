@@ -13,10 +13,60 @@ export default function EventoCard({ evento }: EventoProps) {
     const [showTicketSelector, setShowTicketSelector] = useState(false);
     const [qty, setQty] = useState(1);
 
-    // Simulación del proceso de pago
-    const handlePayment = () => {
-        // AQUÍ CONECTAREMOS MERCADOPAGO / FLOW MÁS ADELANTE
-        alert(`🛒 INICIANDO CHECKOUT\n\nEvento: ${evento.titulo}\nCantidad: ${qty} Entrada(s)\nTotal: $${(evento.precioInt * qty).toLocaleString('es-CL')}\n\nEmpresa: PARQUE HIPICO LA MONTAÑA SpA\n\n(Redirigiendo a pasarela de pago...)`);
+    // Estado para la compra
+    const [ticketType, setTicketType] = useState<'hombres' | 'mujeres'>('hombres'); // Default hombre
+    const [buyerEmail, setBuyerEmail] = useState('');
+    const [attendees, setAttendees] = useState<string[]>(['']); // Inicialmente 1 asistente vacío
+    const [loading, setLoading] = useState(false);
+
+    // Calcular precio según selección
+    const currentPrice = ticketType === 'hombres'
+        ? (evento.precios.hombres ? parseInt(evento.precios.hombres.replace(/\./g, '')) : evento.precioInt)
+        : (evento.precios.mujeres ? parseInt(evento.precios.mujeres.replace(/\./g, '')) : evento.precioInt);
+
+    const handlePayment = async () => {
+        // Validar que todos los nombres estén llenos
+        if (!buyerEmail || attendees.some(name => !name.trim())) {
+            alert('Por favor completa el email y el nombre de TODOS los asistentes.');
+            return;
+        }
+
+        setLoading(true);
+
+        // Guardar datos completos para procesar DESPUÉS del pago
+        localStorage.setItem('pending_order', JSON.stringify({
+            email: buyerEmail,
+            attendees: attendees,
+            eventName: evento.titulo,
+            ticketType: ticketType
+        }));
+
+        try {
+            const res = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: `${evento.titulo} (${ticketType.toUpperCase()}) x${qty}`,
+                    price: currentPrice * qty,
+                    name: attendees[0], // Usamos el primer nombre como "Representante" para MercadoPago
+                    email: buyerEmail
+                })
+            });
+
+            const data = await res.json();
+
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                console.error('Error checkout:', data);
+                alert('Error al iniciar el pago. Intenta nuevamente.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error de conexión.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -26,7 +76,7 @@ export default function EventoCard({ evento }: EventoProps) {
             <div className="absolute top-4 right-4 z-10">
                 <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${evento.estado === 'disponible' ? 'bg-green-500/90 text-white' : 'bg-slate-700/90 text-slate-300'
                     }`}>
-                    {evento.estado}
+                    {evento.estado === 'disponible' ? 'DISPONIBLE' : evento.estado === 'proximamente' ? 'PROXIMAMENTE' : evento.estado}
                 </span>
             </div>
 
@@ -68,31 +118,103 @@ export default function EventoCard({ evento }: EventoProps) {
                 </ul>
 
                 {/* ------------------------------------------------------- */}
-                {/* ZONA DE COMPRA: Lógica Híbrida */}
+                {/* ZONA DE COMPRA */}
                 {/* ------------------------------------------------------- */}
 
                 {showTicketSelector ? (
-                    // VISTA 2: SELECTOR DE ENTRADAS (PuntoTicket Mode)
                     <div className="bg-slate-950 p-4 rounded-lg border border-amber-500/30 animate-in fade-in zoom-in-95 duration-200">
+
+                        {/* Selector Tipo Entrada */}
+                        {evento.precios.mujeres && (
+                            <div className="flex gap-2 mb-4 bg-slate-800 p-1 rounded-lg">
+                                <button
+                                    onClick={() => setTicketType('hombres')}
+                                    className={`flex-1 py-1 text-xs font-bold rounded ${ticketType === 'hombres' ? 'bg-amber-500 text-slate-900' : 'text-slate-400 hover:text-white'}`}
+                                >
+                                    HOMBRES (${evento.precios.hombres})
+                                </button>
+                                <button
+                                    onClick={() => setTicketType('mujeres')}
+                                    className={`flex-1 py-1 text-xs font-bold rounded ${ticketType === 'mujeres' ? 'bg-amber-500 text-slate-900' : 'text-slate-400 hover:text-white'}`}
+                                >
+                                    MUJERES (${evento.precios.mujeres})
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Cantidad */}
                         <div className="flex justify-between items-center mb-4">
-                            <span className="text-white text-sm font-bold">General</span>
+                            <span className="text-white text-sm font-bold">Cantidad</span>
                             <div className="flex items-center gap-3 bg-slate-800 rounded px-2 py-1">
-                                <button onClick={() => setQty(Math.max(1, qty - 1))} className="text-amber-500 hover:text-white px-2"><FaMinus size={10} /></button>
+                                <button
+                                    onClick={() => {
+                                        const newQty = Math.max(1, qty - 1);
+                                        setQty(newQty);
+                                        setAttendees(prev => prev.slice(0, newQty));
+                                    }}
+                                    className="text-amber-500 hover:text-white px-2"
+                                >
+                                    <FaMinus size={10} />
+                                </button>
                                 <span className="text-white w-4 text-center text-sm font-bold">{qty}</span>
-                                <button onClick={() => setQty(qty + 1)} className="text-amber-500 hover:text-white px-2"><FaPlus size={10} /></button>
+                                <button
+                                    onClick={() => {
+                                        const newQty = qty + 1;
+                                        setQty(newQty);
+                                        setAttendees(prev => [...prev, '']);
+                                    }}
+                                    className="text-amber-500 hover:text-white px-2"
+                                >
+                                    <FaPlus size={10} />
+                                </button>
                             </div>
                         </div>
 
+                        {/* Datos Comprador (Email) */}
+                        <div className="mb-4">
+                            <label className="text-[10px] uppercase text-slate-500 font-bold block mb-1">Email donde llegarán los tickets</label>
+                            <input
+                                type="email"
+                                placeholder="tu@email.com"
+                                className="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-white placeholder-slate-500 focus:border-amber-500 outline-none"
+                                value={buyerEmail}
+                                onChange={(e) => setBuyerEmail(e.target.value)}
+                            />
+                        </div>
+
+                        {/* Lista de Asistentes */}
+                        <div className="space-y-2 mb-4 max-h-40 overflow-y-auto pr-1">
+                            <label className="text-[10px] uppercase text-slate-500 font-bold block sticky top-0 bg-slate-950 z-10">Nombre de cada asistente</label>
+                            {Array.from({ length: qty }).map((_, index) => (
+                                <input
+                                    key={index}
+                                    type="text"
+                                    placeholder={`Nombre Asistente #${index + 1}`}
+                                    className="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-white placeholder-slate-500 focus:border-amber-500 outline-none"
+                                    value={attendees[index] || ''}
+                                    onChange={(e) => {
+                                        const newAttendees = [...attendees];
+                                        newAttendees[index] = e.target.value;
+                                        setAttendees(newAttendees);
+                                    }}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Total */}
                         <div className="flex justify-between items-end border-t border-slate-800 pt-3 mb-3">
                             <span className="text-xs text-slate-400">Total a Pagar</span>
-                            <span className="text-xl font-bold text-amber-500">${(evento.precioInt * qty).toLocaleString('es-CL')}</span>
+                            <span className="text-xl font-bold text-amber-500">
+                                ${(currentPrice * qty).toLocaleString('es-CL')}
+                            </span>
                         </div>
 
                         <button
                             onClick={handlePayment}
-                            className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-900 font-bold py-2.5 rounded shadow-lg text-sm flex justify-center items-center gap-2 transform active:scale-95 transition-all"
+                            disabled={loading}
+                            className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-900 font-bold py-2.5 rounded shadow-lg text-sm flex justify-center items-center gap-2 transform active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <FaCreditCard /> PAGAR AHORA
+                            {loading ? 'PROCESANDO...' : <><FaCreditCard /> PAGAR AHORA</>}
                         </button>
                         <button
                             onClick={() => setShowTicketSelector(false)}
@@ -120,7 +242,6 @@ export default function EventoCard({ evento }: EventoProps) {
                         </div>
 
                         {evento.tipoVenta === 'ticket' ? (
-                            // BOTÓN TIPO PUNTOTICKET
                             <button
                                 onClick={() => setShowTicketSelector(true)}
                                 className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg shadow-amber-500/20 hover:scale-[1.02]"
@@ -128,7 +249,6 @@ export default function EventoCard({ evento }: EventoProps) {
                                 <FaTicketAlt /> COMPRAR TICKET
                             </button>
                         ) : (
-                            // BOTÓN WHATSAPP / PUERTA
                             <a
                                 href={`https://wa.me/56971636195?text=Hola,%20tengo%20dudas%20sobre%20entradas%20para%20${evento.titulo}`}
                                 target="_blank"

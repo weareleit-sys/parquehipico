@@ -20,54 +20,56 @@ export interface Evento {
 export const eventos: Evento[] = [
     {
         id: 1,
-        titulo: "Gran Carrera - La Montaña",
-        fecha: "30 de Noviembre",
+        titulo: "Carreras a la Chilena",
+        fecha: "17 de Enero",
         hora: "12:00 HRS",
-        descripcion: "Adrenalina pura y ambiente familiar. Pago en puerta o transferencia previa.",
-        precioInt: 15000,
+        descripcion: "Adrenalina y tradición. Disfruta de las mejores carreras a la chilena en un ambiente único.",
+        precioInt: 20000, // Precio base referencia (hombre)
         precios: {
-            hombres: "15.000",
-            mujeres: "5.000",
+            hombres: "20.000",
+            mujeres: "10.000",
             general: undefined
         },
-        features: ["Carreras a la chilena", "Música en vivo", "Pago en Puerta"],
-        imagen: "/eventos/nov30.jpg",
+        features: ["Carreras en vivo", "Comida Típica", "Música Chilena"],
+        imagen: "/eventos/carreras-2025.png",
         destacado: true,
         estado: "disponible",
-        tipoVenta: 'whatsapp' // 👈 MODO CLÁSICO
+        tipoVenta: 'ticket'
     },
     {
         id: 2,
-        titulo: "Copa Diciembre",
-        fecha: "20 de Diciembre",
-        hora: "12:00 HRS",
-        descripcion: "Grandes competidores en pista. La revancha esperada.",
+        titulo: "Feria Costumbrista",
+        fecha: "24 y 25 de Enero",
+        hora: "11:00 HRS",
+        descripcion: "Lo mejor de nuestras tradiciones. Artesanía, gastronomía y folklore en vivo.",
         precioInt: 20000,
         precios: {
             hombres: "20.000",
-            mujeres: "5.000",
+            mujeres: "10.000",
             general: undefined
         },
-        features: ["Grandes Apuestas", "DJ en vivo", "Zona Picnic"],
-        imagen: null,
+        features: ["Gastronomía", "Artesanía", "Show Folklórico"],
+        imagen: "/eventos/feria-2025.png",
         destacado: false,
-        estado: "proximamente",
-        tipoVenta: 'whatsapp'
+        estado: "disponible",
+        tipoVenta: 'ticket'
     },
     {
         id: 3,
-        titulo: "AÑO NUEVO 2025",
-        fecha: "31 de Diciembre",
-        hora: "22:00 HRS",
-        descripcion: "La fiesta más grande del sur. Artista invitado sorpresa.",
-        precioInt: 40000,
+        titulo: "La Montaña del Amor",
+        fecha: "14 de Febrero",
+        hora: "20:00 HRS",
+        descripcion: "Celebra el día de los enamorados bajo las estrellas con música romántica y cena especial.",
+        precioInt: 20000,
         precios: {
-            general: "40.000"
+            hombres: "20.000",
+            mujeres: "10.000",
+            general: undefined
         },
-        features: ["Barra Abierta", "Camping Incluido", "Fuegos Artificiales"],
-        imagen: null,
+        features: ["Cena Romántica", "Música en Vivo", "Fiesta Bailable"],
+        imagen: "/eventos/san-valentin-2025.png",
         destacado: true,
-        estado: "disponible",
-        tipoVenta: 'ticket' // 👈 MODO PUNTOTICKET PROPIO
+        estado: "proximamente",
+        tipoVenta: 'ticket'
     }
 ];
