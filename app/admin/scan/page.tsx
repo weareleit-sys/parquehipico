@@ -70,7 +70,13 @@ export default function ScanPage() {
     }, [])
 
     const onScanSuccess = async (decodedText: string) => {
-        if (decodedText === lastScannedCode) return
+        // Prevenir doble procesamiento
+        if (decodedText === lastScannedCode) {
+            console.log('[SCAN] Código duplicado ignorado:', decodedText)
+            return
+        }
+
+        console.log('[SCAN] Procesando código:', decodedText)
         setLastScannedCode(decodedText)
 
         // Resetear estado anterior antes de procesar
@@ -85,7 +91,11 @@ export default function ScanPage() {
                 .eq('codigo_qr', decodedText)
                 .single()
 
+            console.log('[SCAN] Ticket encontrado:', data)
+            console.log('[SCAN] Estado actual del ticket:', data?.estado)
+
             if (error || !data) {
+                console.log('[SCAN] Error o no encontrado:', error)
                 setScanStatus('error')
                 setMessage('❌ TICKET NO ENCONTRADO')
                 return
@@ -93,29 +103,33 @@ export default function ScanPage() {
 
             setScanResult(data)
 
+            // Verificar si ya fue usado
             if (data.estado === 'usado') {
+                console.log('[SCAN] Ticket ya estaba marcado como usado')
                 setScanStatus('warning')
                 setMessage(`⚠️ TICKET YA USADO`)
             } else {
-                // Solo actualizar estado (updated_at no existe en la tabla)
+                console.log('[SCAN] Actualizando ticket a "usado"...')
+                // Solo actualizar estado
                 const { error: updateError } = await supabase
                     .from('tickets')
                     .update({ estado: 'usado' })
                     .eq('id', data.id)
 
                 if (updateError) {
-                    console.error('Update error:', updateError)
+                    console.error('[SCAN] Error en update:', updateError)
                     setScanStatus('error')
                     setMessage('Error al actualizar ticket')
                     return
                 }
 
+                console.log('[SCAN] ✅ Ticket actualizado correctamente')
                 setScanStatus('success')
                 setMessage('✅ ACCESO CONCEDIDO')
             }
 
         } catch (err) {
-            console.error(err)
+            console.error('[SCAN] Error de conexión:', err)
             setScanStatus('error')
             setMessage('Error de conexión')
         }
