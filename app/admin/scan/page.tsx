@@ -73,6 +73,8 @@ export default function ScanPage() {
         if (decodedText === lastScannedCode) return
         setLastScannedCode(decodedText)
 
+        // Resetear estado anterior antes de procesar
+        setScanResult(null)
         setScanStatus('idle')
         setMessage('Procesando...')
 
