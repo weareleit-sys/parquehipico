@@ -31,13 +31,17 @@ export async function POST(request: Request) {
         const generatedTickets = [];
         const dbInserts = [];
 
-        // 1. Procesamos cada asistente
-        for (const nombreAsistente of attendees) {
+        // 1. Procesamos cada asistente (soporta tanto objetos {nombre, tipo} como strings)
+        for (const attendee of attendees) {
+            const nombreAsistente = typeof attendee === 'string' ? attendee : attendee.nombre;
+            const tipoAsistente = typeof attendee === 'string' ? 'general' : attendee.tipo;
+
             const codigoQr = `TICKET-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 
             // Preparamos objeto para email
             generatedTickets.push({
                 nombre: nombreAsistente,
+                tipo: tipoAsistente,
                 qr: codigoQr
             });
 

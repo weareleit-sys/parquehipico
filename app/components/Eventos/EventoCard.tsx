@@ -9,48 +9,112 @@ interface EventoProps {
     evento: Evento;
 }
 
+interface Attendee {
+    nombre: string;
+    tipo: 'hombre' | 'mujer';
+}
+
 export default function EventoCard({ evento }: EventoProps) {
     const [showTicketSelector, setShowTicketSelector] = useState(false);
-    const [qty, setQty] = useState(1);
 
-    // Estado para la compra
-    const [ticketType, setTicketType] = useState<'hombres' | 'mujeres'>('hombres'); // Default hombre
+    // Cantidades separadas para hombres y mujeres
+    const [qtyHombres, setQtyHombres] = useState(0);
+    const [qtyMujeres, setQtyMujeres] = useState(0);
+
     const [buyerEmail, setBuyerEmail] = useState('');
-    const [attendees, setAttendees] = useState<string[]>(['']); // Inicialmente 1 asistente vacío
+    const [attendees, setAttendees] = useState<Attendee[]>([]);
     const [loading, setLoading] = useState(false);
 
-    // Calcular precio según selección
-    const currentPrice = ticketType === 'hombres'
-        ? (evento.precios.hombres ? parseInt(evento.precios.hombres.replace(/\./g, '')) : evento.precioInt)
-        : (evento.precios.mujeres ? parseInt(evento.precios.mujeres.replace(/\./g, '')) : evento.precioInt);
+    // Precios
+    const precioHombres = evento.precios.hombres
+        ? parseInt(evento.precios.hombres.replace(/\./g, ''))
+        : evento.precioInt;
+    const precioMujeres = evento.precios.mujeres
+        ? parseInt(evento.precios.mujeres.replace(/\./g, ''))
+        : evento.precioInt;
+    const precioGeneral = evento.precios.general
+        ? parseInt(evento.precios.general.replace(/\./g, ''))
+        : evento.precioInt;
+
+    // Total
+    const totalQty = qtyHombres + qtyMujeres;
+    const totalPrice = evento.precios.general
+        ? precioGeneral * totalQty
+        : (qtyHombres * precioHombres) + (qtyMujeres * precioMujeres);
+
+    // Actualizar lista de asistentes cuando cambian cantidades
+    const updateAttendees = (newQtyHombres: number, newQtyMujeres: number) => {
+        const newAttendees: Attendee[] = [];
+
+        // Primero hombres
+        for (let i = 0; i < newQtyHombres; i++) {
+            const existing = attendees.filter(a => a.tipo === 'hombre')[i];
+            newAttendees.push({ nombre: existing?.nombre || '', tipo: 'hombre' });
+        }
+
+        // Luego mujeres
+        for (let i = 0; i < newQtyMujeres; i++) {
+            const existing = attendees.filter(a => a.tipo === 'mujer')[i];
+            newAttendees.push({ nombre: existing?.nombre || '', tipo: 'mujer' });
+        }
+
+        setAttendees(newAttendees);
+    };
+
+    const handleQtyHombres = (delta: number) => {
+        const newQty = Math.max(0, qtyHombres + delta);
+        setQtyHombres(newQty);
+        updateAttendees(newQty, qtyMujeres);
+    };
+
+    const handleQtyMujeres = (delta: number) => {
+        const newQty = Math.max(0, qtyMujeres + delta);
+        setQtyMujeres(newQty);
+        updateAttendees(qtyHombres, newQty);
+    };
 
     const handlePayment = async () => {
-        // Validar que todos los nombres estén llenos
-        if (!buyerEmail || attendees.some(name => !name.trim())) {
+        if (!buyerEmail || attendees.some(a => !a.nombre.trim())) {
             alert('Por favor completa el email y el nombre de TODOS los asistentes.');
+            return;
+        }
+
+        if (totalQty === 0) {
+            alert('Selecciona al menos 1 entrada.');
             return;
         }
 
         setLoading(true);
 
-        // Guardar datos completos para procesar DESPUÉS del pago
+        // Guardar datos para procesar después del pago
         localStorage.setItem('pending_order', JSON.stringify({
             email: buyerEmail,
             attendees: attendees,
             eventName: evento.titulo,
-            ticketType: ticketType
+            qtyHombres,
+            qtyMujeres
         }));
 
         try {
+            // Construir título descriptivo
+            let title = evento.titulo;
+            if (qtyHombres > 0 && qtyMujeres > 0) {
+                title += ` (${qtyHombres}H + ${qtyMujeres}M)`;
+            } else if (qtyHombres > 0) {
+                title += ` (${qtyHombres} Hombre${qtyHombres > 1 ? 's' : ''})`;
+            } else {
+                title += ` (${qtyMujeres} Mujer${qtyMujeres > 1 ? 'es' : ''})`;
+            }
+
             const res = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    id: `evento-${evento.id}-${ticketType}`,
-                    title: `${evento.titulo} (${ticketType.toUpperCase()}) x${qty}`,
-                    quantity: qty,
-                    unit_price: currentPrice,
-                    name: attendees[0], // Usamos el primer nombre como "Representante" para MercadoPago
+                    id: `evento-${evento.id}-mixed`,
+                    title: title,
+                    quantity: 1, // Una transacción
+                    unit_price: totalPrice,
+                    name: attendees[0].nombre,
                     email: buyerEmail
                 })
             });
@@ -69,6 +133,14 @@ export default function EventoCard({ evento }: EventoProps) {
         } finally {
             setLoading(false);
         }
+    };
+
+    const resetSelector = () => {
+        setShowTicketSelector(false);
+        setQtyHombres(0);
+        setQtyMujeres(0);
+        setAttendees([]);
+        setBuyerEmail('');
     };
 
     return (
@@ -119,60 +191,96 @@ export default function EventoCard({ evento }: EventoProps) {
                     ))}
                 </ul>
 
-                {/* ------------------------------------------------------- */}
                 {/* ZONA DE COMPRA */}
-                {/* ------------------------------------------------------- */}
-
                 {showTicketSelector ? (
                     <div className="bg-slate-950 p-4 rounded-lg border border-amber-500/30 animate-in fade-in zoom-in-95 duration-200">
 
-                        {/* Selector Tipo Entrada */}
-                        {evento.precios.mujeres && (
-                            <div className="flex gap-2 mb-4 bg-slate-800 p-1 rounded-lg">
-                                <button
-                                    onClick={() => setTicketType('hombres')}
-                                    className={`flex-1 py-1 text-xs font-bold rounded ${ticketType === 'hombres' ? 'bg-amber-500 text-slate-900' : 'text-slate-400 hover:text-white'}`}
-                                >
-                                    HOMBRES (${evento.precios.hombres})
-                                </button>
-                                <button
-                                    onClick={() => setTicketType('mujeres')}
-                                    className={`flex-1 py-1 text-xs font-bold rounded ${ticketType === 'mujeres' ? 'bg-amber-500 text-slate-900' : 'text-slate-400 hover:text-white'}`}
-                                >
-                                    MUJERES (${evento.precios.mujeres})
-                                </button>
+                        {/* Selectores de Cantidad Dual */}
+                        {evento.precios.mujeres ? (
+                            <div className="grid grid-cols-2 gap-3 mb-4">
+                                {/* Hombres */}
+                                <div className="bg-slate-800 rounded-lg p-3 text-center">
+                                    <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Hombres</span>
+                                    <span className="text-amber-500 font-bold text-sm block mb-2">${evento.precios.hombres}</span>
+                                    <div className="flex items-center justify-center gap-2">
+                                        <button
+                                            onClick={() => handleQtyHombres(-1)}
+                                            className="w-7 h-7 rounded bg-slate-700 text-amber-500 flex items-center justify-center hover:bg-slate-600"
+                                        >
+                                            <FaMinus size={10} />
+                                        </button>
+                                        <span className="text-white font-bold text-lg w-6 text-center">{qtyHombres}</span>
+                                        <button
+                                            onClick={() => handleQtyHombres(1)}
+                                            className="w-7 h-7 rounded bg-slate-700 text-amber-500 flex items-center justify-center hover:bg-slate-600"
+                                        >
+                                            <FaPlus size={10} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Mujeres */}
+                                <div className="bg-slate-800 rounded-lg p-3 text-center">
+                                    <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Mujeres</span>
+                                    <span className="text-amber-500 font-bold text-sm block mb-2">${evento.precios.mujeres}</span>
+                                    <div className="flex items-center justify-center gap-2">
+                                        <button
+                                            onClick={() => handleQtyMujeres(-1)}
+                                            className="w-7 h-7 rounded bg-slate-700 text-amber-500 flex items-center justify-center hover:bg-slate-600"
+                                        >
+                                            <FaMinus size={10} />
+                                        </button>
+                                        <span className="text-white font-bold text-lg w-6 text-center">{qtyMujeres}</span>
+                                        <button
+                                            onClick={() => handleQtyMujeres(1)}
+                                            className="w-7 h-7 rounded bg-slate-700 text-amber-500 flex items-center justify-center hover:bg-slate-600"
+                                        >
+                                            <FaPlus size={10} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            // Precio general único
+                            <div className="bg-slate-800 rounded-lg p-3 text-center mb-4">
+                                <span className="text-amber-500 font-bold text-lg">${evento.precios.general}</span>
+                                <div className="flex items-center justify-center gap-3 mt-2">
+                                    <button
+                                        onClick={() => {
+                                            const newQty = Math.max(0, qtyHombres - 1);
+                                            setQtyHombres(newQty);
+                                            updateAttendees(newQty, 0);
+                                        }}
+                                        className="w-8 h-8 rounded bg-slate-700 text-amber-500 flex items-center justify-center"
+                                    >
+                                        <FaMinus size={12} />
+                                    </button>
+                                    <span className="text-white font-bold text-xl w-8 text-center">{qtyHombres}</span>
+                                    <button
+                                        onClick={() => {
+                                            const newQty = qtyHombres + 1;
+                                            setQtyHombres(newQty);
+                                            updateAttendees(newQty, 0);
+                                        }}
+                                        className="w-8 h-8 rounded bg-slate-700 text-amber-500 flex items-center justify-center"
+                                    >
+                                        <FaPlus size={12} />
+                                    </button>
+                                </div>
                             </div>
                         )}
 
-                        {/* Cantidad */}
-                        <div className="flex justify-between items-center mb-4">
-                            <span className="text-white text-sm font-bold">Cantidad</span>
-                            <div className="flex items-center gap-3 bg-slate-800 rounded px-2 py-1">
-                                <button
-                                    onClick={() => {
-                                        const newQty = Math.max(1, qty - 1);
-                                        setQty(newQty);
-                                        setAttendees(prev => prev.slice(0, newQty));
-                                    }}
-                                    className="text-amber-500 hover:text-white px-2"
-                                >
-                                    <FaMinus size={10} />
-                                </button>
-                                <span className="text-white w-4 text-center text-sm font-bold">{qty}</span>
-                                <button
-                                    onClick={() => {
-                                        const newQty = qty + 1;
-                                        setQty(newQty);
-                                        setAttendees(prev => [...prev, '']);
-                                    }}
-                                    className="text-amber-500 hover:text-white px-2"
-                                >
-                                    <FaPlus size={10} />
-                                </button>
+                        {/* Resumen de entradas */}
+                        {totalQty > 0 && (
+                            <div className="text-center mb-3 text-xs text-slate-400">
+                                {qtyHombres > 0 && qtyMujeres > 0
+                                    ? `${qtyHombres} hombre${qtyHombres > 1 ? 's' : ''} + ${qtyMujeres} mujer${qtyMujeres > 1 ? 'es' : ''}`
+                                    : `${totalQty} entrada${totalQty > 1 ? 's' : ''}`
+                                }
                             </div>
-                        </div>
+                        )}
 
-                        {/* Datos Comprador (Email) */}
+                        {/* Email */}
                         <div className="mb-4">
                             <label className="text-[10px] uppercase text-slate-500 font-bold block mb-1">Email donde llegarán los tickets</label>
                             <input
@@ -185,48 +293,54 @@ export default function EventoCard({ evento }: EventoProps) {
                         </div>
 
                         {/* Lista de Asistentes */}
-                        <div className="space-y-2 mb-4 max-h-40 overflow-y-auto pr-1">
-                            <label className="text-[10px] uppercase text-slate-500 font-bold block sticky top-0 bg-slate-950 z-10">Nombre de cada asistente</label>
-                            {Array.from({ length: qty }).map((_, index) => (
-                                <input
-                                    key={index}
-                                    type="text"
-                                    placeholder={`Nombre Asistente #${index + 1}`}
-                                    className="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-white placeholder-slate-500 focus:border-amber-500 outline-none"
-                                    value={attendees[index] || ''}
-                                    onChange={(e) => {
-                                        const newAttendees = [...attendees];
-                                        newAttendees[index] = e.target.value;
-                                        setAttendees(newAttendees);
-                                    }}
-                                />
-                            ))}
-                        </div>
+                        {attendees.length > 0 && (
+                            <div className="space-y-2 mb-4 max-h-48 overflow-y-auto pr-1">
+                                <label className="text-[10px] uppercase text-slate-500 font-bold block sticky top-0 bg-slate-950 z-10">Nombre de cada asistente</label>
+                                {attendees.map((attendee, index) => (
+                                    <div key={index} className="flex gap-2 items-center">
+                                        <span className={`text-[9px] px-2 py-0.5 rounded font-bold ${attendee.tipo === 'hombre' ? 'bg-blue-500/20 text-blue-400' : 'bg-pink-500/20 text-pink-400'}`}>
+                                            {attendee.tipo === 'hombre' ? 'H' : 'M'}
+                                        </span>
+                                        <input
+                                            type="text"
+                                            placeholder={`Nombre #${index + 1}`}
+                                            className="flex-1 bg-slate-800 border border-slate-700 rounded p-2 text-xs text-white placeholder-slate-500 focus:border-amber-500 outline-none"
+                                            value={attendee.nombre}
+                                            onChange={(e) => {
+                                                const newAttendees = [...attendees];
+                                                newAttendees[index].nombre = e.target.value;
+                                                setAttendees(newAttendees);
+                                            }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
 
                         {/* Total */}
                         <div className="flex justify-between items-end border-t border-slate-800 pt-3 mb-3">
                             <span className="text-xs text-slate-400">Total a Pagar</span>
                             <span className="text-xl font-bold text-amber-500">
-                                ${(currentPrice * qty).toLocaleString('es-CL')}
+                                ${totalPrice.toLocaleString('es-CL')}
                             </span>
                         </div>
 
                         <button
                             onClick={handlePayment}
-                            disabled={loading}
+                            disabled={loading || totalQty === 0}
                             className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-900 font-bold py-2.5 rounded shadow-lg text-sm flex justify-center items-center gap-2 transform active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? 'PROCESANDO...' : <><FaCreditCard /> PAGAR AHORA</>}
                         </button>
                         <button
-                            onClick={() => setShowTicketSelector(false)}
+                            onClick={resetSelector}
                             className="w-full mt-2 text-xs text-slate-500 hover:text-white underline text-center"
                         >
                             Cancelar
                         </button>
                     </div>
                 ) : (
-                    // VISTA 1: PRECIOS Y BOTÓN PRINCIPAL
+                    // VISTA INICIAL: PRECIOS Y BOTÓN
                     <>
                         <div className="mb-6 bg-slate-800/50 p-3 rounded border border-slate-700/50">
                             {evento.precios.general ? (
