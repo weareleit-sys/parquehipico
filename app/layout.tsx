@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-
-// Importamos los componentes globales
-import Navbar from "./components/Header/Navbar";
-import Footer from "./components/Footer/Footer";
-import FloatingWhatsApp from "./components/UI/FloatingWhatsApp";
+import ClientLayout from "./ClientLayout";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,17 +18,9 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${inter.className} bg-slate-950 text-white antialiased`}>
-
-        {/* 1. NAVBAR GLOBAL (Siempre visible arriba) */}
-        <Navbar />
-
-        {/* 2. CONTENIDO DE CADA PÁGINA */}
-        {children}
-
-        {/* 3. ELEMENTOS GLOBALES (Footer y botón flotante) */}
-        <Footer />
-        <FloatingWhatsApp />
-
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
   );
