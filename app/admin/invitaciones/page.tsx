@@ -60,31 +60,49 @@ export default function InvitacionesPage() {
         if (!ticketRef.current) return
 
         try {
+            // Esperar a que la imagen del QR esté cargada
+            const qrImg = ticketRef.current.querySelector('img') as HTMLImageElement
+            if (qrImg && !qrImg.complete) {
+                await new Promise((resolve) => {
+                    qrImg.onload = resolve
+                    setTimeout(resolve, 1000) // Fallback timeout
+                })
+            }
+
             const canvas = await html2canvas(ticketRef.current, {
                 backgroundColor: '#1a1a1a',
-                scale: 2
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                logging: false
             })
 
             canvas.toBlob(async (blob) => {
-                if (!blob) return
+                if (!blob) {
+                    alert('Error generando la imagen. Intenta de nuevo.')
+                    return
+                }
+
                 const file = new File([blob], 'invitacion-parque.png', { type: 'image/png' })
 
-                if (navigator.share) {
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                     await navigator.share({
                         title: 'Invitación Parque Hípico',
                         text: `Hola ${ticket.nombre}, aquí tienes tu invitación doble para ${ticket.evento}.`,
                         files: [file]
                     })
                 } else {
+                    // Fallback: descargar
                     const link = document.createElement('a')
                     link.download = `invitacion-${ticket.nombre.replace(/\s+/g, '-')}.png`
                     link.href = canvas.toDataURL()
                     link.click()
+                    alert('Imagen descargada. Puedes enviarla manualmente por WhatsApp.')
                 }
-            })
+            }, 'image/png', 1.0)
         } catch (err) {
             console.error('Error al compartir:', err)
-            alert('No se pudo abrir el menú de compartir. Intenta descargar la imagen.')
+            alert('No se pudo compartir. Intenta descargar la imagen manualmente.')
         }
     }
 

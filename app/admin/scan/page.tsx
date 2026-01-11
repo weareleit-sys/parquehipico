@@ -4,62 +4,79 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useState, useRef } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import { Html5QrcodeScanner } from 'html5-qrcode'
+import { Html5Qrcode } from 'html5-qrcode'
 import Link from 'next/link'
 
 export default function ScanPage() {
-    const [scanResult, setScanResult] = useState<any>(null) // Data del ticket
+    const [scanResult, setScanResult] = useState<any>(null)
     const [scanStatus, setScanStatus] = useState<'idle' | 'success' | 'error' | 'warning'>('idle')
     const [message, setMessage] = useState('')
     const [lastScannedCode, setLastScannedCode] = useState<string | null>(null)
-    const scannerRef = useRef<Html5QrcodeScanner | null>(null)
+    const [cameraError, setCameraError] = useState<string | null>(null)
+    const [isScanning, setIsScanning] = useState(false)
+    const scannerRef = useRef<Html5Qrcode | null>(null)
 
-    // Sonidos (Opcional pero recomendado para feedback)
-    const playSound = (type: 'success' | 'error') => {
-        const audio = new Audio(type === 'success' ? '/sounds/beep-success.mp3' : '/sounds/beep-error.mp3') // Placeholder paths
-        audio.play().catch(e => console.log('Audio play failed', e))
+    const startScanner = async () => {
+        try {
+            setCameraError(null)
+            setIsScanning(true)
+
+            // Solicitar permisos explícitamente primero
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+            stream.getTracks().forEach(track => track.stop()) // Solo para probar permisos
+
+            const scanner = new Html5Qrcode("reader")
+            scannerRef.current = scanner
+
+            await scanner.start(
+                { facingMode: "environment" },
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                onScanSuccess,
+                () => { } // Silenciar errores de escaneo
+            )
+        } catch (err: any) {
+            console.error('Camera error:', err)
+            setIsScanning(false)
+
+            if (err.name === 'NotAllowedError') {
+                setCameraError('⚠️ Permiso de cámara denegado. Por favor, permite el acceso a la cámara en la configuración de tu navegador.')
+            } else if (err.name === 'NotFoundError') {
+                setCameraError('⚠️ No se encontró ninguna cámara en este dispositivo.')
+            } else {
+                setCameraError(`⚠️ Error al iniciar la cámara: ${err.message || 'Error desconocido'}`)
+            }
+        }
+    }
+
+    const stopScanner = async () => {
+        if (scannerRef.current) {
+            try {
+                await scannerRef.current.stop()
+                scannerRef.current = null
+            } catch (e) {
+                console.log('Error stopping scanner:', e)
+            }
+        }
+        setIsScanning(false)
     }
 
     useEffect(() => {
-        // Inicializar Scanner
-        // Usamos un timeout pequeño para asegurar que el DOM esté listo
-        const timer = setTimeout(() => {
-            const scanner = new Html5QrcodeScanner(
-                "reader",
-                {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 },
-                    aspectRatio: 1.0,
-                    showTorchButtonIfSupported: true
-                },
-                /* verbose= */ false
-            )
-
-            scanner.render(onScanSuccess, onScanFailure)
-            scannerRef.current = scanner
-        }, 100)
-
         return () => {
-            if (scannerRef.current) {
-                scannerRef.current.clear().catch(error => {
-                    console.error("Failed to clear html5-qrcode scanner. ", error)
-                })
-            }
-            clearTimeout(timer)
+            stopScanner()
         }
     }, [])
 
     const onScanSuccess = async (decodedText: string) => {
-        // Evitar procesar el mismo código muchas veces seguidas en milisegundos
         if (decodedText === lastScannedCode) return
         setLastScannedCode(decodedText)
 
-        // Pausar visualmente para procesar
         setScanStatus('idle')
         setMessage('Procesando...')
 
         try {
-            // 1. Buscar en BD
             const { data, error } = await supabase
                 .from('tickets')
                 .select('*')
@@ -69,25 +86,21 @@ export default function ScanPage() {
             if (error || !data) {
                 setScanStatus('error')
                 setMessage('❌ TICKET NO ENCONTRADO')
-                playSound('error')
                 return
             }
 
             setScanResult(data)
 
-            // 2. Validar Estado
             if (data.estado === 'usado') {
                 setScanStatus('warning')
                 const fechaUso = new Date(data.updated_at || Date.now()).toLocaleTimeString()
                 setMessage(`⚠️ TICKET YA USADO (A las ${fechaUso})`)
-                playSound('error')
             } else {
-                // 3. Marcar como USADO
                 const { error: updateError } = await supabase
                     .from('tickets')
                     .update({
                         estado: 'usado',
-                        updated_at: new Date().toISOString() // Importante para saber cuándo entró
+                        updated_at: new Date().toISOString()
                     })
                     .eq('id', data.id)
 
@@ -99,7 +112,6 @@ export default function ScanPage() {
 
                 setScanStatus('success')
                 setMessage('✅ ACCESO CONCEDIDO')
-                playSound('success')
             }
 
         } catch (err) {
@@ -108,13 +120,7 @@ export default function ScanPage() {
             setMessage('Error de conexión')
         }
 
-        // Limpiar el "last scanned" después de unos segundos para permitir escanearlo de nuevo si es necesario
         setTimeout(() => setLastScannedCode(null), 3000)
-    }
-
-    const onScanFailure = () => {
-        // No hacer nada, es ruidoso
-        // console.warn(`Code scan error = ${error}`)
     }
 
     const resetScan = () => {
@@ -137,8 +143,50 @@ export default function ScanPage() {
             {/* Scanner Area */}
             <div className="flex-grow flex flex-col items-center justify-start gap-6">
 
-                {/* Contenedor del scanner (Librería lo usa) */}
-                <div id="reader" className="w-full max-w-sm bg-gray-900 rounded-lg overflow-hidden border-2 border-gray-700"></div>
+                {/* Botón para iniciar cámara */}
+                {!isScanning && !cameraError && (
+                    <div className="text-center">
+                        <button
+                            onClick={startScanner}
+                            className="bg-green-600 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-green-500 transition-all"
+                        >
+                            📷 Iniciar Cámara
+                        </button>
+                        <p className="text-gray-500 mt-4 text-sm">
+                            Presiona para activar la cámara y escanear códigos QR
+                        </p>
+                    </div>
+                )}
+
+                {/* Error de cámara */}
+                {cameraError && (
+                    <div className="bg-red-900/50 border border-red-500 rounded-xl p-6 text-center max-w-sm">
+                        <p className="text-red-300 mb-4">{cameraError}</p>
+                        <button
+                            onClick={startScanner}
+                            className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold"
+                        >
+                            🔄 Reintentar
+                        </button>
+                    </div>
+                )}
+
+                {/* Contenedor del scanner */}
+                <div
+                    id="reader"
+                    className={`w-full max-w-sm bg-gray-900 rounded-lg overflow-hidden border-2 border-gray-700 ${!isScanning ? 'hidden' : ''}`}
+                    style={{ minHeight: '300px' }}
+                ></div>
+
+                {/* Botón para detener */}
+                {isScanning && scanStatus === 'idle' && (
+                    <button
+                        onClick={stopScanner}
+                        className="bg-gray-700 text-white px-6 py-2 rounded-lg text-sm"
+                    >
+                        Detener Cámara
+                    </button>
+                )}
 
                 {/* Resultado */}
                 {scanStatus !== 'idle' && (
@@ -156,8 +204,11 @@ export default function ScanPage() {
                                 <p className="text-xs uppercase tracking-widest opacity-75">Evento</p>
                                 <p className="text-lg font-semibold mb-2">{scanResult.evento || 'General'}</p>
 
-                                <p className="text-xs uppercase tracking-widest opacity-75">Tipo</p>
-                                <p className="text-sm font-semibold">{scanResult.categoria || 'Entrada'}</p>
+                                {scanResult.estado === 'cortesia' && (
+                                    <div className="bg-amber-500 text-black px-3 py-1 rounded-full inline-block text-sm font-bold mt-2">
+                                        CORTESÍA DOBLE
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -170,8 +221,8 @@ export default function ScanPage() {
                     </div>
                 )}
 
-                {scanStatus === 'idle' && (
-                    <div className="text-center text-gray-500 mt-10">
+                {isScanning && scanStatus === 'idle' && (
+                    <div className="text-center text-gray-500 mt-4">
                         <p>Apunta la cámara al código QR del visitante.</p>
                     </div>
                 )}
