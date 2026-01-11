@@ -93,7 +93,6 @@ export default function ScanPage() {
 
             if (data.estado === 'usado') {
                 setScanStatus('warning')
-                const fechaUso = new Date(data.created_at || Date.now()).toLocaleTimeString()
                 setMessage(`⚠️ TICKET YA USADO`)
             } else {
                 // Solo actualizar estado (updated_at no existe en la tabla)
