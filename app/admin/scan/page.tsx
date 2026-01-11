@@ -93,18 +93,17 @@ export default function ScanPage() {
 
             if (data.estado === 'usado') {
                 setScanStatus('warning')
-                const fechaUso = new Date(data.updated_at || Date.now()).toLocaleTimeString()
-                setMessage(`⚠️ TICKET YA USADO (A las ${fechaUso})`)
+                const fechaUso = new Date(data.created_at || Date.now()).toLocaleTimeString()
+                setMessage(`⚠️ TICKET YA USADO`)
             } else {
+                // Solo actualizar estado (updated_at no existe en la tabla)
                 const { error: updateError } = await supabase
                     .from('tickets')
-                    .update({
-                        estado: 'usado',
-                        updated_at: new Date().toISOString()
-                    })
+                    .update({ estado: 'usado' })
                     .eq('id', data.id)
 
                 if (updateError) {
+                    console.error('Update error:', updateError)
                     setScanStatus('error')
                     setMessage('Error al actualizar ticket')
                     return
