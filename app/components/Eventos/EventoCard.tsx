@@ -46,8 +46,10 @@ export default function EventoCard({ evento }: EventoProps) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    id: `evento-${evento.id}-${ticketType}`,
                     title: `${evento.titulo} (${ticketType.toUpperCase()}) x${qty}`,
-                    price: currentPrice * qty,
+                    quantity: qty,
+                    unit_price: currentPrice,
                     name: attendees[0], // Usamos el primer nombre como "Representante" para MercadoPago
                     email: buyerEmail
                 })
