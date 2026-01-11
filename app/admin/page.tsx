@@ -78,7 +78,17 @@ export default function AdminDashboard() {
                     <div className="mt-4 pt-4 border-t border-gray-800">
                         <p className="text-gray-500 text-xs uppercase tracking-widest mb-4">Gestión</p>
 
-                        <Link href="/admin/invitaciones" className="group relative overflow-hidden bg-zinc-800 p-6 rounded-2xl shadow-lg border border-zinc-700 transition-transform hover:bg-zinc-700">
+                        <Link href="/admin/dashboard" className="group relative overflow-hidden bg-amber-600 p-6 rounded-2xl shadow-xl mb-4 block transition-transform hover:scale-105">
+                            <div className="flex items-center gap-4 z-10 relative">
+                                <span className="text-4xl">📊</span>
+                                <div>
+                                    <h2 className="text-xl font-bold">Dashboard de Ventas</h2>
+                                    <p className="text-amber-200 text-sm">Ver todos los tickets y estadísticas</p>
+                                </div>
+                            </div>
+                        </Link>
+
+                        <Link href="/admin/invitaciones" className="group relative overflow-hidden bg-zinc-800 p-6 rounded-2xl shadow-lg border border-zinc-700 transition-transform hover:bg-zinc-700 block">
                             <div className="flex items-center gap-4 z-10 relative">
                                 <span className="text-4xl">🎟️</span>
                                 <div>
