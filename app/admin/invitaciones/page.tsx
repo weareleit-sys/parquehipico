@@ -5,9 +5,8 @@ export const dynamic = 'force-dynamic'
 import { useState, useRef } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import QRCode from 'qrcode'
-import html2canvas from 'html2canvas'
-import { eventos } from '../../(sections)/eventos/data'
 import Link from 'next/link'
+import { eventos } from '../../(sections)/eventos/data'
 
 export default function InvitacionesPage() {
     const [loading, setLoading] = useState(false)
@@ -56,53 +55,135 @@ export default function InvitacionesPage() {
         }
     }
 
-    const handleShare = async () => {
-        if (!ticketRef.current) return
-
-        try {
-            // Esperar a que la imagen del QR esté cargada
-            const qrImg = ticketRef.current.querySelector('img') as HTMLImageElement
-            if (qrImg && !qrImg.complete) {
-                await new Promise((resolve) => {
-                    qrImg.onload = resolve
-                    setTimeout(resolve, 1000) // Fallback timeout
-                })
+    const generateTicketCanvas = async (): Promise<Blob | null> => {
+        return new Promise(async (resolve) => {
+            const canvas = document.createElement('canvas')
+            const ctx = canvas.getContext('2d')
+            if (!ctx) {
+                resolve(null)
+                return
             }
 
-            const canvas = await html2canvas(ticketRef.current, {
-                backgroundColor: '#1a1a1a',
-                scale: 2,
-                useCORS: true,
-                allowTaint: true,
-                logging: false
-            })
+            // Dimensiones del ticket (proporción 9:16)
+            const width = 540
+            const height = 960
+            canvas.width = width
+            canvas.height = height
 
-            canvas.toBlob(async (blob) => {
-                if (!blob) {
-                    alert('Error generando la imagen. Intenta de nuevo.')
-                    return
-                }
+            // Fondo negro
+            ctx.fillStyle = '#18181b'
+            ctx.fillRect(0, 0, width, height)
 
-                const file = new File([blob], 'invitacion-parque.png', { type: 'image/png' })
+            // Línea dorada superior
+            const gradient = ctx.createLinearGradient(0, 0, width, 0)
+            gradient.addColorStop(0, '#f59e0b')
+            gradient.addColorStop(0.5, '#ef4444')
+            gradient.addColorStop(1, '#f59e0b')
+            ctx.fillStyle = gradient
+            ctx.fillRect(0, 0, width, 8)
 
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        title: 'Invitación Parque Hípico',
-                        text: `Hola ${ticket.nombre}, aquí tienes tu invitación doble para ${ticket.evento}.`,
-                        files: [file]
-                    })
-                } else {
-                    // Fallback: descargar
-                    const link = document.createElement('a')
-                    link.download = `invitacion-${ticket.nombre.replace(/\s+/g, '-')}.png`
-                    link.href = canvas.toDataURL()
-                    link.click()
-                    alert('Imagen descargada. Puedes enviarla manualmente por WhatsApp.')
-                }
-            }, 'image/png', 1.0)
+            // Título "PARQUE HÍPICO"
+            ctx.fillStyle = '#f59e0b'
+            ctx.font = 'bold 16px Arial'
+            ctx.textAlign = 'center'
+            ctx.fillText('PARQUE HÍPICO', width / 2, 60)
+
+            // Nombre del evento
+            ctx.fillStyle = '#ffffff'
+            ctx.font = 'italic 24px Georgia'
+            ctx.fillText(ticket.evento, width / 2, 100)
+
+            // "INVITACIÓN OFICIAL"
+            ctx.fillStyle = '#9ca3af'
+            ctx.font = '12px Arial'
+            ctx.fillText('INVITACIÓN OFICIAL', width / 2, 160)
+
+            // Nombre del invitado
+            ctx.fillStyle = '#ffffff'
+            ctx.font = 'bold 36px Arial'
+            ctx.fillText(ticket.nombre, width / 2, 210)
+
+            // Dibujar QR
+            const qrImg = new Image()
+            qrImg.onload = () => {
+                // Fondo blanco para el QR
+                const qrSize = 220
+                const qrX = (width - qrSize) / 2
+                const qrY = 260
+
+                ctx.fillStyle = '#ffffff'
+                ctx.beginPath()
+                ctx.roundRect(qrX - 10, qrY - 10, qrSize + 20, qrSize + 20, 10)
+                ctx.fill()
+
+                // Dibujar el QR
+                ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize)
+
+                // Badge "ADMISIÓN DOBLE"
+                ctx.fillStyle = '#d97706'
+                ctx.beginPath()
+                ctx.roundRect(width / 2 - 80, 520, 160, 32, 16)
+                ctx.fill()
+
+                ctx.fillStyle = '#000000'
+                ctx.font = 'bold 14px Arial'
+                ctx.fillText('ADMISIÓN DOBLE', width / 2, 542)
+
+                // Texto adicional
+                ctx.fillStyle = '#9ca3af'
+                ctx.font = '12px Arial'
+                ctx.fillText('Válido para titular + 1 acompañante', width / 2, 580)
+
+                // Pie de página
+                ctx.fillStyle = '#6b7280'
+                ctx.font = '10px Arial'
+                ctx.fillText('Prohibida su venta • Uso exclusivo Staff', width / 2, height - 60)
+                ctx.fillText(`ID: ${ticket.codigo.slice(0, 20)}...`, width / 2, height - 40)
+
+                // Convertir a blob
+                canvas.toBlob((blob) => {
+                    resolve(blob)
+                }, 'image/png', 1.0)
+            }
+
+            qrImg.onerror = () => {
+                resolve(null)
+            }
+
+            qrImg.src = qrImage
+        })
+    }
+
+    const handleShare = async () => {
+        try {
+            const blob = await generateTicketCanvas()
+
+            if (!blob) {
+                alert('Error generando la imagen. Intenta de nuevo.')
+                return
+            }
+
+            const file = new File([blob], 'invitacion-parque.png', { type: 'image/png' })
+
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    title: 'Invitación Parque Hípico',
+                    text: `Hola ${ticket.nombre}, aquí tienes tu invitación doble para ${ticket.evento}.`,
+                    files: [file]
+                })
+            } else {
+                // Fallback: descargar
+                const url = URL.createObjectURL(blob)
+                const link = document.createElement('a')
+                link.download = `invitacion-${ticket.nombre.replace(/\s+/g, '-')}.png`
+                link.href = url
+                link.click()
+                URL.revokeObjectURL(url)
+                alert('Imagen descargada. Puedes enviarla manualmente por WhatsApp.')
+            }
         } catch (err) {
             console.error('Error al compartir:', err)
-            alert('No se pudo compartir. Intenta descargar la imagen manualmente.')
+            alert('No se pudo compartir. Intenta descargar la imagen.')
         }
     }
 
