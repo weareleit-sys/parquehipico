@@ -1,10 +1,10 @@
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { NextRequest, NextResponse } from 'next/server';
 
-// 👇 AQUÍ ESTÁ EL CAMBIO: Ponemos la llave directo.
-// Así no depende de si el servidor leyó o no el archivo .env
+// 👇 MODO PRUEBA: Usando credenciales de TEST para testing
+// Para volver a producción, cambiar por: APP_USR-1382387818783144-010810-323f5437e8d582832d3680fd1e9299db-3115909271
 const client = new MercadoPagoConfig({
-    accessToken: 'APP_USR-1382387818783144-010810-323f5437e8d582832d3680fd1e9299db-3115909271'
+    accessToken: 'TEST-1382387818783144-010810-1b12f39f487698b3b194dac3dcbca247-3115909271'
 });
 
 export async function POST(req: NextRequest) {
