@@ -92,7 +92,8 @@ export default function EventoCard({ evento }: EventoProps) {
             attendees: attendees,
             eventName: evento.titulo,
             qtyHombres,
-            qtyMujeres
+            qtyMujeres,
+            totalPrice // ← Incluir el total real para dividir correctamente
         }));
 
         try {

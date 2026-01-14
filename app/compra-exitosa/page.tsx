@@ -24,9 +24,9 @@ function CompraExitosaContent() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email: orderData.email,
-                        attendees: orderData.attendees, // Array de nombres
+                        attendees: orderData.attendees,
                         payment_id: paymentId,
-                        total: 5000, // Esto debería venir del localStorage idealmente, o del backend, por ahora dejamos 5000 ref
+                        total: orderData.totalPrice || 0, // Usar el total real del localStorage
                         eventName: orderData.eventName
                     })
                 })
