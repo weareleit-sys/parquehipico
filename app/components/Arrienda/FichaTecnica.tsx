@@ -26,7 +26,7 @@ const FichaTecnica = () => {
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4">
-                            <Link href="https://wa.me/56971636195" target="_blank" className="inline-flex justify-center items-center bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-8 rounded-full transition-all hover:scale-105 shadow-lg shadow-green-500/20">
+                            <Link href="https://wa.me/56993330628" target="_blank" className="inline-flex justify-center items-center bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-8 rounded-full transition-all hover:scale-105 shadow-lg shadow-green-500/20">
                                 <FaWhatsapp className="mr-2 text-xl" />
                                 Cotizar por WhatsApp
                             </Link>

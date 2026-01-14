@@ -99,7 +99,7 @@ export default function UnetePage() {
                     </p>
 
                     <a
-                        href="https://wa.me/56971636195?text=Hola,%20me%20interesa%20participar%20en%20los%20eventos%20del%20Parque.%20Mi%20rubro%20es..."
+                        href="https://wa.me/56993330628?text=Hola,%20me%20interesa%20participar%20en%20los%20eventos%20del%20Parque.%20Mi%20rubro%20es..."
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-3 bg-green-600 hover:bg-green-500 text-white font-bold py-4 px-10 rounded-full shadow-lg shadow-green-900/20 transition-all transform hover:scale-105"

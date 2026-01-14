@@ -4,7 +4,7 @@ import { FaWhatsapp } from 'react-icons/fa';
 const FloatingWhatsApp = () => {
     return (
         <a
-            href="https://wa.me/56971636195"
+            href="https://wa.me/56993330628"
             target="_blank"
             rel="noopener noreferrer"
             className="fixed bottom-8 right-8 z-50 flex items-center group"

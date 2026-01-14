@@ -63,7 +63,7 @@ export default function Header() {
 
         {/* Botón CTA Desktop */}
         <a
-          href="https://wa.me/56971636195?text=Hola,%20me%20interesa%20conocer%20más%20sobre%20el%20Parque%20Hípico%20La%20Montaña"
+          href="https://wa.me/56993330628?text=Hola,%20me%20interesa%20conocer%20más%20sobre%20el%20Parque%20Hípico%20La%20Montaña"
           target="_blank"
           rel="noopener noreferrer"
           className="hidden md:inline-flex items-center justify-center px-6 py-2 text-sm font-bold text-slate-900 transition-all bg-amber-500 rounded hover:bg-white hover:text-amber-600 shadow-md transform hover:-translate-y-0.5"
@@ -127,7 +127,7 @@ export default function Header() {
               Únete
             </Link>
             <a
-              href="https://wa.me/56971636195"
+              href="https://wa.me/56993330628"
               target="_blank"
               rel="noopener noreferrer"
               className="mt-4 text-center w-full py-3 text-base font-bold text-slate-900 bg-amber-500 rounded hover:bg-white hover:text-amber-600 transition-colors"

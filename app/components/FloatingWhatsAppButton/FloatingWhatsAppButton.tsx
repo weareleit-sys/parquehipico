@@ -29,7 +29,7 @@ export default function FloatingWhatsAppButton() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const whatsappUrl = 'https://wa.me/56971636195?text=Hola,%20quiero%20coordinar%20carreras%20y%20eventos%20en%20Parque%20H%C3%ADpico%20La%20Monta%C3%B1a.';
+  const whatsappUrl = 'https://wa.me/56993330628?text=Hola,%20quiero%20coordinar%20carreras%20y%20eventos%20en%20Parque%20H%C3%ADpico%20La%20Monta%C3%B1a.';
 
   return (
     <a

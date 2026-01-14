@@ -369,7 +369,7 @@ export default function EventoCard({ evento }: EventoProps) {
                             </button>
                         ) : (
                             <a
-                                href={`https://wa.me/56971636195?text=Hola,%20tengo%20dudas%20sobre%20entradas%20para%20${evento.titulo}`}
+                                href={`https://wa.me/56993330628?text=Hola,%20tengo%20dudas%20sobre%20entradas%20para%20${evento.titulo}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-300 border border-slate-700 hover:border-green-500"

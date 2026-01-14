@@ -73,7 +73,7 @@ const Navbar = () => {
                     ))}
 
                     <a
-                        href="https://wa.me/56971636195?text=Hola,%20quisiera%20cotizar%20un%20evento%20en%20el%20Parque"
+                        href="https://wa.me/56993330628?text=Hola,%20quisiera%20cotizar%20un%20evento%20en%20el%20Parque"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-900 font-extrabold text-sm py-3 px-6 rounded-full shadow-lg hover:shadow-amber-500/20 transition-all transform hover:-translate-y-1"
@@ -115,7 +115,7 @@ const Navbar = () => {
                     <div className="h-2"></div>
 
                     <a
-                        href="https://wa.me/56971636195?text=Hola,%20quisiera%20cotizar%20un%20evento"
+                        href="https://wa.me/56993330628?text=Hola,%20quisiera%20cotizar%20un%20evento"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="bg-amber-500 text-slate-900 font-extrabold text-lg py-4 px-12 rounded-full shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 w-full max-w-xs mx-auto"

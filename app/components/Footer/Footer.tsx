@@ -34,7 +34,7 @@ export default function Footer() {
               <li><Link href="/eventos" className="hover:text-amber-500 transition-colors">Calendario de Eventos</Link></li>
               <li><Link href="/arrienda" className="hover:text-amber-500 transition-colors">Arriendo para Empresas</Link></li>
               <li><Link href="/inicio#historia" className="hover:text-amber-500 transition-colors">Nuestra Historia</Link></li>
-              <li><Link href="https://wa.me/56971636195" className="hover:text-amber-500 transition-colors">Contacto</Link></li>
+              <li><Link href="https://wa.me/56993330628" className="hover:text-amber-500 transition-colors">Contacto</Link></li>
             </ul>
           </div>
 
@@ -60,7 +60,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <FaPhoneAlt className="text-amber-500 flex-shrink-0" />
-                <a href="tel:+56971636195" className="hover:text-white transition-colors">+56 9 7163 6195</a>
+                <a href="tel:+56993330628" className="hover:text-white transition-colors">+56 9 7163 6195</a>
               </li>
               <li className="flex items-center gap-3">
                 <FaEnvelope className="text-amber-500 flex-shrink-0" />

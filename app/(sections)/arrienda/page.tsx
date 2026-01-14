@@ -96,7 +96,7 @@ export default function ArriendaPage() {
                         Agenda una visita técnica al predio. Atendemos productoras y particulares.
                     </p>
                     <a
-                        href="https://wa.me/56971636195?text=Hola,%20soy%20productor/a%20y%20necesito%20cotizar%20arriendo%20del%20Parque"
+                        href="https://wa.me/56993330628?text=Hola,%20soy%20productor/a%20y%20necesito%20cotizar%20arriendo%20del%20Parque"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-3 bg-amber-600 hover:bg-amber-500 text-white font-bold py-4 px-8 rounded-full shadow-lg shadow-amber-900/20 transition-all transform hover:scale-105"
