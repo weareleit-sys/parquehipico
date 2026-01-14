@@ -113,10 +113,12 @@ export default function EventoCard({ evento }: EventoProps) {
                 body: JSON.stringify({
                     id: `evento-${evento.id}-mixed`,
                     title: title,
-                    quantity: 1, // Una transacción
+                    quantity: 1,
                     unit_price: totalPrice,
                     name: attendees[0].nombre,
-                    email: buyerEmail
+                    email: buyerEmail,
+                    attendees: attendees, // ← Enviar asistentes al servidor
+                    eventName: evento.titulo // ← Enviar nombre del evento
                 })
             });
 
