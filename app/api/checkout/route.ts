@@ -1,10 +1,9 @@
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { NextRequest, NextResponse } from 'next/server';
 
-// 👇 MODO PRUEBA: Usando credenciales de TEST para testing
-// Para volver a producción, cambiar por: APP_USR-1382387818783144-010810-323f5437e8d582832d3680fd1e9299db-3115909271
+// 👇 MODO PRUEBA: Credenciales de prueba de "Parque Hipico Web"
 const client = new MercadoPagoConfig({
-    accessToken: 'TEST-1382387818783144-010810-1b12f39f487698b3b194dac3dcbca247-3115909271'
+    accessToken: 'APP_USR-7069132968758424-011408-9924e6599cc23ec0d29c6c3d14f4b3f3-3134094374'
 });
 
 export async function POST(req: NextRequest) {
