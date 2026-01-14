@@ -38,8 +38,8 @@ export async function POST(req: NextRequest) {
                 },
                 back_urls: {
                     success: `${baseUrl}/compra-exitosa`,
-                    failure: `${baseUrl}/test-pago?status=failure`,
-                    pending: `${baseUrl}/test-pago?status=pending`,
+                    failure: `${baseUrl}/eventos?status=failure`,
+                    pending: `${baseUrl}/eventos?status=pending`,
                 },
                 auto_return: 'approved',
             },
