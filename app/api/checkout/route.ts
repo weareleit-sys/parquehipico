@@ -2,9 +2,9 @@ import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../lib/supabase';
 
-// 👇 MODO PRUEBA: Credenciales de prueba de "Parque Hipico Web"
+// Usar variable de entorno para el token (más seguro)
 const client = new MercadoPagoConfig({
-    accessToken: 'APP_USR-7069132968758424-011408-9924e6599cc23ec0d29c6c3d14f4b3f3-3134094374'
+    accessToken: process.env.MP_ACCESS_TOKEN || ''
 });
 
 export async function POST(req: NextRequest) {
