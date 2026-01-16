@@ -64,7 +64,6 @@ const Navbar = () => {
         }`;
 
     return (
-    return (
         <>
             <nav className={navClasses}>
                 <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-50">
