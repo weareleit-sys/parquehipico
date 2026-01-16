@@ -20,7 +20,7 @@ const ParallaxLogo = () => {
 
     let opacity = 0;
     if (scrollY > startFade) {
-        opacity = Math.min((scrollY - startFade) / (endFade - startFade), 1);
+        opacity = Math.min((scrollY - startFade) / (endFade - startFade), 1) * 0.85;
     }
 
     if (opacity <= 0) return null;
@@ -33,11 +33,11 @@ const ParallaxLogo = () => {
                 zIndex: 5,
             }}
         >
-            {/* Imagen con tamaño reducido en móvil */}
+            {/* Logo casi completo visible, tamaño optimizado para móvil */}
             <img
                 src="/logo-bg.png"
                 alt=""
-                className="w-[75%] h-auto object-contain md:w-[75vw] max-w-[900px]"
+                className="w-[95vw] h-auto object-contain md:w-[85vw] max-w-[1100px]"
             />
         </div>
     );
