@@ -109,8 +109,7 @@ const Navbar = () => {
             </div>
 
             {/* --- MENÚ MÓVIL OVERLAY --- */}
-            {/* CORRECCIÓN AQUÍ: justify-start + pt-32 para que no choque con el header */}
-            <div className={`fixed inset-0 bg-slate-950 z-40 flex flex-col justify-start items-center pt-32 transition-all duration-500 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
+            <div className={`fixed inset-0 bg-slate-950 z-[60] flex flex-col justify-start items-center pt-32 transition-all duration-500 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
 
                 {/* Fondos decorativos */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500 rounded-full blur-[100px] opacity-10 pointer-events-none"></div>

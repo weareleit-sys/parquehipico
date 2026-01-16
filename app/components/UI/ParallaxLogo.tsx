@@ -33,11 +33,11 @@ const ParallaxLogo = () => {
                 zIndex: 5,
             }}
         >
-            {/* Imagen que cubre toda la pantalla, especialmente en móvil */}
+            {/* Imagen con tamaño reducido en móvil */}
             <img
                 src="/logo-bg.png"
                 alt=""
-                className="w-full h-full object-cover md:object-contain md:w-[100vw] md:h-auto"
+                className="w-[75%] h-auto object-contain md:w-[75vw] max-w-[900px]"
             />
         </div>
     );
