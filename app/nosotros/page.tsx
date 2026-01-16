@@ -115,7 +115,7 @@ export default function NosotrosPage() {
                         <div className="h-[600px] w-full bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl relative">
                             {/* IFRAME DE GOOGLE MAPS */}
                             <iframe
-                                src="https://maps.google.com/maps?q=S-743%2C%20Araucan%C3%ADa&t=&z=13&ie=UTF8&iwloc=&output=embed"
+                                src="https://maps.google.com/maps?q=Cancha+Hipica+La+Monta%C3%B1a&t=&z=15&ie=UTF8&iwloc=&output=embed"
                                 width="100%"
                                 height="100%"
                                 style={{ border: 0 }}

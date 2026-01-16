@@ -2,9 +2,10 @@ import React from 'react';
 
 const Galeria = () => {
     return (
-        <section className="bg-slate-950 py-20 px-6">
-            <div className="max-w-7xl mx-auto">
+        <section className="bg-slate-900 py-20 px-6 relative overflow-hidden">
+            <div className="max-w-7xl mx-auto relative z-10">
                 <div className="text-center mb-16">
+                    <span className="text-amber-500 font-bold uppercase tracking-wider text-sm mb-2 block">Nuestras Instalaciones</span>
                     <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4">Conoce Nuestro Recinto</h2>
                     <p className="text-lg text-slate-400 max-w-2xl mx-auto">
                         Un recorrido visual por nuestras 3 hectáreas de tradición y modernidad.

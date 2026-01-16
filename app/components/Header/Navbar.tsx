@@ -15,48 +15,64 @@ const navLinks = [
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [hidden, setHidden] = useState(false);
+    const [lastScrollY, setLastScrollY] = useState(0);
 
-    // 1. Detectar Scroll
+    // 1. Detectar Scroll - Ocultar al bajar, mostrar al subir
     useEffect(() => {
         const handleScroll = () => {
-            if (window.scrollY > 50) {
-                setScrolled(true);
-            } else {
+            const currentScrollY = window.scrollY;
+
+            // Si estamos arriba del todo, siempre mostrar
+            if (currentScrollY < 100) {
                 setScrolled(false);
+                setHidden(false);
+            } else {
+                setScrolled(true);
+                // Ocultar al bajar, mostrar al subir
+                if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                    setHidden(true); // Bajando - ocultar
+                } else {
+                    setHidden(false); // Subiendo - mostrar
+                }
             }
+
+            setLastScrollY(currentScrollY);
         };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    }, [lastScrollY]);
 
-    // 2. Bloquear Scroll del Body cuando el menú está abierto (Evita el "juego" de fondo)
+    // 2. Bloquear Scroll del Body cuando el menú está abierto
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
+            setHidden(false); // Siempre mostrar cuando el menú está abierto
         } else {
             document.body.style.overflow = 'unset';
         }
     }, [isOpen]);
 
-    // Clases dinámicas: 
-    // Si el menú está abierto (isOpen), forzamos fondo transparente para que se fusione con el overlay
-    const navClasses = scrolled && !isOpen
-        ? "fixed top-0 left-0 w-full z-50 bg-slate-950/90 backdrop-blur-md py-4 shadow-lg transition-all duration-300 border-b border-white/5"
-        : "fixed top-0 left-0 w-full z-50 bg-transparent py-6 transition-all duration-300"; // Transparente si está arriba O si el menú está abierto
+    // Clases dinámicas con transición de hide/show
+    const navClasses = `fixed top-0 left-0 w-full z-50 transition-all duration-300 ${hidden && !isOpen ? '-translate-y-full' : 'translate-y-0'
+        } ${scrolled && !isOpen
+            ? "bg-slate-950/90 backdrop-blur-md py-4 shadow-lg border-b border-white/5"
+            : "bg-transparent py-6"
+        }`;
 
     return (
         <nav className={navClasses}>
             <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-50">
 
-                {/* LOGO */}
-                <Link href="/inicio" className="flex items-center group" onClick={() => setIsOpen(false)}>
-                    <div className="relative w-10 h-10 md:w-14 md:h-14 flex items-center justify-center mr-3 transition-transform group-hover:scale-105">
-                        <img src="/logo-main.png" alt="Parque Hípico Logo" className="w-full h-full object-contain drop-shadow-md" />
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="text-white font-extrabold text-lg md:text-xl leading-none tracking-widest uppercase drop-shadow-sm">Parque Hípico</span>
-                        <span className="text-amber-500 text-xs md:text-sm font-serif italic tracking-wide">La Montaña</span>
-                    </div>
+                {/* LOGO - Texto con línea decorativa */}
+                <Link href="/inicio" className="flex items-center gap-3 group" onClick={() => setIsOpen(false)}>
+                    <span className="text-white font-extrabold text-base md:text-lg leading-none tracking-widest uppercase drop-shadow-lg">
+                        PARQUE HÍPICO
+                    </span>
+                    <span className="hidden sm:block w-6 md:w-8 h-[2px] bg-amber-500"></span>
+                    <span className="text-amber-500 text-base md:text-lg font-serif italic tracking-wide drop-shadow-lg group-hover:text-amber-400 transition-colors">
+                        La Montaña
+                    </span>
                 </Link>
 
                 {/* MENÚ DE ESCRITORIO */}

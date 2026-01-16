@@ -4,9 +4,9 @@ import { FaTools, FaMapMarkedAlt, FaHorseHead } from 'react-icons/fa';
 
 const Servicios = () => {
     return (
-        <section className="bg-slate-950 py-24 px-6 relative overflow-hidden">
+        <section className="bg-slate-900 py-24 px-6 relative overflow-hidden">
             {/* Decoración de fondo sutil */}
-            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-slate-950 opacity-50 z-0"></div>
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800 via-slate-900 to-slate-900 opacity-50 z-0"></div>
 
             <div className="max-w-7xl mx-auto relative z-10">
                 {/* Encabezado */}

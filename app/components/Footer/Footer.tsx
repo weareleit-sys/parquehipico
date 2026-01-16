@@ -3,7 +3,7 @@ import { FaInstagram, FaFacebookF, FaYoutube, FaTiktok, FaMapMarkerAlt, FaPhoneA
 
 export default function Footer() {
   return (
-    <footer className="bg-black text-slate-300 py-16 border-t border-slate-900 font-sans">
+    <footer className="bg-black text-slate-300 py-16 border-t border-slate-900 font-sans relative z-10">
       <div className="container mx-auto px-6 max-w-7xl">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
 
@@ -18,11 +18,18 @@ export default function Footer() {
               Un espacio versátil diseñado para crear experiencias inolvidables.
             </p>
             <div className="flex gap-4">
-              {[FaInstagram, FaFacebookF, FaYoutube, FaTiktok].map((Icon, i) => (
-                <a key={i} href="#" className="bg-slate-900 p-3 rounded-full hover:bg-amber-500 hover:text-black transition-all duration-300">
-                  <Icon size={18} />
-                </a>
-              ))}
+              <a href="https://www.instagram.com/parquehipico.lamontana/" target="_blank" rel="noopener noreferrer" className="bg-slate-900 p-3 rounded-full hover:bg-amber-500 hover:text-black transition-all duration-300">
+                <FaInstagram size={18} />
+              </a>
+              <a href="https://www.facebook.com/profile.php?id=61579392327345" target="_blank" rel="noopener noreferrer" className="bg-slate-900 p-3 rounded-full hover:bg-amber-500 hover:text-black transition-all duration-300">
+                <FaFacebookF size={18} />
+              </a>
+              <a href="https://www.youtube.com/@parquehipicolamontana" target="_blank" rel="noopener noreferrer" className="bg-slate-900 p-3 rounded-full hover:bg-amber-500 hover:text-black transition-all duration-300">
+                <FaYoutube size={18} />
+              </a>
+              <a href="https://www.tiktok.com/@parquehipicolamontana" target="_blank" rel="noopener noreferrer" className="bg-slate-900 p-3 rounded-full hover:bg-amber-500 hover:text-black transition-all duration-300">
+                <FaTiktok size={18} />
+              </a>
             </div>
           </div>
 
@@ -33,7 +40,7 @@ export default function Footer() {
               <li><Link href="/inicio" className="hover:text-amber-500 transition-colors">Inicio</Link></li>
               <li><Link href="/eventos" className="hover:text-amber-500 transition-colors">Calendario de Eventos</Link></li>
               <li><Link href="/arrienda" className="hover:text-amber-500 transition-colors">Arriendo para Empresas</Link></li>
-              <li><Link href="/inicio#historia" className="hover:text-amber-500 transition-colors">Nuestra Historia</Link></li>
+              <li><Link href="/nosotros" className="hover:text-amber-500 transition-colors">Nuestra Historia</Link></li>
               <li><Link href="https://wa.me/56993330628" className="hover:text-amber-500 transition-colors">Contacto</Link></li>
             </ul>
           </div>
@@ -56,15 +63,22 @@ export default function Footer() {
             <ul className="space-y-6 text-sm">
               <li className="flex items-start gap-3">
                 <FaMapMarkerAlt className="text-amber-500 mt-1 flex-shrink-0" />
-                <span>Km 4.5 Camino Villarrica - Loncoche<br />Región de la Araucanía, Chile</span>
+                <a
+                  href="https://www.google.com/maps/search/Cancha+Hipica+La+Monta%C3%B1a"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-amber-500 transition-colors"
+                >
+                  Nancahue S-743, PC G, Loncoche<br />Región de la Araucanía, Chile
+                </a>
               </li>
               <li className="flex items-center gap-3">
                 <FaPhoneAlt className="text-amber-500 flex-shrink-0" />
-                <a href="tel:+56993330628" className="hover:text-white transition-colors">+56 9 7163 6195</a>
+                <a href="https://wa.me/56993330628" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">+56 9 9333 0628</a>
               </li>
               <li className="flex items-center gap-3">
                 <FaEnvelope className="text-amber-500 flex-shrink-0" />
-                <a href="mailto:contacto@parquehipico.cl" className="hover:text-white transition-colors">contacto@parquehipico.cl</a>
+                <a href="mailto:weareleit@gmail.com" className="hover:text-white transition-colors">weareleit@gmail.com</a>
               </li>
             </ul>
           </div>
@@ -73,7 +87,7 @@ export default function Footer() {
 
         {/* COPYRIGHT */}
         <div className="border-t border-slate-900 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-600">
-          <p>© 2025 Parque Hípico La Montaña. Todos los derechos reservados.</p>
+          <p>© 2026 Parque Hípico La Montaña. Todos los derechos reservados.</p>
           <p className="mt-2 md:mt-0 flex items-center gap-1">
             Digital Partner <span className="text-slate-400 font-bold">ELEIT TECH</span>
           </p>
