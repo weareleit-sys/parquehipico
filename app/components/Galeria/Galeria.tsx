@@ -6,7 +6,7 @@ const Galeria = () => {
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-16">
                     <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4">Conoce Nuestro Recinto</h2>
-                    <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                    <p className="text-lg text-slate-400 max-w-2xl mx-auto">
                         Un recorrido visual por nuestras 3 hectáreas de tradición y modernidad.
                     </p>
                 </div>
@@ -14,48 +14,65 @@ const Galeria = () => {
                 {/* BENTO GRID LAYOUT */}
                 <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[600px]">
 
-                    {/* FOTO 1: Vista Aérea (Grande) */}
+                    {/* FOTO 1: Interior del Galpón (Grande) */}
                     <div className="md:col-span-2 md:row-span-2 relative rounded-3xl overflow-hidden group min-h-[300px]">
-                        {/* Cuando tengas la foto aérea, descomenta la línea de abajo y borra el div gris */}
-                        {/* <img src="/images/aerea.jpg" alt="Vista Aérea" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" /> */}
-                        <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400 font-bold text-xl border-2 border-dashed border-slate-300">
-                            📸 FOTO 1: Vista Aérea
-                        </div>
-
+                        <img
+                            src="/images/eventos/galpon-interior.jpg"
+                            alt="Interior del Galpón"
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
                         <div className="absolute bottom-0 left-0 p-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent w-full">
-                            <span className="text-white font-bold text-2xl">Vista Panorámica</span>
-                            <p className="text-gray-200 text-sm mt-1">3 Hectáreas de naturaleza</p>
+                            <span className="text-white font-bold text-2xl">Galpón Principal</span>
+                            <p className="text-gray-200 text-sm mt-1">Escenario, pantallas y capacidad para 2.000 personas</p>
                         </div>
                     </div>
 
-                    {/* FOTO 2: Entrada */}
+                    {/* FOTO 2: Pista de Carreras */}
                     <div className="md:col-span-1 md:row-span-1 relative rounded-3xl overflow-hidden group min-h-[200px]">
-                        <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500 font-bold border-2 border-dashed border-slate-600">
-                            📸 FOTO 2: Entrada
-                        </div>
+                        <img
+                            src="/images/eventos/pista-carreras.jpg"
+                            alt="Pista de Carreras"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
                         <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-all"></div>
                         <div className="absolute bottom-4 left-4">
-                            <span className="text-white font-bold bg-black/50 px-3 py-1 rounded-full text-sm backdrop-blur-sm">Acceso Principal</span>
+                            <span className="text-white font-bold bg-black/50 px-3 py-1 rounded-full text-sm backdrop-blur-sm">Pista de Carreras</span>
                         </div>
                     </div>
 
-                    {/* FOTO 3: Tribunas */}
+                    {/* FOTO 3: Premiación */}
                     <div className="md:col-span-1 md:row-span-1 relative rounded-3xl overflow-hidden group min-h-[200px]">
-                        <div className="w-full h-full bg-slate-300 flex items-center justify-center text-slate-500 font-bold border-2 border-dashed border-slate-400">
-                            📸 FOTO 3: Tribunas
-                        </div>
+                        <img
+                            src="/images/eventos/premiacion-caballo.jpg"
+                            alt="Premiación"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
                         <div className="absolute bottom-4 left-4">
-                            <span className="text-slate-900 font-bold bg-white/80 px-3 py-1 rounded-full text-sm backdrop-blur-sm">Tribunas</span>
+                            <span className="text-white font-bold bg-amber-500/90 px-3 py-1 rounded-full text-sm backdrop-blur-sm">🏆 Premiaciones</span>
                         </div>
                     </div>
 
-                    {/* FOTO 4: Nocturna / Evento */}
-                    <div className="md:col-span-2 md:row-span-1 relative rounded-3xl overflow-hidden group min-h-[200px]">
-                        <div className="w-full h-full bg-slate-900 flex items-center justify-center text-slate-600 font-bold border-2 border-dashed border-slate-700">
-                            📸 FOTO 4: Iluminación / Nocturna
+                    {/* FOTO 4: Gastronomía (Asado) */}
+                    <div className="md:col-span-1 md:row-span-1 relative rounded-3xl overflow-hidden group min-h-[200px]">
+                        <img
+                            src="/images/eventos/asado-palo.jpg"
+                            alt="Asado al Palo"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <div className="absolute bottom-0 left-0 p-4 bg-gradient-to-t from-black/80 to-transparent w-full">
+                            <span className="text-white font-bold">🔥 Gastronomía Tradicional</span>
                         </div>
-                        <div className="absolute bottom-0 left-0 p-6 bg-gradient-to-t from-black/80 to-transparent w-full">
-                            <span className="text-white font-bold text-xl">Eventos Nocturnos</span>
+                    </div>
+
+                    {/* FOTO 5: Ambiente y Celebración */}
+                    <div className="md:col-span-1 md:row-span-1 relative rounded-3xl overflow-hidden group min-h-[200px]">
+                        <img
+                            src="/images/eventos/grupo-celebrando.jpg"
+                            alt="Grupo Celebrando"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <div className="absolute bottom-0 left-0 p-4 bg-gradient-to-t from-black/80 to-transparent w-full">
+                            <span className="text-white font-bold">🎉 Ambiente Único</span>
                         </div>
                     </div>
 
