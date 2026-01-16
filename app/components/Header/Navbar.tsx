@@ -54,8 +54,11 @@ const Navbar = () => {
     }, [isOpen]);
 
     // Clases dinámicas con transición de hide/show
-    const navClasses = `fixed top-0 left-0 w-full z-50 transition-all duration-300 ${hidden && !isOpen ? '-translate-y-full' : 'translate-y-0'
-        } ${scrolled && !isOpen
+    // Clases dinámicas con transición de hide/show
+    // IMPORTANTE: Cuando isOpen es true, NO aplicamos ninguna clase translate para evitar crear un containing block
+    // que rompa el position: fixed del menú móvil hijo.
+    const navClasses = `fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isOpen ? '' : (hidden ? '-translate-y-full' : 'translate-y-0')
+        } ${(scrolled || isOpen)
             ? "bg-slate-950/90 backdrop-blur-md py-4 shadow-lg border-b border-white/5"
             : "bg-transparent py-6"
         }`;

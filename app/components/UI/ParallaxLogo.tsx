@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from 'react';
 
-const ParallaxLogo = () => {
+interface ParallaxLogoProps {
+    maxOpacity?: number;
+}
+
+const ParallaxLogo = ({ maxOpacity = 0.85 }: ParallaxLogoProps) => {
     const [scrollY, setScrollY] = useState(0);
 
     useEffect(() => {
@@ -20,7 +24,7 @@ const ParallaxLogo = () => {
 
     let opacity = 0;
     if (scrollY > startFade) {
-        opacity = Math.min((scrollY - startFade) / (endFade - startFade), 1) * 0.85;
+        opacity = Math.min((scrollY - startFade) / (endFade - startFade), 1) * maxOpacity;
     }
 
     if (opacity <= 0) return null;

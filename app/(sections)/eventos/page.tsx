@@ -7,24 +7,35 @@ export const metadata = {
     description: 'Próximas carreras, fiestas y eventos en Villarrica.',
 };
 
+import ParallaxLogo from '@/components/UI/ParallaxLogo';
+
 export default function EventosPage() {
     return (
-        // Mantenemos el padding-top (pt-24) para que el Navbar fijo no tape el contenido
-        <main className="min-h-screen bg-slate-950 pt-24">
+        <main className="min-h-screen bg-slate-950">
+            {/* HERO SECTION CON PARALLAX */}
+            <ParallaxLogo maxOpacity={0.15} />
 
-            {/* Hero de Eventos */}
-            <section className="relative py-24 bg-slate-900 border-b border-slate-800">
-                <div className="absolute inset-0 bg-[url('/pattern-dark.png')] opacity-5"></div>
-                <div className="container mx-auto px-4 max-w-7xl text-center relative z-10">
-                    <span className="text-amber-500 font-bold tracking-widest uppercase text-sm mb-2 block">
-                        Temporada 2025
+            {/* HERO VISUAL PRINCIPAL */}
+            <section className="relative h-[60vh] md:h-[70vh] w-full flex items-center justify-center overflow-hidden border-b border-slate-800">
+                <div className="absolute inset-0">
+                    <img
+                        src="/eventos/cartelera-bg.jpg"
+                        alt="Cartelera de Eventos"
+                        className="w-full h-full object-cover object-center brightness-[0.4]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+                </div>
+                <div className="relative z-10 text-center px-4 max-w-5xl translate-y-8">
+                    <span className="text-amber-500 font-bold tracking-[0.2em] uppercase text-sm md:text-base mb-6 block animate-fade-in-up">
+                        TEMPORADA 2026
                     </span>
-                    <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6">
-                        Cartelera Oficial
+                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white mb-8 tracking-tight leading-none">
+                        CARTELERA <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">OFICIAL</span>
                     </h1>
-                    <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+                    <p className="text-xl md:text-2xl text-slate-300 font-light max-w-2xl mx-auto leading-relaxed">
                         Compra tus e-tickets de forma segura o reserva tus entradas para las carreras.
-                        <span className="block mt-2 text-slate-500 text-sm">Operado por Parque Hípico La Montaña SpA</span>
+                        <span className="block mt-2 text-slate-400 text-sm">Operado por Parque Hípico La Montaña SpA</span>
                     </p>
                 </div>
             </section>

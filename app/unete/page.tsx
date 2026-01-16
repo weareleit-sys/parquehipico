@@ -39,20 +39,35 @@ const categorias = [
     }
 ];
 
+import ParallaxLogo from '@/components/UI/ParallaxLogo';
+
 export default function UnetePage() {
     return (
-        <main className="min-h-screen bg-slate-950 pt-24">
+        <main className="min-h-screen bg-slate-950">
 
-            {/* HERO SECTION */}
-            <section className="relative py-20 bg-gradient-to-b from-slate-900 to-slate-950 border-b border-slate-800">
-                <div className="container mx-auto px-4 max-w-4xl text-center">
-                    <span className="text-amber-500 font-bold tracking-widest uppercase text-sm mb-2 block">
-                        Convocatoria Abierta
+            {/* HERO SECTION CON PARALLAX */}
+            <ParallaxLogo maxOpacity={0.15} />
+
+            {/* HERO VISUAL PRINCIPAL */}
+            <section className="relative h-[60vh] md:h-[70vh] w-full flex items-center justify-center overflow-hidden border-b border-slate-800">
+                <div className="absolute inset-0">
+                    <img
+                        src="/arrienda/hero-bg.jpg"
+                        alt="Únete al Parque"
+                        className="w-full h-full object-cover object-center brightness-[0.4]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+                </div>
+
+                <div className="relative z-10 text-center px-4 max-w-5xl translate-y-8">
+                    <span className="text-amber-500 font-bold tracking-[0.2em] uppercase text-sm md:text-base mb-6 block animate-fade-in-up">
+                        CONVOCATORIA ABIERTA
                     </span>
-                    <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6">
-                        Únete a los Eventos
+                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white mb-8 tracking-tight leading-none">
+                        ÚNETE A <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">LOS EVENTOS</span>
                     </h1>
-                    <p className="text-xl text-slate-400">
+                    <p className="text-xl md:text-2xl text-slate-300 font-light max-w-2xl mx-auto leading-relaxed">
                         Sé parte de la experiencia del Parque Hípico La Montaña. Buscamos socios estratégicos para elevar el nivel de cada jornada.
                     </p>
                 </div>

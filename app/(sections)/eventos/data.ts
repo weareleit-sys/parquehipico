@@ -31,7 +31,7 @@ export const eventos: Evento[] = [
             general: undefined
         },
         features: ["Carreras en vivo", "Comida Típica", "Música Chilena"],
-        imagen: "/eventos/carreras-2025.png",
+        imagen: "/eventos/carreras-chilena.jpg",
         destacado: true,
         estado: "disponible",
         tipoVenta: 'ticket'
@@ -49,7 +49,7 @@ export const eventos: Evento[] = [
             general: undefined
         },
         features: ["Gastronomía", "Artesanía", "Show Folklórico"],
-        imagen: "/eventos/feria-2025.png",
+        imagen: "/eventos/feria-costumbrista.jpg",
         destacado: false,
         estado: "disponible",
         tipoVenta: 'ticket'
@@ -67,7 +67,7 @@ export const eventos: Evento[] = [
             general: undefined
         },
         features: ["Cena Romántica", "Música en Vivo", "Fiesta Bailable"],
-        imagen: "/eventos/san-valentin-2025.png",
+        imagen: "/eventos/san-valentin.jpg",
         destacado: true,
         estado: "disponible",
         tipoVenta: 'ticket'
