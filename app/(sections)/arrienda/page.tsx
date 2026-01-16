@@ -71,7 +71,7 @@ export default function ArriendaPage() {
             </section>
 
             {/* Tipos de Eventos */}
-            <section className="py-20 bg-slate-950">
+            <section className="py-20 bg-slate-950 relative z-10">
                 <div className="container mx-auto px-4 max-w-7xl">
                     <div className="grid md:grid-cols-3 gap-8">
                         {tiposEventos.map(tipo => (
@@ -101,7 +101,7 @@ export default function ArriendaPage() {
             </section>
 
             {/* Specs Grid */}
-            <section className="py-20 bg-slate-900 border-y border-slate-800">
+            <section className="py-20 bg-slate-900 border-y border-slate-800 relative z-10">
                 <div className="container mx-auto px-4 max-w-7xl">
                     <h2 className="text-3xl font-bold text-white mb-12 text-center">Ficha Técnica</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -130,7 +130,7 @@ export default function ArriendaPage() {
             </section>
 
             {/* Galería del Recinto */}
-            <section className="py-20 bg-slate-950">
+            <section className="py-20 bg-slate-950 relative z-10">
                 <div className="container mx-auto px-4 max-w-7xl">
                     <h2 className="text-3xl font-bold text-white mb-4 text-center">Conoce Nuestro Espacio</h2>
                     <p className="text-slate-400 text-center mb-12 max-w-2xl mx-auto">
@@ -157,7 +157,7 @@ export default function ArriendaPage() {
             </section>
 
             {/* CTA Final */}
-            <section className="py-24 bg-slate-950 relative overflow-hidden">
+            <section className="py-24 bg-slate-950 relative overflow-hidden z-10">
                 {/* Efecto de luz de fondo */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-500/10 blur-[100px] rounded-full"></div>
 

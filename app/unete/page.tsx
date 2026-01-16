@@ -74,7 +74,7 @@ export default function UnetePage() {
             </section>
 
             {/* GRILLA DE CATEGORÍAS */}
-            <section className="py-20">
+            <section className="py-20 relative z-10">
                 <div className="container mx-auto px-4 max-w-7xl">
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 justify-center">
                         {categorias.map((cat) => (
@@ -101,7 +101,7 @@ export default function UnetePage() {
             </section>
 
             {/* CTA WHATSAPP */}
-            <section className="py-20 bg-slate-900 relative overflow-hidden">
+            <section className="py-20 bg-slate-900 relative overflow-hidden z-10">
                 {/* Decoración de fondo */}
                 <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/5 blur-[100px] rounded-full"></div>
 

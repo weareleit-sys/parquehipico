@@ -41,7 +41,7 @@ export default function EventosPage() {
             </section>
 
             {/* Grid de Eventos */}
-            <section className="py-20">
+            <section className="py-20 relative z-10">
                 <div className="container mx-auto px-4 max-w-7xl">
                     {eventos.length > 0 ? (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
