@@ -64,55 +64,58 @@ const Navbar = () => {
         }`;
 
     return (
-        <nav className={navClasses}>
-            <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-50">
+    return (
+        <>
+            <nav className={navClasses}>
+                <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-50">
 
-                {/* LOGO - Texto con línea decorativa */}
-                <Link href="/inicio" className="flex items-center gap-3 group" onClick={() => setIsOpen(false)}>
-                    <span className="text-white font-extrabold text-base md:text-lg leading-none tracking-widest uppercase drop-shadow-lg">
-                        PARQUE HÍPICO
-                    </span>
-                    <span className="hidden sm:block w-6 md:w-8 h-[2px] bg-amber-500"></span>
-                    <span className="text-amber-500 text-base md:text-lg font-serif italic tracking-wide drop-shadow-lg group-hover:text-amber-400 transition-colors">
-                        La Montaña
-                    </span>
-                </Link>
+                    {/* LOGO - Texto con línea decorativa */}
+                    <Link href="/inicio" className="flex items-center gap-3 group" onClick={() => setIsOpen(false)}>
+                        <span className="text-white font-extrabold text-base md:text-lg leading-none tracking-widest uppercase drop-shadow-lg">
+                            PARQUE HÍPICO
+                        </span>
+                        <span className="hidden sm:block w-6 md:w-8 h-[2px] bg-amber-500"></span>
+                        <span className="text-amber-500 text-base md:text-lg font-serif italic tracking-wide drop-shadow-lg group-hover:text-amber-400 transition-colors">
+                            La Montaña
+                        </span>
+                    </Link>
 
-                {/* MENÚ DE ESCRITORIO */}
-                <div className="hidden lg:flex space-x-8 items-center">
-                    {navLinks.map((item) => (
-                        <Link
-                            key={item.name}
-                            href={item.href}
-                            className="text-white text-sm font-bold uppercase tracking-widest hover:text-amber-500 transition-colors relative group"
+                    {/* MENÚ DE ESCRITORIO */}
+                    <div className="hidden lg:flex space-x-8 items-center">
+                        {navLinks.map((item) => (
+                            <Link
+                                key={item.name}
+                                href={item.href}
+                                className="text-white text-sm font-bold uppercase tracking-widest hover:text-amber-500 transition-colors relative group"
+                            >
+                                {item.name}
+                                <span className="absolute -bottom-2 left-0 w-0 h-0.5 bg-amber-500 transition-all duration-300 group-hover:w-full"></span>
+                            </Link>
+                        ))}
+
+                        <a
+                            href="https://wa.me/56993330628?text=Hola,%20quisiera%20cotizar%20un%20evento%20en%20el%20Parque"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-900 font-extrabold text-sm py-3 px-6 rounded-full shadow-lg hover:shadow-amber-500/20 transition-all transform hover:-translate-y-1"
                         >
-                            {item.name}
-                            <span className="absolute -bottom-2 left-0 w-0 h-0.5 bg-amber-500 transition-all duration-300 group-hover:w-full"></span>
-                        </Link>
-                    ))}
+                            <FaWhatsapp className="text-lg" />
+                            COTIZAR
+                        </a>
+                    </div>
 
-                    <a
-                        href="https://wa.me/56993330628?text=Hola,%20quisiera%20cotizar%20un%20evento%20en%20el%20Parque"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-900 font-extrabold text-sm py-3 px-6 rounded-full shadow-lg hover:shadow-amber-500/20 transition-all transform hover:-translate-y-1"
+                    {/* BOTÓN MÓVIL (Hamburguesa/Cerrar) */}
+                    <button
+                        className="lg:hidden text-white focus:outline-none p-2 bg-slate-800/50 rounded-full backdrop-blur-sm border border-white/10"
+                        onClick={() => setIsOpen(!isOpen)}
                     >
-                        <FaWhatsapp className="text-lg" />
-                        COTIZAR
-                    </a>
+                        {isOpen ? <FaTimes size={24} className="text-amber-500" /> : <FaBars size={24} />}
+                    </button>
                 </div>
+            </nav>
 
-                {/* BOTÓN MÓVIL (Hamburguesa/Cerrar) */}
-                <button
-                    className="lg:hidden text-white focus:outline-none p-2 bg-slate-800/50 rounded-full backdrop-blur-sm border border-white/10"
-                    onClick={() => setIsOpen(!isOpen)}
-                >
-                    {isOpen ? <FaTimes size={24} className="text-amber-500" /> : <FaBars size={24} />}
-                </button>
-            </div>
-
-            {/* --- MENÚ MÓVIL OVERLAY --- */}
-            <div className={`fixed inset-0 bg-slate-950 z-[60] flex flex-col justify-start items-center pt-32 transition-all duration-500 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
+            {/* --- MENÚ MÓVIL OVERLAY (FUERA DEL NAV) --- */}
+            <div className={`fixed inset-0 bg-slate-950 z-[49] flex flex-col justify-start items-center pt-32 transition-all duration-500 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
 
                 {/* Fondos decorativos */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500 rounded-full blur-[100px] opacity-10 pointer-events-none"></div>
@@ -143,7 +146,7 @@ const Navbar = () => {
                     </a>
                 </div>
             </div>
-        </nav>
+        </>
     );
 };
 
