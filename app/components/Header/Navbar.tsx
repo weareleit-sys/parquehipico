@@ -29,8 +29,15 @@ const Navbar = () => {
                 setHidden(false);
             } else {
                 setScrolled(true);
-                // Ocultar al bajar, mostrar al subir
-                if (currentScrollY > lastScrollY && currentScrollY > 100) {
+
+                // Detectar si estamos al final de la página (Footer)
+                const isBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100;
+
+                if (isBottom) {
+                    setHidden(false); // Mostrar si estamos al final
+                }
+                // Ocultar al bajar, mostrar al subir (solo si no estamos al final)
+                else if (currentScrollY > lastScrollY && currentScrollY > 100) {
                     setHidden(true); // Bajando - ocultar
                 } else {
                     setHidden(false); // Subiendo - mostrar
