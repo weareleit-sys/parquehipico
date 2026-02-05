@@ -21,13 +21,13 @@ export const eventos: Evento[] = [
     {
         id: 1,
         titulo: "Carreras a la Chilena",
-        fecha: "17 de Enero",
-        hora: "12:00 HRS",
+        fecha: "15 de Febrero",
+        hora: "14:00 HRS",
         descripcion: "Adrenalina y tradición. Disfruta de las mejores carreras a la chilena en un ambiente único.",
-        precioInt: 20000, // Precio base referencia (hombre)
+        precioInt: 15000, // Precio base (hombre)
         precios: {
-            hombres: "20.000",
-            mujeres: "10.000",
+            hombres: "15.000",
+            mujeres: "5.000",
             general: undefined
         },
         features: ["Carreras en vivo", "Comida Típica", "Música Chilena"],
@@ -38,38 +38,38 @@ export const eventos: Evento[] = [
     },
     {
         id: 2,
-        titulo: "Feria Costumbrista",
-        fecha: "24 y 25 de Enero",
+        titulo: "Feria Costumbrista (Sábado)",
+        fecha: "21 de Febrero",
         hora: "11:00 HRS",
-        descripcion: "Lo mejor de nuestras tradiciones. Artesanía, gastronomía y folklore en vivo.",
-        precioInt: 20000,
+        descripcion: "Lo mejor de nuestras tradiciones. Artesanía, gastronomía y folklore en vivo. Día 1.",
+        precioInt: 5000,
         precios: {
-            hombres: "20.000",
-            mujeres: "10.000",
-            general: undefined
+            hombres: undefined,
+            mujeres: undefined,
+            general: "5.000"
         },
         features: ["Gastronomía", "Artesanía", "Show Folklórico"],
-        imagen: "/eventos/feria-costumbrista.jpg",
+        imagen: "/eventos/feria-sabado.jpg",
         destacado: false,
-        estado: "disponible",
+        estado: "proximamente",
         tipoVenta: 'ticket'
     },
     {
         id: 3,
-        titulo: "La Montaña del Amor",
-        fecha: "14 de Febrero",
-        hora: "20:00 HRS",
-        descripcion: "Celebra el día de los enamorados bajo las estrellas con música romántica y cena especial.",
-        precioInt: 20000,
+        titulo: "Feria Costumbrista (Domingo)",
+        fecha: "22 de Febrero",
+        hora: "11:00 HRS",
+        descripcion: "Segundo día de fiesta y tradiciones. Comida típica, artesanía y show de cierre.",
+        precioInt: 5000,
         precios: {
-            hombres: "20.000",
-            mujeres: "10.000",
-            general: undefined
+            hombres: undefined,
+            mujeres: undefined,
+            general: "5.000"
         },
-        features: ["Cena Romántica", "Música en Vivo", "Fiesta Bailable"],
-        imagen: "/eventos/san-valentin.jpg",
-        destacado: true,
-        estado: "disponible",
+        features: ["Gastronomía", "Artesanía", "Show de Cierre"],
+        imagen: "/eventos/feria-domingo.jpg",
+        destacado: false,
+        estado: "proximamente",
         tipoVenta: 'ticket'
     }
 ];
