@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { Evento } from '../data/eventos';
+import type { Evento } from '../data';
 
 interface EventoCardProps {
     evento: Evento;

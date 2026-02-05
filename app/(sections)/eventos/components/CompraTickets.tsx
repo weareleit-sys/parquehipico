@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { Evento } from '../data/eventos';
+import type { Evento } from '../data';
 
 interface CompraTicketsProps {
     evento: Evento;
