@@ -10,14 +10,6 @@ export default function EventoCard({ evento }: EventoCardProps) {
     const dia = fecha.getDate();
     const mes = fecha.toLocaleDateString('es-CL', { month: 'short' }).toUpperCase();
 
-    const categoriaColor = {
-        'CARRERA': 'bg-blue-100 text-blue-700',
-        'FIESTA': 'bg-purple-100 text-purple-700',
-        'FESTIVAL': 'bg-green-100 text-green-700',
-        'CORPORATIVO': 'bg-amber-100 text-amber-700',
-        'FAMILIAR': 'bg-pink-100 text-pink-700'
-    };
-
     return (
         <div className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-slate-200">
             {/* Imagen del evento */}
@@ -41,10 +33,10 @@ export default function EventoCard({ evento }: EventoCardProps) {
             {/* Contenido */}
             <div className="p-6">
                 <div className="flex items-center gap-2 mb-3">
-                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${categoriaColor[evento.categoria]}`}>
-                        {evento.categoria}
+                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-700">
+                        EVENTO
                     </span>
-                    <span className="text-slate-500 text-sm">{evento.hora} hrs</span>
+                    <span className="text-slate-500 text-sm">{evento.hora}</span>
                 </div>
 
                 <h3 className="text-2xl font-bold text-slate-900 mb-2">{evento.titulo}</h3>
@@ -58,19 +50,21 @@ export default function EventoCard({ evento }: EventoCardProps) {
                         </div>
                         <div>
                             <p className="text-sm text-slate-500">Desde</p>
-                            <p className="text-xl font-bold text-amber-600">${evento.precioDesde.toLocaleString('es-CL')}</p>
+                            <p className="text-xl font-bold text-amber-600">${evento.precioInt.toLocaleString('es-CL')}</p>
                         </div>
                     </div>
 
                     <span className={`
             text-sm font-semibold
-            ${evento.estado === 'EN_VENTA' ? 'text-green-600' : ''}
-            ${evento.estado === 'PROXIMAMENTE' ? 'text-amber-600' : ''}
-            ${evento.estado === 'AGOTADO' ? 'text-red-600' : ''}
+            ${evento.estado === 'disponible' ? 'text-green-600' : ''}
+            ${evento.estado === 'proximamente' ? 'text-amber-600' : ''}
+            ${evento.estado === 'agotado' ? 'text-red-600' : ''}
+            ${evento.estado === 'finalizado' ? 'text-gray-600' : ''}
           `}>
-                        {evento.estado === 'EN_VENTA' && '✓ EN VENTA'}
-                        {evento.estado === 'PROXIMAMENTE' && '⏳ PRÓXIMAMENTE'}
-                        {evento.estado === 'AGOTADO' && '✗ AGOTADO'}
+                        {evento.estado === 'disponible' && '✓ DISPONIBLE'}
+                        {evento.estado === 'proximamente' && '⏳ PRÓXIMAMENTE'}
+                        {evento.estado === 'agotado' && '✗ AGOTADO'}
+                        {evento.estado === 'finalizado' && '◉ FINALIZADO'}
                     </span>
                 </div>
 
