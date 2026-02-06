@@ -139,6 +139,24 @@ export default function DashboardPage() {
         }
     }
 
+    const deleteTicket = async (ticketId: string, nombreCliente: string) => {
+        if (!confirm(`¿Eliminar permanentemente el ticket de "${nombreCliente}"?`)) return
+
+        try {
+            const { error } = await supabase
+                .from('tickets')
+                .delete()
+                .eq('id', ticketId)
+
+            if (!error) {
+                setTickets(prev => prev.filter(t => t.id !== ticketId))
+                alert('Ticket eliminado correctamente')
+            }
+        } catch (err) {
+            alert('Error al eliminar')
+        }
+    }
+
     const exportCSV = () => {
         const headers = ['Fecha', 'Cliente', 'Email', 'Evento', 'Monto', 'Estado', 'Payment ID', 'Código QR']
         const rows = filteredTickets.map(t => [
@@ -310,14 +328,23 @@ export default function DashboardPage() {
                                             {ticket.payment_id || '-'}
                                         </td>
                                         <td className="px-4 py-3">
-                                            {ticket.estado !== 'usado' && (
+                                            <div className="flex gap-2">
+                                                {ticket.estado !== 'usado' && (
+                                                    <button
+                                                        onClick={() => markAsUsed(ticket.id)}
+                                                        className="bg-amber-500 text-black px-3 py-1 rounded text-xs font-bold hover:bg-amber-400"
+                                                    >
+                                                        MARCAR
+                                                    </button>
+                                                )}
                                                 <button
-                                                    onClick={() => markAsUsed(ticket.id)}
-                                                    className="bg-amber-500 text-black px-3 py-1 rounded text-xs font-bold hover:bg-amber-400"
+                                                    onClick={() => deleteTicket(ticket.id, ticket.nombre_cliente)}
+                                                    className="bg-red-600 text-white px-2 py-1 rounded text-xs font-bold hover:bg-red-500"
+                                                    title="Eliminar ticket"
                                                 >
-                                                    MARCAR
+                                                    🗑️
                                                 </button>
-                                            )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
