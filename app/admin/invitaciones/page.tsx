@@ -194,7 +194,7 @@ export default function InvitacionesPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 p-4 font-sans">
+        <div className="min-h-screen bg-slate-900 p-4 font-sans">
             <nav className="flex justify-between items-center mb-8 bg-white p-4 rounded-lg shadow">
                 <div className="flex items-center gap-2">
                     <Link href="/admin" className="text-gray-500 hover:text-gray-800">
