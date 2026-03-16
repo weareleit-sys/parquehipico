@@ -78,6 +78,13 @@ export default function Header() {
           >
             Únete
           </Link>
+          <Link
+            href="/login"
+            className={`text-sm font-medium transition-colors hover:border-b border-amber-500 pb-1 ${isScrolled ? 'text-slate-300 hover:text-white' : 'text-white/90 hover:text-white drop-shadow-md'
+              }`}
+          >
+            Admin
+          </Link>
         </nav>
 
         {/* Botón CTA Desktop */}
@@ -144,6 +151,13 @@ export default function Header() {
               className="text-lg font-medium text-slate-300 hover:text-amber-500 border-b border-white/5 pb-2"
             >
               Únete
+            </Link>
+            <Link
+              href="/login"
+              onClick={closeMenu}
+              className="text-lg font-medium text-slate-300 hover:text-amber-500 border-b border-white/5 pb-2"
+            >
+              Admin
             </Link>
             <a
               href="https://wa.me/56993330628"
