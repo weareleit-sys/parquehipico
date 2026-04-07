@@ -216,11 +216,20 @@ export default function ScanPage() {
                                 <p className="text-xl font-bold mb-2">{scanResult.nombre_cliente}</p>
 
                                 <p className="text-xs uppercase tracking-widest opacity-75">Evento</p>
-                                <p className="text-lg font-semibold mb-2">{scanResult.evento || 'General'}</p>
+                                <p className="text-lg font-semibold mb-3">{scanResult.evento || 'General'}</p>
 
-                                {scanResult.estado === 'cortesia' && (
-                                    <div className="bg-amber-500 text-black px-3 py-1 rounded-full inline-block text-sm font-bold mt-2">
-                                        CORTESÍA DOBLE
+                                {/* Tipo de acceso - muy visible para el portero */}
+                                {scanResult.tipo_invitacion === 'staff' ? (
+                                    <div className="bg-blue-600 text-white px-4 py-3 rounded-xl text-center mt-2">
+                                        <div className="text-2xl mb-1">🎫</div>
+                                        <div className="font-bold text-lg">PERSONAL AUTORIZADO</div>
+                                        <div className="text-sm opacity-80 mt-1">Acceso individual — Sin +1</div>
+                                    </div>
+                                ) : (
+                                    <div className="bg-amber-500 text-black px-4 py-3 rounded-xl text-center mt-2">
+                                        <div className="text-2xl mb-1">⭐</div>
+                                        <div className="font-bold text-lg">ADMISIÓN DOBLE</div>
+                                        <div className="text-sm opacity-70 mt-1">Titular + 1 acompañante</div>
                                     </div>
                                 )}
                             </div>

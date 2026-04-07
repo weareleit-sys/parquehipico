@@ -21,7 +21,7 @@ export const eventos: Evento[] = [
     {
         id: 1,
         titulo: "Carreras a la Chilena",
-        fecha: "22 de Marzo",
+        fecha: "25 de Abril",
         hora: "14:00 HRS",
         descripcion: "Adrenalina y tradición. Disfruta de las mejores carreras a la chilena en un ambiente único.",
         precioInt: 15000, // Precio base (hombre)
