@@ -143,7 +143,7 @@ export default function InvitacionesPage() {
                     ctx.fillText('PERSONAL AUTORIZADO', width / 2, 542)
                     ctx.fillStyle = '#9ca3af'
                     ctx.font = '12px Arial'
-                    ctx.fillText('Acceso individual — Sin +1', width / 2, 580)
+                    ctx.fillText('Acceso individual', width / 2, 580)
                 }
 
                 ctx.fillStyle = '#6b7280'
@@ -280,7 +280,7 @@ export default function InvitacionesPage() {
                                 </div>
                             ) : (
                                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                                    <p className="text-blue-800 text-sm font-medium">🎫 Invitación Staff — Acceso individual sin +1</p>
+                                    <p className="text-blue-800 text-sm font-medium">🎫 Invitación Staff — Acceso individual</p>
                                 </div>
                             )}
 
@@ -336,7 +336,7 @@ export default function InvitacionesPage() {
                                         <div className="inline-block bg-blue-600 text-white px-4 py-1 rounded-full font-bold text-sm mb-2">
                                             PERSONAL AUTORIZADO
                                         </div>
-                                        <p className="text-gray-400 text-xs">Acceso individual — Sin +1</p>
+                                        <p className="text-gray-400 text-xs">Acceso individual</p>
                                     </>
                                 )}
                             </div>
