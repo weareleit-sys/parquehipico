@@ -107,30 +107,6 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
   const [selectedLeadForGuion, setSelectedLeadForGuion] = useState<Lead | null>(null);
   const [findingContactId, setFindingContactId] = useState<string | null>(null);
 
-  // Batch generar guiones
-  const [batchGenerating, setBatchGenerating] = useState(false);
-  const [batchProgress, setBatchProgress] = useState('');
-
-  const handleBatchGenerateGuiones = async () => {
-    const pending = leads.filter(l => l.website && !l.guion);
-    if (pending.length === 0) return;
-    setBatchGenerating(true);
-    let done = 0;
-    for (const lead of pending) {
-      setBatchProgress(`Generando ${done + 1}/${pending.length}: ${lead.empresa.substring(0, 30)}...`);
-      try {
-        await fetch('/api/leads/generar-guion', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lead_id: lead.id })
-        });
-        done++;
-      } catch { done++; }
-    }
-    setBatchGenerating(false);
-    setBatchProgress('');
-    fetchLeads();
-  };
-
   // Ordenamiento
   const [sortField, setSortField] = useState<SortField>('created_at');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -294,21 +270,9 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
           <h1 className="text-4xl font-extrabold text-white mt-1 tracking-tight">Panel de Leads & Outreach</h1>
           <p className="text-slate-400 text-sm mt-1">Busca empresas en la Araucanía, por sector y categoría. Contacta por WhatsApp, Instagram, Facebook o TikTok.</p>
         </div>
-        <div className="flex items-center gap-3">
-          {batchGenerating ? (
-            <div className="bg-purple-950/50 border border-purple-800 rounded-xl px-4 py-2.5 text-xs text-purple-300 font-medium animate-pulse">{batchProgress}</div>
-          ) : (
-            leads.filter(l => l.website && !l.guion).length > 0 && (
-              <button onClick={handleBatchGenerateGuiones} className="flex items-center gap-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-600/30 text-purple-400 font-bold py-2 px-4 rounded-xl text-xs transition-all">
-                <FaMagic />
-                Generar {leads.filter(l => l.website && !l.guion).length} guiones
-              </button>
-            )
-          )}
-          <button onClick={fetchLeads} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg transition-all">
-            <FaSyncAlt className={loading ? 'animate-spin' : ''} /> Actualizar
-          </button>
-        </div>
+        <button onClick={fetchLeads} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg transition-all">
+          <FaSyncAlt className={loading ? 'animate-spin' : ''} /> Actualizar
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
