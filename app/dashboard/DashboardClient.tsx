@@ -101,7 +101,6 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
     },
   };
   const [searchLimit, setSearchLimit] = useState(10);
-  const [jobId, setJobId] = useState<string | null>(null);
   const [jobProgress, setJobProgress] = useState(0);
   const [jobStatus, setJobStatus] = useState<string | null>(null);
   const [jobPhase, setJobPhase] = useState('');
@@ -112,38 +111,6 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
 
   // Modal de Outreach
   const [selectedLeadForOutreach, setSelectedLeadForOutreach] = useState<Lead | null>(null);
-
-  // Polling para Jobs de Búsqueda
-  useEffect(() => {
-    if (!jobId) return;
-
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/leads/job-status/${jobId}`);
-        if (!res.ok) throw new Error('Error al obtener estado');
-        const data = await res.json();
-
-        setJobProgress(data.progress || 0);
-        setJobStatus(data.status);
-        setJobPhase(data.phase || '');
-
-        if (data.status === 'done' || data.status === 'error') {
-          clearInterval(interval);
-          setJobId(null);
-          setLoading(false);
-          // Recargar lista completa
-          fetchLeads();
-        }
-      } catch (err) {
-        console.error(err);
-        clearInterval(interval);
-        setJobId(null);
-        setLoading(false);
-      }
-    }, 2500);
-
-    return () => clearInterval(interval);
-  }, [jobId]);
 
   // Polling para Jobs de Análisis de Lead Individual
   useEffect(() => {
@@ -196,13 +163,13 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
   }, [fetchLeads]);
 
 
-  // Iniciar búsqueda asíncrona con Gemini Grounding
+  // Iniciar búsqueda con Gemini Grounding (sincrónica, sin polling)
   const handleStartSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setJobProgress(0);
-    setJobStatus('pending');
-    setJobPhase('Iniciando búsqueda...');
+    setJobStatus('running');
+    setJobPhase(`Buscando empresas de ${searchCategory} en ${searchLocation}...`);
 
     try {
       const res = await fetch('/api/leads/search', {
@@ -216,15 +183,22 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
       });
 
       const data = await res.json();
-      if (res.ok && data.job_id) {
-        setJobId(data.job_id);
+      if (res.ok && data.success) {
+        setJobProgress(100);
+        setJobStatus('done');
+        setJobPhase(`Completado: ${data.total} leads encontrados`);
+        fetchLeads();
       } else {
-        alert(data.error || 'Ocurrió un error al lanzar la búsqueda');
-        setLoading(false);
+        setJobStatus('error');
+        setJobPhase(data.error || 'Error en la búsqueda');
+        alert(data.error || 'Ocurrió un error al buscar');
       }
     } catch (err) {
       console.error(err);
+      setJobStatus('error');
+      setJobPhase('Error de red al buscar');
       alert('Error de red al intentar buscar.');
+    } finally {
       setLoading(false);
     }
   };
