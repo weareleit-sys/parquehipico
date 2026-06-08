@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FaWhatsapp, FaSyncAlt, FaSearch, FaExternalLinkAlt, FaSort, FaSortUp, FaSortDown, FaMagic } from 'react-icons/fa';
+import { FaWhatsapp, FaSyncAlt, FaSearch, FaExternalLinkAlt, FaSort, FaSortUp, FaSortDown, FaMagic, FaEye } from 'react-icons/fa';
 import { FaInstagram, FaFacebook, FaTiktok } from 'react-icons/fa';
 import OutreachModal from './OutreachModal';
+import GuionModal from './GuionModal';
 
 interface Lead {
   id: string;
@@ -103,20 +104,8 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
   const phaseInterval = useRef<NodeJS.Timeout | null>(null);
 
   const [selectedLeadForOutreach, setSelectedLeadForOutreach] = useState<Lead | null>(null);
+  const [selectedLeadForGuion, setSelectedLeadForGuion] = useState<Lead | null>(null);
   const [findingContactId, setFindingContactId] = useState<string | null>(null);
-  const [generatingGuionId, setGeneratingGuionId] = useState<string | null>(null);
-
-  const handleGenerateGuion = async (leadId: string) => {
-    setGeneratingGuionId(leadId);
-    try {
-      const res = await fetch('/api/leads/generar-guion', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lead_id: leadId })
-      });
-      if ((await res.json()).success) fetchLeads();
-    } catch (err) { console.error(err); }
-    finally { setGeneratingGuionId(null); }
-  };
 
   // Ordenamiento
   const [sortField, setSortField] = useState<SortField>('created_at');
@@ -189,18 +178,17 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
     } finally { setLoading(false); }
   };
 
-  const getWhatsAppLink = (lead: Lead) => {
+  const getWhatsAppLink = (lead: Lead, customGuion?: string) => {
     if (!lead.telefono) return '#';
     let digits = lead.telefono.replace(/\D/g, '');
     if (digits.startsWith('569')) { /* ok */ }
     else if (digits.startsWith('9') && digits.length <= 9) { digits = '56' + digits; }
     else if (digits.length === 8) { digits = '569' + digits; }
     else if (!digits.startsWith('56')) { digits = '56' + digits; }
-    // Usar guion personalizado si existe, sino template por categoría
     const template = whatsappTemplates[lead.categoria] || whatsappTemplates.productoras;
     const ciudad = lead.ubicacion?.split(',')[0]?.trim() || 'la Araucanía';
     const defaultMsg = template.replace('{empresa}', lead.empresa).replace('{ciudad}', ciudad);
-    const msg = lead.guion || defaultMsg;
+    const msg = customGuion || lead.guion || defaultMsg;
     return `https://wa.me/${digits}?text=${encodeURIComponent(msg)}`;
   };
 
@@ -484,17 +472,13 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
                           </td>
                           <td className="px-4 py-4 text-right">
                             <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                              {lead.website && !lead.guion && (
-                                <button onClick={() => handleGenerateGuion(lead.id)}
-                                  disabled={generatingGuionId === lead.id}
-                                  className="text-purple-400 hover:text-purple-300 text-xs font-bold flex items-center gap-1 bg-purple-500/10 px-2 py-1.5 rounded-lg border border-purple-500/20 transition-all disabled:opacity-50"
-                                  title="Generar mensaje personalizado con IA">
-                                  <FaMagic className="text-[10px]" />
-                                  {generatingGuionId === lead.id ? '...' : 'Guion'}
+                              {lead.website && (
+                                <button onClick={() => setSelectedLeadForGuion(lead)}
+                                  className={`text-xs font-bold flex items-center gap-1 px-2 py-1.5 rounded-lg border transition-all ${lead.guion ? 'text-purple-400 bg-purple-500/10 border-purple-500/20 hover:bg-purple-500/20' : 'text-purple-400 hover:text-purple-300 bg-purple-500/10 border-purple-500/20'}`}
+                                  title={lead.guion ? 'Ver guion personalizado' : 'Generar guion con IA'}>
+                                  {lead.guion ? <FaEye className="text-[10px]" /> : <FaMagic className="text-[10px]" />}
+                                  {lead.guion ? 'Guion' : 'Guion'}
                                 </button>
-                              )}
-                              {lead.guion && (
-                                <span className="text-[10px] text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded font-bold" title="Tiene guion personalizado">✨</span>
                               )}
                               {lead.website && (
                                 <a href={lead.website.startsWith('http')?lead.website:`https://${lead.website}`} target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:text-amber-400 text-xs font-bold flex items-center gap-1 bg-slate-800 px-2 py-1.5 rounded-lg border border-slate-700">web <FaExternalLinkAlt className="text-[9px]"/></a>
@@ -519,6 +503,9 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
 
       {selectedLeadForOutreach && (
         <OutreachModal lead={selectedLeadForOutreach} isOpen={true} onClose={() => setSelectedLeadForOutreach(null)} onSaved={fetchLeads} />
+      )}
+      {selectedLeadForGuion && (
+        <GuionModal lead={selectedLeadForGuion} isOpen={true} onClose={() => setSelectedLeadForGuion(null)} onSaved={fetchLeads} getWhatsAppLink={getWhatsAppLink} />
       )}
     </div>
   );

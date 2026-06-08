@@ -15,7 +15,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing GEMINI_API_KEY' }, { status: 500 });
     }
 
-    // Obtener datos del lead
     const { data: lead, error: leadError } = await supabase
       .from('leads')
       .select('*')
@@ -31,13 +30,15 @@ export async function POST(req: NextRequest) {
     const ciudad = lead.ubicacion || 'la Araucanía';
     const categoria = lead.categoria;
 
-    const prompt = `Sos Alberto del Parque Hípico La Montaña, el recinto outdoor más grande del sur de Chile (3 hectáreas planas, 5.000 personas, luz trifásica).
+    const prompt = `Sos Alberto del Parque Hípico La Montaña, el recinto outdoor más grande del sur de Chile (3 hectáreas planas, 5.000 personas, luz trifásica, 400+ estacionamientos, cancha de carreras certificada). Arrendamos el espacio para eventos masivos.
 
-Entraste a la web de "${empresa}" (${website || 'sin web'}) en ${ciudad} y viste qué hacen.
+Investigá "${empresa}" (${website || 'sin web'}) en ${ciudad}, categoría: ${categoria}.
 
-Escribí un mensaje de WhatsApp de 3 líneas para ofrecerles el parque como venue para eventos masivos. Mencioná algo concreto que viste de ellos. Tono directo, chileno, informal. NADA genérico. NADA de "Estimado" ni "24/7". Firmá: "soy Alberto del Parque Hípico La Montaña".
-
-Respondé SOLO el texto del mensaje.`;
+Respondé EXACTAMENTE en este formato JSON, sin Markdown adicional:
+{
+  "perfil": "1 línea describiendo qué hace esta empresa y qué tipo de eventos organiza",
+  "guion": "mensaje de WhatsApp de 3 líneas ofreciendo el parque como venue. Mencioná algo concreto que viste. Tono directo, chileno, informal. Firmá: 'soy Alberto del Parque Hípico La Montaña'. NADA genérico."
+}`;
 
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
@@ -57,19 +58,41 @@ Respondé SOLO el texto del mensaje.`;
     }
 
     const data = await geminiRes.json();
-    const guion = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    let cleaned = rawText.trim();
+    if (cleaned.includes('```json')) {
+      cleaned = cleaned.split('```json')[1].split('```')[0].trim();
+    } else if (cleaned.includes('```')) {
+      cleaned = cleaned.split('```')[1].split('```')[0].trim();
+    }
+
+    if (!cleaned) {
+      return NextResponse.json({ error: 'Gemini returned empty response' }, { status: 502 });
+    }
+
+    let result: any;
+    try {
+      result = JSON.parse(cleaned);
+    } catch {
+      return NextResponse.json({ error: 'Failed to parse', raw: cleaned.substring(0, 300) }, { status: 502 });
+    }
+
+    const guion = result.guion?.trim() || '';
+    const perfil = result.perfil?.trim() || '';
 
     if (!guion) {
       return NextResponse.json({ error: 'Gemini returned empty guion' }, { status: 502 });
     }
 
-    // Guardar guion en el lead
+    // Guardar en BD
     await supabase.from('leads').update({
       guion: guion,
+      raw_data: JSON.stringify({ ...(lead.raw_data ? JSON.parse(lead.raw_data) : {}), perfil_ia: perfil }),
       updated_at: new Date().toISOString()
     }).eq('id', lead_id);
 
-    return NextResponse.json({ success: true, guion });
+    return NextResponse.json({ success: true, guion, perfil });
   } catch (error: any) {
     console.error('Generar Guion Error:', error);
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
