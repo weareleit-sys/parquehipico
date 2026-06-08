@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { FaWhatsapp, FaSyncAlt, FaSearch, FaExternalLinkAlt } from 'react-icons/fa';
+import React, { useState, useEffect, useRef } from 'react';
+import { FaWhatsapp, FaSyncAlt, FaSearch, FaExternalLinkAlt, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import { FaInstagram, FaFacebook, FaTiktok } from 'react-icons/fa';
 import OutreachModal from './OutreachModal';
 
@@ -26,73 +26,62 @@ interface Lead {
   guion: string;
   raw_data: string;
   created_at: string;
+  _lastOutreach: { resultado: string; fecha_contacto: string } | null;
 }
 
 const sectoresAraucania: Record<string, { label: string; ciudades: { value: string; label: string }[] }> = {
-  temuco: {
-    label: 'Temuco y alrededores',
-    ciudades: [
-      { value: 'Temuco', label: 'Temuco' },
-      { value: 'Padre Las Casas', label: 'Padre Las Casas' },
-      { value: 'Vilcún', label: 'Vilcún' },
-      { value: 'Freire', label: 'Freire' },
-      { value: 'Pitrufquén', label: 'Pitrufquén' },
-      { value: 'Nueva Imperial', label: 'Nueva Imperial' },
-      { value: 'Cholchol', label: 'Cholchol' },
-      { value: 'Galvarino', label: 'Galvarino' },
-    ]
-  },
-  lacustre: {
-    label: 'Zona Lacustre',
-    ciudades: [
-      { value: 'Villarrica', label: 'Villarrica' },
-      { value: 'Pucón', label: 'Pucón' },
-      { value: 'Lican Ray', label: 'Lican Ray' },
-      { value: 'Caburgua', label: 'Caburgua' },
-      { value: 'Curarrehue', label: 'Curarrehue' },
-      { value: 'Coñaripe', label: 'Coñaripe' },
-    ]
-  },
-  sur: {
-    label: 'Zona Sur',
-    ciudades: [
-      { value: 'Loncoche', label: 'Loncoche' },
-      { value: 'Gorbea', label: 'Gorbea' },
-      { value: 'Toltén', label: 'Toltén' },
-      { value: 'Teodoro Schmidt', label: 'Teodoro Schmidt' },
-    ]
-  },
-  costa: {
-    label: 'Costa Araucanía',
-    ciudades: [
-      { value: 'Carahue', label: 'Carahue' },
-      { value: 'Puerto Saavedra', label: 'Puerto Saavedra' },
-    ]
-  },
-  norte: {
-    label: 'Zona Norte (Malleco)',
-    ciudades: [
-      { value: 'Victoria', label: 'Victoria' },
-      { value: 'Curacautín', label: 'Curacautín' },
-      { value: 'Lautaro', label: 'Lautaro' },
-      { value: 'Collipulli', label: 'Collipulli' },
-      { value: 'Angol', label: 'Angol' },
-      { value: 'Lonquimay', label: 'Lonquimay' },
-    ]
-  },
-  lagos: {
-    label: 'Zona Lagos',
-    ciudades: [
-      { value: 'Panguipulli', label: 'Panguipulli' },
-      { value: 'Lanco', label: 'Lanco' },
-      { value: 'Mariquina', label: 'Mariquina' },
-    ]
-  },
+  temuco: { label: 'Temuco y alrededores', ciudades: [
+    { value: 'Temuco', label: 'Temuco' }, { value: 'Padre Las Casas', label: 'Padre Las Casas' },
+    { value: 'Vilcún', label: 'Vilcún' }, { value: 'Freire', label: 'Freire' },
+    { value: 'Pitrufquén', label: 'Pitrufquén' }, { value: 'Nueva Imperial', label: 'Nueva Imperial' },
+    { value: 'Cholchol', label: 'Cholchol' }, { value: 'Galvarino', label: 'Galvarino' },
+  ]},
+  lacustre: { label: 'Zona Lacustre', ciudades: [
+    { value: 'Villarrica', label: 'Villarrica' }, { value: 'Pucón', label: 'Pucón' },
+    { value: 'Lican Ray', label: 'Lican Ray' }, { value: 'Caburgua', label: 'Caburgua' },
+    { value: 'Curarrehue', label: 'Curarrehue' }, { value: 'Coñaripe', label: 'Coñaripe' },
+  ]},
+  sur: { label: 'Zona Sur', ciudades: [
+    { value: 'Loncoche', label: 'Loncoche' }, { value: 'Gorbea', label: 'Gorbea' },
+    { value: 'Toltén', label: 'Toltén' }, { value: 'Teodoro Schmidt', label: 'Teodoro Schmidt' },
+  ]},
+  costa: { label: 'Costa Araucanía', ciudades: [
+    { value: 'Carahue', label: 'Carahue' }, { value: 'Puerto Saavedra', label: 'Puerto Saavedra' },
+  ]},
+  norte: { label: 'Zona Norte (Malleco)', ciudades: [
+    { value: 'Victoria', label: 'Victoria' }, { value: 'Curacautín', label: 'Curacautín' },
+    { value: 'Lautaro', label: 'Lautaro' }, { value: 'Collipulli', label: 'Collipulli' },
+    { value: 'Angol', label: 'Angol' }, { value: 'Lonquimay', label: 'Lonquimay' },
+  ]},
+  lagos: { label: 'Zona Lagos', ciudades: [
+    { value: 'Panguipulli', label: 'Panguipulli' }, { value: 'Lanco', label: 'Lanco' },
+    { value: 'Mariquina', label: 'Mariquina' },
+  ]},
 };
 
-interface DashboardClientProps {
-  initialLeads: Lead[];
-}
+// Templates WhatsApp por categoría
+const whatsappTemplates: Record<string, string> = {
+  productoras: 'Hola, soy Alberto del Parque Hípico La Montaña en Villarrica. Tenemos 3 hectáreas planas, capacidad 5.000+ personas y luz trifásica T1. Vi el trabajo de {empresa} en {ciudad} y creo que podemos ser el espacio ideal para sus próximos eventos. ¿Conversamos?',
+  corporativo: 'Hola, soy Alberto del Parque Hípico La Montaña. Vi que {empresa} está en {ciudad}. Tenemos 3 hectáreas con 400+ estacionamientos, perfecto para team building, cenas de fin de año o convenciones corporativas. ¿Les interesaría conocer el espacio?',
+  matrimonios: 'Hola, soy Alberto del Parque Hípico La Montaña. Vi el trabajo de {empresa} en {ciudad} organizando bodas. Tenemos 3 hectáreas planas con capacidad para 5.000+ personas, ideal para matrimonios al aire libre en la Araucanía. ¿Charlamos?',
+  cumpleanos: 'Hola, soy Alberto del Parque Hípico La Montaña en Villarrica. Vi que {empresa} organiza celebraciones en {ciudad}. Tenemos 3 hectáreas con espacio para fiestas infantiles, cumpleaños y eventos familiares. ¿Te interesaría conocer el lugar?',
+  municipal: 'Hola, soy Alberto del Parque Hípico La Montaña. Tenemos 3 hectáreas planas con capacidad 5.000+ personas, ideales para ferias costumbristas, eventos municipales y encuentros masivos. Vi el trabajo de {empresa} en {ciudad} y creo que podemos colaborar. ¿Conversamos?',
+};
+
+// Mensajes rotativos para la barra de progreso
+const searchPhases = [
+  'Consultando Google Maps...',
+  'Rastreando páginas amarillas...',
+  'Verificando teléfonos...',
+  'Buscando redes sociales...',
+  'Analizando resultados...',
+  'Guardando en base de datos...',
+];
+
+type SortField = 'empresa' | 'categoria' | 'ubicacion' | 'created_at' | 'estado_lead';
+type SortDir = 'asc' | 'desc';
+
+interface DashboardClientProps { initialLeads: Lead[]; }
 
 export default function DashboardClient({ initialLeads }: DashboardClientProps) {
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
@@ -102,120 +91,103 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
   const [activeState, setActiveState] = useState('todos');
   const [activeSector, setActiveSector] = useState('todos');
 
-  // Búsqueda Gemini
   const [searchCategory, setSearchCategory] = useState('productoras');
   const [searchLocation, setSearchLocation] = useState('Temuco');
   const [searchSector, setSearchSector] = useState('temuco');
   const [searchLimit, setSearchLimit] = useState(10);
   const [searchStatus, setSearchStatus] = useState<string | null>(null);
   const [searchMessage, setSearchMessage] = useState('');
-  const [newLeads, setNewLeads] = useState<Lead[]>([]); // leads de la última búsqueda
+  const [searchPhaseIdx, setSearchPhaseIdx] = useState(0);
+  const [newLeads, setNewLeads] = useState<Lead[]>([]);
+  const phaseInterval = useRef<NodeJS.Timeout | null>(null);
 
-  // Modal de Outreach
   const [selectedLeadForOutreach, setSelectedLeadForOutreach] = useState<Lead | null>(null);
-
-  // Buscar contacto de un lead sin teléfono
   const [findingContactId, setFindingContactId] = useState<string | null>(null);
+
+  // Ordenamiento
+  const [sortField, setSortField] = useState<SortField>('created_at');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
+
+  // Rotar mensajes durante búsqueda
+  useEffect(() => {
+    if (searchStatus === 'running') {
+      phaseInterval.current = setInterval(() => {
+        setSearchPhaseIdx(prev => (prev + 1) % searchPhases.length);
+      }, 3000);
+    } else {
+      if (phaseInterval.current) clearInterval(phaseInterval.current);
+    }
+    return () => { if (phaseInterval.current) clearInterval(phaseInterval.current); };
+  }, [searchStatus]);
 
   const handleFindContact = async (leadId: string) => {
     setFindingContactId(leadId);
     try {
       const res = await fetch('/api/leads/find-contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lead_id: leadId })
       });
-      const data = await res.json();
-      if (data.success) {
-        fetchLeads();
-      }
-    } catch (err) {
-      console.error('Error finding contact:', err);
-    } finally {
-      setFindingContactId(null);
-    }
+      if ((await res.json()).success) fetchLeads();
+    } catch (err) { console.error(err); }
+    finally { setFindingContactId(null); }
   };
 
   const fetchLeads = React.useCallback(async () => {
     try {
-      const queryParams = new URLSearchParams();
-      if (activeCategory !== 'todos') queryParams.append('categoria', activeCategory);
-      if (activeState !== 'todos') queryParams.append('estado', activeState);
-      if (activeSector !== 'todos') queryParams.append('sector', activeSector);
-      if (searchTerm) queryParams.append('search', searchTerm);
-
-      const res = await fetch(`/api/leads/list?${queryParams.toString()}`);
-      if (res.ok) {
-        const data = await res.json();
-        setLeads(data.leads || []);
-      }
-    } catch (err) {
-      console.error('Error fetching leads:', err);
-    }
+      const q = new URLSearchParams();
+      if (activeCategory !== 'todos') q.append('categoria', activeCategory);
+      if (activeState !== 'todos') q.append('estado', activeState);
+      if (activeSector !== 'todos') q.append('sector', activeSector);
+      if (searchTerm) q.append('search', searchTerm);
+      const res = await fetch(`/api/leads/list?${q.toString()}`);
+      if (res.ok) { const d = await res.json(); setLeads(d.leads || []); }
+    } catch (err) { console.error(err); }
   }, [activeCategory, activeState, activeSector, searchTerm]);
 
-  useEffect(() => {
-    fetchLeads();
-  }, [fetchLeads]);
+  useEffect(() => { fetchLeads(); }, [fetchLeads]);
 
   const handleStartSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setSearchStatus('running');
+    setSearchPhaseIdx(0);
     setSearchMessage(`Buscando ${searchCategory} en ${searchLocation}...`);
 
     try {
       const res = await fetch('/api/leads/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          categoria: searchCategory,
-          ubicacion: searchLocation,
-          sector: searchSector,
-          limit: searchLimit
-        })
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categoria: searchCategory, ubicacion: searchLocation, sector: searchSector, limit: searchLimit })
       });
-
       const data = await res.json();
       if (res.ok && data.success) {
-        const found = data.leads || [];
-        setNewLeads(found);
+        setNewLeads(data.leads || []);
         setSearchStatus('done');
-        setSearchMessage(`${found.length} leads encontrados en ${searchLocation}`);
+        setSearchMessage(`${data.total} leads encontrados en ${searchLocation}`);
         fetchLeads();
       } else {
         setSearchStatus('error');
         setSearchMessage(data.error || 'Error en la búsqueda');
       }
-    } catch (err) {
+    } catch {
       setSearchStatus('error');
       setSearchMessage('Error de red al buscar');
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   const getWhatsAppLink = (lead: Lead) => {
     if (!lead.telefono) return '#';
     const cleanPhone = lead.telefono.replace(/\D/g, '');
-    const msg = `Hola, soy Alberto del Parque Hípico La Montaña. Tenemos 3 hectáreas planas con capacidad para 5.000+ personas y luz trifásica. ¿Tienen algún evento que necesite locación en la Araucanía?`;
+    const template = whatsappTemplates[lead.categoria] || whatsappTemplates.productoras;
+    const ciudad = lead.ubicacion?.split(',')[0]?.trim() || 'la Araucanía';
+    const msg = template.replace('{empresa}', lead.empresa).replace('{ciudad}', ciudad);
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
   };
 
   const getCategoryEmoji = (cat: string) => {
-    switch (cat) {
-      case 'productoras': return '🎪';
-      case 'corporativo': return '🏢';
-      case 'matrimonios': return '💒';
-      case 'municipal': return '🏛️';
-      case 'cumpleanos': return '🎂';
-      default: return '📍';
-    }
+    switch (cat) { case 'productoras': return '🎪'; case 'corporativo': return '🏢'; case 'matrimonios': return '💒'; case 'municipal': return '🏛️'; case 'cumpleanos': return '🎂'; default: return '📍'; }
   };
 
-  const getSectorLabel = (sectorKey: string) => {
-    return sectoresAraucania[sectorKey]?.label || sectorKey || '—';
-  };
+  const getSectorLabel = (s: string) => sectoresAraucania[s]?.label || s || '—';
 
   const getSocialLinks = (lead: Lead) => {
     const links: { icon: React.ReactNode; url: string; color: string }[] = [];
@@ -225,9 +197,55 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
     return links;
   };
 
+  const getRelativeTime = (dateStr: string | null) => {
+    if (!dateStr) return null;
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    if (mins < 1) return 'ahora';
+    if (mins < 60) return `hace ${mins} min`;
+    if (hours < 24) return `hace ${hours}h`;
+    if (days < 30) return `hace ${days}d`;
+    return new Date(dateStr).toLocaleDateString('es-CL');
+  };
+
+  const getOutreachResultLabel = (r: string) => {
+    switch (r) { case 'contactado': return '📱 Contactado'; case 'respondio': return '💬 Respondió'; case 'agendado': return '📅 Agendado'; case 'rechazo': return '❌ Rechazo'; default: return '⏳ Pendiente'; }
+  };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortField(field); setSortDir('asc'); }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) return <FaSort className="text-slate-600 ml-1" />;
+    return sortDir === 'asc' ? <FaSortUp className="text-amber-500 ml-1" /> : <FaSortDown className="text-amber-500 ml-1" />;
+  };
+
+  // Ordenar leads
+  const sortedLeads = [...leads].sort((a, b) => {
+    let va: any = a[sortField] || '';
+    let vb: any = b[sortField] || '';
+    if (sortField === 'estado_lead') {
+      const order = ['nuevo','en_proceso','contactado','agendado','descartado'];
+      va = order.indexOf(va); vb = order.indexOf(vb);
+    }
+    if (va < vb) return sortDir === 'asc' ? -1 : 1;
+    if (va > vb) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  // Determinar si un lead está en la última búsqueda y si ya fue contactado
+  const getNewLeadStatus = (lead: Lead) => {
+    const isNew = newLeads.some(nl => nl.empresa === lead.empresa);
+    const wasContacted = !!lead._lastOutreach;
+    return { isNew, wasContacted };
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6 border-b border-slate-800 pb-6">
         <div>
           <span className="text-amber-500 font-bold uppercase tracking-[0.2em] text-xs">Parque Hípico La Montaña</span>
@@ -235,25 +253,21 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
           <p className="text-slate-400 text-sm mt-1">Busca empresas en la Araucanía, por sector y categoría. Contacta por WhatsApp, Instagram, Facebook o TikTok.</p>
         </div>
         <button onClick={fetchLeads} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg transition-all">
-          <FaSyncAlt className={loading ? 'animate-spin' : ''} />
-          Actualizar Vista
+          <FaSyncAlt className={loading ? 'animate-spin' : ''} /> Actualizar
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        
-        {/* PANEL LATERAL */}
+
+        {/* SIDEBAR */}
         <div className="lg:col-span-1 bg-slate-900 rounded-2xl p-6 border border-slate-800 h-fit space-y-6">
           <div className="flex items-center gap-3">
-            <FaSearch className="text-amber-500 text-xl" />
-            <h3 className="text-lg font-bold text-white">Buscar Leads</h3>
+            <FaSearch className="text-amber-500 text-xl" /><h3 className="text-lg font-bold text-white">Buscar Leads</h3>
           </div>
-
           <form onSubmit={handleStartSearch} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Categoría</label>
-              <select value={searchCategory} onChange={(e) => setSearchCategory(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 transition-colors text-sm">
+              <select value={searchCategory} onChange={e => setSearchCategory(e.target.value)} className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 text-sm">
                 <option value="productoras">🎪 Productoras de Eventos</option>
                 <option value="corporativo">🏢 Corporativo / Empresas</option>
                 <option value="matrimonios">💒 Wedding Planners / Bodas</option>
@@ -261,59 +275,59 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
                 <option value="municipal">🏛️ Municipalidades / Ferias</option>
               </select>
             </div>
-
             <div>
               <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Sector</label>
-              <select value={searchSector} onChange={(e) => {
-                setSearchSector(e.target.value);
-                const ciudades = sectoresAraucania[e.target.value]?.ciudades;
-                if (ciudades && ciudades.length > 0) setSearchLocation(ciudades[0].value);
-              }} className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 transition-colors text-sm">
-                {Object.entries(sectoresAraucania).map(([key, sec]) => (
-                  <option key={key} value={key}>{sec.label}</option>
-                ))}
+              <select value={searchSector} onChange={e => { setSearchSector(e.target.value); const c = sectoresAraucania[e.target.value]?.ciudades; if (c?.length) setSearchLocation(c[0].value); }} className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 text-sm">
+                {Object.entries(sectoresAraucania).map(([k, s]) => (<option key={k} value={k}>{s.label}</option>))}
               </select>
             </div>
-
             <div>
               <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Ciudad</label>
-              <select value={searchLocation} onChange={(e) => setSearchLocation(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 transition-colors text-sm">
-                {(sectoresAraucania[searchSector]?.ciudades || []).map((c) => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
-                ))}
+              <select value={searchLocation} onChange={e => setSearchLocation(e.target.value)} className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 text-sm">
+                {(sectoresAraucania[searchSector]?.ciudades || []).map(c => (<option key={c.value} value={c.value}>{c.label}</option>))}
               </select>
             </div>
-
             <div>
               <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Cantidad</label>
-              <input type="number" min={1} max={20} value={searchLimit}
-                onChange={(e) => setSearchLimit(parseInt(e.target.value) || 5)}
-                className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 transition-colors text-sm" />
+              <input type="number" min={1} max={20} value={searchLimit} onChange={e => setSearchLimit(parseInt(e.target.value) || 5)} className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 text-sm" />
             </div>
-
-            <button type="submit" disabled={loading}
-              className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50">
-              <FaSearch />
-              {loading ? 'Buscando...' : 'Buscar Leads'}
+            <button type="submit" disabled={loading} className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50">
+              <FaSearch /> {loading ? 'Buscando...' : 'Buscar Leads'}
             </button>
           </form>
 
-          {/* Estado de búsqueda */}
-          {searchStatus && (
-            <div className={`rounded-xl p-4 border space-y-2 ${searchStatus === 'error' ? 'bg-red-950/30 border-red-900' : searchStatus === 'done' ? 'bg-emerald-950/30 border-emerald-900' : 'bg-slate-950 border-slate-800'}`}>
-              <p className="text-xs font-bold text-slate-300">{searchMessage}</p>
+          {/* BARRA DE PROGRESO ANIMADA */}
+          {searchStatus === 'running' && (
+            <div className="bg-slate-950 rounded-xl p-4 border border-slate-800 space-y-3">
+              <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 animate-pulse rounded-full" style={{ width: '100%', animation: 'shimmer 2s infinite' }} />
+              </div>
+              <p className="text-xs text-amber-400 font-medium text-center">{searchPhases[searchPhaseIdx]}</p>
+              <style jsx>{`@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }`}</style>
             </div>
           )}
 
-          {/* Resultados de última búsqueda */}
+          {searchStatus === 'done' && (
+            <div className="bg-emerald-950/30 rounded-xl p-4 border border-emerald-900">
+              <p className="text-xs font-bold text-emerald-400">{searchMessage}</p>
+            </div>
+          )}
+          {searchStatus === 'error' && (
+            <div className="bg-red-950/30 rounded-xl p-4 border border-red-900">
+              <p className="text-xs font-bold text-red-400">{searchMessage}</p>
+            </div>
+          )}
+
           {newLeads.length > 0 && searchStatus === 'done' && (
-            <div className="bg-slate-950 rounded-xl p-4 border border-slate-800 space-y-2 max-h-96 overflow-y-auto">
+            <div className="bg-slate-950 rounded-xl p-4 border border-slate-800 space-y-2 max-h-80 overflow-y-auto">
               <p className="text-xs font-bold text-amber-500 uppercase">Encontrados</p>
               {newLeads.map((lead, i) => (
-                <div key={i} className="text-xs text-slate-300 border-b border-slate-800 pb-2 last:border-0 last:pb-0">
+                <div key={i} className="text-xs border-b border-slate-800 pb-2 last:border-0 last:pb-0">
                   <p className="text-white font-semibold">{lead.empresa}</p>
                   <p className="text-slate-500">{lead.ubicacion} {lead.telefono ? `· ${lead.telefono}` : ''}</p>
+                  {lead._lastOutreach && (
+                    <span className="inline-block mt-1 text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded font-bold">Ya contactado</span>
+                  )}
                 </div>
               ))}
             </div>
@@ -322,147 +336,113 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
 
         {/* TABLA */}
         <div className="lg:col-span-3 space-y-6">
-          
-          {/* FILTROS */}
           <div className="bg-slate-900 rounded-2xl p-4 border border-slate-800 space-y-3">
             <div className="relative w-full">
-              <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar por empresa o ubicación..."
-                className="w-full bg-slate-800 border border-slate-700 text-white pl-9 pr-4 py-2 rounded-xl outline-none focus:border-amber-500 transition-colors text-sm" />
+              <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar por empresa o ubicación..." className="w-full bg-slate-800 border border-slate-700 text-white pl-9 pr-4 py-2 rounded-xl outline-none focus:border-amber-500 text-sm" />
               <FaSearch className="absolute left-3 top-3 text-slate-500" />
             </div>
-
             <div className="flex flex-wrap gap-2">
-              {['todos', 'productoras', 'corporativo', 'matrimonios', 'cumpleanos', 'municipal'].map((cat) => (
-                <button key={cat} onClick={() => setActiveCategory(cat)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all uppercase border ${activeCategory === cat ? 'bg-amber-500 text-slate-950 border-amber-500' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-750'}`}>
-                  {cat === 'todos' ? 'Todas' : `${getCategoryEmoji(cat)} ${cat}`}
+              {['todos','productoras','corporativo','matrimonios','cumpleanos','municipal'].map(c => (
+                <button key={c} onClick={() => setActiveCategory(c)} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase border transition-all ${activeCategory===c?'bg-amber-500 text-slate-950 border-amber-500':'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-750'}`}>
+                  {c==='todos'?'Todas':`${getCategoryEmoji(c)} ${c}`}
                 </button>
               ))}
             </div>
-
             <div className="flex flex-wrap gap-2">
-              {['todos', 'temuco', 'lacustre', 'sur', 'costa', 'norte', 'lagos'].map((sec) => (
-                <button key={sec} onClick={() => setActiveSector(sec)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all uppercase border ${activeSector === sec ? 'bg-blue-500 text-white border-blue-500' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-750'}`}>
-                  {sec === 'todos' ? 'Todos los Sectores' : sectoresAraucania[sec]?.label || sec}
+              {['todos','temuco','lacustre','sur','costa','norte','lagos'].map(s => (
+                <button key={s} onClick={() => setActiveSector(s)} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase border transition-all ${activeSector===s?'bg-blue-500 text-white border-blue-500':'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-750'}`}>
+                  {s==='todos'?'Todos los Sectores':sectoresAraucania[s]?.label||s}
                 </button>
               ))}
             </div>
-
             <div className="flex flex-wrap gap-2">
-              {['todos', 'nuevo', 'en_proceso', 'contactado', 'agendado', 'descartado'].map((st) => (
-                <button key={st} onClick={() => setActiveState(st)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all uppercase border ${activeState === st ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-750'}`}>
-                  {st === 'todos' ? 'Todos los Estados' : st.replace('_', ' ')}
+              {['todos','nuevo','en_proceso','contactado','agendado','descartado'].map(st => (
+                <button key={st} onClick={() => setActiveState(st)} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase border transition-all ${activeState===st?'bg-emerald-500 text-white border-emerald-500':'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-750'}`}>
+                  {st==='todos'?'Todos los Estados':st.replace('_',' ')}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* TABLA */}
+          {/* TABLA CON HEADERS CLICKEABLES */}
           <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-slate-950 border-b border-slate-800">
                   <tr>
-                    <th className="px-4 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Empresa</th>
+                    <th className="px-4 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:text-white transition-colors" onClick={() => handleSort('empresa')}>
+                      <span className="inline-flex items-center">Empresa {getSortIcon('empresa')}</span>
+                    </th>
                     <th className="px-4 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Sector</th>
-                    <th className="px-4 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Categoría</th>
-                    <th className="px-4 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Ciudad</th>
+                    <th className="px-4 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:text-white transition-colors" onClick={() => handleSort('categoria')}>
+                      <span className="inline-flex items-center">Cat {getSortIcon('categoria')}</span>
+                    </th>
+                    <th className="px-4 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:text-white transition-colors" onClick={() => handleSort('ubicacion')}>
+                      <span className="inline-flex items-center">Ciudad {getSortIcon('ubicacion')}</span>
+                    </th>
                     <th className="px-4 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Redes</th>
-                    <th className="px-4 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Estado</th>
+                    <th className="px-4 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider cursor-pointer select-none hover:text-white transition-colors" onClick={() => handleSort('estado_lead')}>
+                      <span className="inline-flex items-center">Estado {getSortIcon('estado_lead')}</span>
+                    </th>
+                    <th className="px-4 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Último contacto</th>
                     <th className="px-4 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Contacto</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800">
-                  {leads.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-slate-500 text-sm">
-                        No hay leads. Usa el panel lateral para buscar empresas en la Araucanía.
-                      </td>
-                    </tr>
+                  {sortedLeads.length === 0 ? (
+                    <tr><td colSpan={8} className="px-6 py-12 text-center text-slate-500 text-sm">No hay leads. Usa el panel lateral para buscar empresas en la Araucanía.</td></tr>
                   ) : (
-                    leads.map((lead) => {
-                      const isNew = newLeads.some(nl => nl.empresa === lead.empresa);
+                    sortedLeads.map(lead => {
+                      const { isNew, wasContacted } = getNewLeadStatus(lead);
                       const socials = getSocialLinks(lead);
+                      const lastTime = getRelativeTime(lead._lastOutreach?.fecha_contacto || null);
+                      const lastResult = lead._lastOutreach?.resultado;
                       return (
-                        <tr key={lead.id} className={`${isNew ? 'bg-amber-500/5 border-l-2 border-l-amber-500' : ''} hover:bg-slate-800/30 transition-all`}>
-                          {/* Empresa */}
+                        <tr key={lead.id} className={`${isNew ? (wasContacted ? 'bg-blue-500/5' : 'bg-amber-500/5') : ''} hover:bg-slate-800/30 transition-all`}>
                           <td className="px-4 py-4">
                             <div>
-                              <span className="text-white font-semibold text-sm block">{lead.empresa}</span>
+                              <span className="text-white font-semibold text-sm block">
+                                {lead.empresa}
+                                {isNew && !wasContacted && <span className="ml-2 inline-block text-[10px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded font-bold">Nuevo</span>}
+                                {isNew && wasContacted && <span className="ml-2 inline-block text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded font-bold">Ya contactado</span>}
+                              </span>
                               <div className="flex gap-3 text-xs text-slate-500 mt-1">
                                 {lead.telefono && <span className="font-mono text-slate-400">{lead.telefono}</span>}
-                                {lead.website && (
-                                  <a href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`} target="_blank" rel="noopener noreferrer"
-                                    className="text-amber-500 hover:text-amber-400 flex items-center gap-1">
-                                    web <FaExternalLinkAlt className="text-[9px]" />
-                                  </a>
-                                )}
+                                {lead.website && <a href={lead.website.startsWith('http')?lead.website:`https://${lead.website}`} target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:text-amber-400 flex items-center gap-1">web <FaExternalLinkAlt className="text-[9px]"/></a>}
                               </div>
                             </div>
                           </td>
-                          {/* Sector */}
-                          <td className="px-4 py-4 text-xs text-slate-400">
-                            {getSectorLabel(lead.sector)}
-                          </td>
-                          {/* Categoría */}
-                          <td className="px-4 py-4 text-sm text-slate-300">
-                            <span className="capitalize">{getCategoryEmoji(lead.categoria)} {lead.categoria}</span>
-                          </td>
-                          {/* Ciudad */}
+                          <td className="px-4 py-4 text-xs text-slate-400">{getSectorLabel(lead.sector)}</td>
+                          <td className="px-4 py-4 text-sm text-slate-300"><span className="capitalize">{getCategoryEmoji(lead.categoria)} {lead.categoria}</span></td>
                           <td className="px-4 py-4 text-sm text-slate-400">{lead.ubicacion || '—'}</td>
-                          {/* Redes Sociales */}
                           <td className="px-4 py-4 text-center">
                             <div className="flex justify-center gap-3">
-                              {socials.length === 0 ? (
-                                <span className="text-xs text-slate-600">—</span>
-                              ) : (
-                                socials.map((s, i) => (
-                                  <a key={i} href={s.url} target="_blank" rel="noopener noreferrer"
-                                    className={`text-slate-500 ${s.color} transition-colors`} title={s.url}>
-                                    {s.icon}
-                                  </a>
-                                ))
-                              )}
+                              {socials.length === 0 ? <span className="text-xs text-slate-600">—</span> : socials.map((s,i) => (
+                                <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" className={`text-slate-500 ${s.color} transition-colors`}>{s.icon}</a>
+                              ))}
                             </div>
                           </td>
-                          {/* Estado */}
                           <td className="px-4 py-4 text-center">
-                            <button onClick={() => setSelectedLeadForOutreach(lead)}
-                              className="bg-slate-800 border border-slate-700 hover:border-slate-600 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-all capitalize">
-                              {lead.estado_lead.replace('_', ' ')}
-                            </button>
+                            <button onClick={() => setSelectedLeadForOutreach(lead)} className="bg-slate-800 border border-slate-700 hover:border-slate-600 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-all capitalize">{lead.estado_lead.replace('_',' ')}</button>
                           </td>
-                          {/* Contacto */}
+                          <td className="px-4 py-4 text-xs text-slate-500">
+                            {lastTime ? (
+                              <span title={lastResult ? getOutreachResultLabel(lastResult) : ''} className="cursor-help">
+                                {lastTime}
+                                {lastResult === 'agendado' && ' 📅'}
+                                {lastResult === 'rechazo' && ' ❌'}
+                              </span>
+                            ) : <span className="text-slate-600">—</span>}
+                          </td>
                           <td className="px-4 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
                               {lead.website && (
-                                <a href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`}
-                                  target="_blank" rel="noopener noreferrer"
-                                  className="text-amber-500 hover:text-amber-400 text-xs font-bold flex items-center gap-1 bg-slate-800 px-2 py-1.5 rounded-lg border border-slate-700">
-                                  web <FaExternalLinkAlt className="text-[9px]" />
-                                </a>
+                                <a href={lead.website.startsWith('http')?lead.website:`https://${lead.website}`} target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:text-amber-400 text-xs font-bold flex items-center gap-1 bg-slate-800 px-2 py-1.5 rounded-lg border border-slate-700">web <FaExternalLinkAlt className="text-[9px]"/></a>
                               )}
                               {lead.telefono ? (
-                                <a href={getWhatsAppLink(lead)} target="_blank" rel="noopener noreferrer"
-                                  onClick={() => {
-                                    fetch('/api/outreach/log', {
-                                      method: 'POST', headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({ lead_id: lead.id, resultado: 'contactado', nuevo_estado_lead: 'contactado' })
-                                    }).then(() => fetchLeads());
-                                  }}
-                                  className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs shadow-lg transition-all">
-                                  <FaWhatsapp className="text-xs" /> WhatsApp
-                                </a>
+                                <a href={getWhatsAppLink(lead)} target="_blank" rel="noopener noreferrer" onClick={() => { fetch('/api/outreach/log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lead_id:lead.id,resultado:'contactado',nuevo_estado_lead:'contactado'})}).then(()=>fetchLeads()); }} className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs shadow-lg transition-all"><FaWhatsapp className="text-xs"/> WhatsApp</a>
                               ) : (
-                                <button onClick={() => handleFindContact(lead.id)}
-                                  disabled={findingContactId === lead.id}
-                                  className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition-all disabled:opacity-50">
-                                  <FaSearch className="text-xs" />
-                                  {findingContactId === lead.id ? 'Buscando...' : 'Buscar contacto'}
-                                </button>
+                                <button onClick={() => handleFindContact(lead.id)} disabled={findingContactId===lead.id} className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition-all disabled:opacity-50"><FaSearch className="text-xs"/> {findingContactId===lead.id?'Buscando...':'Buscar contacto'}</button>
                               )}
                             </div>
                           </td>
@@ -474,13 +454,11 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
               </table>
             </div>
           </div>
-
         </div>
       </div>
 
       {selectedLeadForOutreach && (
-        <OutreachModal lead={selectedLeadForOutreach} isOpen={true}
-          onClose={() => setSelectedLeadForOutreach(null)} onSaved={fetchLeads} />
+        <OutreachModal lead={selectedLeadForOutreach} isOpen={true} onClose={() => setSelectedLeadForOutreach(null)} onSaved={fetchLeads} />
       )}
     </div>
   );

@@ -16,22 +16,15 @@ export async function GET(request: NextRequest) {
       .select('*')
       .order('created_at', { ascending: false });
 
-    // Filtro por categoría (usando ANY sobre el array categorias)
     if (categoria && categoria !== 'todos') {
       query = query.filter('categorias', 'cs', `{${categoria}}`);
     }
-
-    // Filtro por estado
     if (estado && estado !== 'todos') {
       query = query.eq('estado_lead', estado);
     }
-
-    // Filtro por sector
     if (sector && sector !== 'todos') {
       query = query.eq('sector', sector);
     }
-
-    // Filtro de búsqueda por texto (nombre de la empresa o ubicación)
     if (search) {
       query = query.or(`empresa.ilike.%${search}%,ubicacion.ilike.%${search}%`);
     }
@@ -42,7 +35,34 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ leads });
+    if (!leads || leads.length === 0) {
+      return NextResponse.json({ leads: [] });
+    }
+
+    // Obtener último outreach por lead
+    const leadIds = leads.map((l: any) => l.id);
+    const { data: outreachData } = await supabase
+      .from('outreach')
+      .select('lead_id, resultado, fecha_contacto')
+      .in('lead_id', leadIds)
+      .order('fecha_contacto', { ascending: false });
+
+    // Agrupar outreach por lead_id (quedarse con el más reciente)
+    const outreachByLead: Record<string, any> = {};
+    if (outreachData) {
+      for (const o of outreachData) {
+        if (!outreachByLead[o.lead_id]) {
+          outreachByLead[o.lead_id] = o;
+        }
+      }
+    }
+
+    const enrichedLeads = leads.map((lead: any) => ({
+      ...lead,
+      _lastOutreach: outreachByLead[lead.id] || null
+    }));
+
+    return NextResponse.json({ leads: enrichedLeads });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
