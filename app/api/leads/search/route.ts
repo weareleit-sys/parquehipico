@@ -24,7 +24,9 @@ Si la categoría es "matrimonios": busca wedding planners, centros de eventos pa
 Si la categoría es "cumpleanos": busca salones de eventos, quintas de recreo, lugares para fiestas infantiles y cumpleaños.
 Si la categoría es "municipal": busca municipalidades, corporaciones de turismo, organismos públicos que organicen ferias o eventos masivos.
 
-Para cada resultado encuentra: nombre de la empresa/organización, teléfono de contacto, sitio web, ciudad donde operan, y sus redes sociales (instagram, facebook, tiktok si las tienen). Responde SOLO un JSON array de objetos con las llaves "empresa", "telefono", "website", "ubicacion", "instagram", "facebook", "tiktok" sin formato adicional de Markdown.`;
+IMPORTANTE: El teléfono de contacto es OBLIGATORIO. Busca en Google, Facebook, Instagram, páginas amarillas, guías locales hasta encontrar un número. Si absolutamente no encuentras teléfono, usa string vacío "". El sitio web también es importante.
+
+Para cada resultado incluye: nombre de la empresa, teléfono, sitio web, ciudad, instagram, facebook, tiktok (string vacío si no encuentra). Responde SOLO un JSON array de objetos con las llaves "empresa", "telefono", "website", "ubicacion", "instagram", "facebook", "tiktok" sin formato adicional de Markdown.`;
 
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,

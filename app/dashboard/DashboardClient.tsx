@@ -114,6 +114,28 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
   // Modal de Outreach
   const [selectedLeadForOutreach, setSelectedLeadForOutreach] = useState<Lead | null>(null);
 
+  // Buscar contacto de un lead sin teléfono
+  const [findingContactId, setFindingContactId] = useState<string | null>(null);
+
+  const handleFindContact = async (leadId: string) => {
+    setFindingContactId(leadId);
+    try {
+      const res = await fetch('/api/leads/find-contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead_id: leadId })
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchLeads();
+      }
+    } catch (err) {
+      console.error('Error finding contact:', err);
+    } finally {
+      setFindingContactId(null);
+    }
+  };
+
   const fetchLeads = React.useCallback(async () => {
     try {
       const queryParams = new URLSearchParams();
@@ -413,23 +435,36 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
                               {lead.estado_lead.replace('_', ' ')}
                             </button>
                           </td>
-                          {/* WhatsApp */}
+                          {/* Contacto */}
                           <td className="px-4 py-4 text-right">
-                            {lead.telefono ? (
-                              <a href={getWhatsAppLink(lead)} target="_blank" rel="noopener noreferrer"
-                                onClick={() => {
-                                  fetch('/api/outreach/log', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ lead_id: lead.id, resultado: 'contactado', nuevo_estado_lead: 'contactado' })
-                                  }).then(() => fetchLeads());
-                                }}
-                                className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-xl text-xs shadow-lg transition-all">
-                                <FaWhatsapp className="text-sm" /> WhatsApp
-                              </a>
-                            ) : (
-                              <span className="text-xs text-slate-600">Sin teléfono</span>
-                            )}
+                            <div className="flex items-center justify-end gap-2">
+                              {lead.website && (
+                                <a href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`}
+                                  target="_blank" rel="noopener noreferrer"
+                                  className="text-amber-500 hover:text-amber-400 text-xs font-bold flex items-center gap-1 bg-slate-800 px-2 py-1.5 rounded-lg border border-slate-700">
+                                  web <FaExternalLinkAlt className="text-[9px]" />
+                                </a>
+                              )}
+                              {lead.telefono ? (
+                                <a href={getWhatsAppLink(lead)} target="_blank" rel="noopener noreferrer"
+                                  onClick={() => {
+                                    fetch('/api/outreach/log', {
+                                      method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ lead_id: lead.id, resultado: 'contactado', nuevo_estado_lead: 'contactado' })
+                                    }).then(() => fetchLeads());
+                                  }}
+                                  className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs shadow-lg transition-all">
+                                  <FaWhatsapp className="text-xs" /> WhatsApp
+                                </a>
+                              ) : (
+                                <button onClick={() => handleFindContact(lead.id)}
+                                  disabled={findingContactId === lead.id}
+                                  className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition-all disabled:opacity-50">
+                                  <FaSearch className="text-xs" />
+                                  {findingContactId === lead.id ? 'Buscando...' : 'Buscar contacto'}
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );
