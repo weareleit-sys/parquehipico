@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FaWhatsapp, FaSyncAlt, FaSearch, FaExternalLinkAlt, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
+import { FaWhatsapp, FaSyncAlt, FaSearch, FaExternalLinkAlt, FaSort, FaSortUp, FaSortDown, FaMagic } from 'react-icons/fa';
 import { FaInstagram, FaFacebook, FaTiktok } from 'react-icons/fa';
 import OutreachModal from './OutreachModal';
 
@@ -104,6 +104,19 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
 
   const [selectedLeadForOutreach, setSelectedLeadForOutreach] = useState<Lead | null>(null);
   const [findingContactId, setFindingContactId] = useState<string | null>(null);
+  const [generatingGuionId, setGeneratingGuionId] = useState<string | null>(null);
+
+  const handleGenerateGuion = async (leadId: string) => {
+    setGeneratingGuionId(leadId);
+    try {
+      const res = await fetch('/api/leads/generar-guion', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead_id: leadId })
+      });
+      if ((await res.json()).success) fetchLeads();
+    } catch (err) { console.error(err); }
+    finally { setGeneratingGuionId(null); }
+  };
 
   // Ordenamiento
   const [sortField, setSortField] = useState<SortField>('created_at');
@@ -179,14 +192,15 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
   const getWhatsAppLink = (lead: Lead) => {
     if (!lead.telefono) return '#';
     let digits = lead.telefono.replace(/\D/g, '');
-    // Normalizar a formato internacional chileno
-    if (digits.startsWith('569')) { /* ya está bien */ }
+    if (digits.startsWith('569')) { /* ok */ }
     else if (digits.startsWith('9') && digits.length <= 9) { digits = '56' + digits; }
     else if (digits.length === 8) { digits = '569' + digits; }
     else if (!digits.startsWith('56')) { digits = '56' + digits; }
+    // Usar guion personalizado si existe, sino template por categoría
     const template = whatsappTemplates[lead.categoria] || whatsappTemplates.productoras;
     const ciudad = lead.ubicacion?.split(',')[0]?.trim() || 'la Araucanía';
-    const msg = template.replace('{empresa}', lead.empresa).replace('{ciudad}', ciudad);
+    const defaultMsg = template.replace('{empresa}', lead.empresa).replace('{ciudad}', ciudad);
+    const msg = lead.guion || defaultMsg;
     return `https://wa.me/${digits}?text=${encodeURIComponent(msg)}`;
   };
 
@@ -469,7 +483,19 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
                             ) : <span className="text-slate-600">—</span>}
                           </td>
                           <td className="px-4 py-4 text-right">
-                            <div className="flex items-center justify-end gap-2">
+                            <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                              {lead.website && !lead.guion && (
+                                <button onClick={() => handleGenerateGuion(lead.id)}
+                                  disabled={generatingGuionId === lead.id}
+                                  className="text-purple-400 hover:text-purple-300 text-xs font-bold flex items-center gap-1 bg-purple-500/10 px-2 py-1.5 rounded-lg border border-purple-500/20 transition-all disabled:opacity-50"
+                                  title="Generar mensaje personalizado con IA">
+                                  <FaMagic className="text-[10px]" />
+                                  {generatingGuionId === lead.id ? '...' : 'Guion'}
+                                </button>
+                              )}
+                              {lead.guion && (
+                                <span className="text-[10px] text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded font-bold" title="Tiene guion personalizado">✨</span>
+                              )}
                               {lead.website && (
                                 <a href={lead.website.startsWith('http')?lead.website:`https://${lead.website}`} target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:text-amber-400 text-xs font-bold flex items-center gap-1 bg-slate-800 px-2 py-1.5 rounded-lg border border-slate-700">web <FaExternalLinkAlt className="text-[9px]"/></a>
                               )}
