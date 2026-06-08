@@ -16,10 +16,22 @@ function isValidEmail(email: string): boolean {
   return !!(email && email.includes('@') && email.includes('.') && !email.includes(' '));
 }
 
-// Detectar si un teléfono es WhatsApp (+56 9 en Chile)
+// Detectar si un teléfono es móvil chileno (compatible con WhatsApp)
 function isWhatsAppCompatible(tel: string): boolean {
   const digits = tel.replace(/\D/g, '');
-  return digits.startsWith('569') || digits.length === 9;
+  if (digits.startsWith('569')) return true;
+  if (digits.startsWith('9') && digits.length <= 9) return true;
+  if (digits.length === 8) return true; // podría ser fijo sin código, asumimos que con +56 9 podría ser
+  return false;
+}
+
+// Normalizar teléfono chileno a formato internacional
+function normalizePhone(tel: string): string {
+  let digits = tel.replace(/\D/g, '');
+  if (digits.startsWith('569')) return '+' + digits;
+  if (digits.startsWith('9') && digits.length <= 9) return '+56' + digits;
+  if (digits.length === 8) return '+569' + digits;
+  return digits; // no podemos normalizar, devolvemos limpio
 }
 
 // Limpiar website (detectar emails metidos como web, urls inválidas)
@@ -51,20 +63,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing GEMINI_API_KEY' }, { status: 500 });
     }
 
-    const prompt = `Busca ${limit} empresas, negocios o servicios reales en ${ubicacion}, Región de la Araucanía, Chile. La categoría es "${categoria}".
+    const prompt = `Soy Alberto del Parque Hípico La Montaña, el recinto outdoor más grande del sur de Chile: 3 hectáreas planas (30.000 m²), capacidad 5.000+ personas, 400+ estacionamientos, luz trifásica T1, cancha de carreras certificada. Vendemos ARRIENDO del espacio para eventos masivos.
 
-Si la categoría es "productoras": busca productoras de eventos, festivales, conciertos, ferias.
-Si la categoría es "corporativo": busca empresas grandes que hagan team building, cenas de fin de año, convenciones.
-Si la categoría es "matrimonios": busca wedding planners, centros de eventos para bodas, organizadores de matrimonios.
-Si la categoría es "cumpleanos": busca salones de eventos, quintas de recreo, lugares para fiestas infantiles y cumpleaños.
-Si la categoría es "municipal": busca municipalidades, corporaciones de turismo, organismos públicos que organicen ferias o eventos masivos.
+Busca ${limit} empresas, productoras u organizaciones reales en ${ubicacion}, Región de la Araucanía, que podrían NECESITAR un espacio outdoor masivo. La categoría es "${categoria}".
 
-IMPORTANTE: El teléfono de contacto es OBLIGATORIO. Busca en Google, Facebook, Instagram, páginas amarillas, guías locales hasta encontrar un número. Prefiere teléfonos móviles chilenos (+56 9). Si absolutamente no encuentras teléfono, usa string vacío "".
+Si la categoría es "productoras": busca productoras de eventos, festivales, conciertos. Necesitan venues para los eventos de SUS clientes. Nosotros somos el venue.
+Si la categoría es "corporativo": busca empresas con +50 empleados que hagan team building, cenas de fin de año, convenciones que requieran espacio al aire libre.
+Si la categoría es "matrimonios": busca wedding planners, centros de eventos, organizadores de bodas que busquen locaciones outdoor.
+Si la categoría es "cumpleanos": busca salones de eventos, quintas de recreo, animadores infantiles, lugares para fiestas y celebraciones.
+Si la categoría es "municipal": busca municipalidades, corporaciones de turismo y cultura que organicen ferias costumbristas, eventos masivos.
 
-El sitio web debe ser un dominio real (ej: "www.empresa.cl"), NO pongas emails como website.
-Si encuentras email de contacto, agrégalo en un campo "email" aparte.
+IMPORTANTE: Busca teléfonos de contacto REALES, preferentemente móviles con WhatsApp (+56 9). Busca en Google Maps, páginas amarillas, Facebook, Instagram. Si no encuentras teléfono, déjalo vacío "".
+El sitio web debe ser un dominio real (ej: "www.empresa.cl"), NO pongas emails como website. Si hay email, usa campo "email".
+Instagram, Facebook y TikTok: usuario o URL real. Si no encuentras, string vacío "".
 
-Para cada resultado incluye: empresa, telefono, website, email, ubicacion, instagram, facebook, tiktok (string vacío si no encuentra). Responde SOLO un JSON array sin Markdown.`;
+Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","website","email","ubicacion","instagram","facebook","tiktok"}`;
 
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
@@ -130,8 +143,9 @@ Para cada resultado incluye: empresa, telefono, website, email, ubicacion, insta
 
       // Validar y limpiar campos
       const email = isValidEmail(lead.email) ? lead.email.trim() : '';
-      const cleanTel = (lead.telefono || '').trim();
-      const isWap = isWhatsAppCompatible(cleanTel);
+      const rawTel = (lead.telefono || '').trim();
+      const cleanTel = normalizePhone(rawTel);
+      const isWap = isWhatsAppCompatible(rawTel);
       const site = cleanWebsite(lead.website || '');
 
       let finalEmail = email;

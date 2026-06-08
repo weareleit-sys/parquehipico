@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
 
+function normalizePhone(tel: string): string {
+  let digits = tel.replace(/\D/g, '');
+  if (digits.startsWith('569')) return '+' + digits;
+  if (digits.startsWith('9') && digits.length <= 9) return '+56' + digits;
+  if (digits.length === 8) return '+569' + digits;
+  return digits;
+}
+
 export async function POST(req: NextRequest) {
   const supabase = getSupabase();
 
@@ -73,7 +81,7 @@ Responde SOLO un JSON con las llaves "telefono", "instagram", "facebook", "tikto
 
     // Actualizar lead con los datos encontrados
     const updates: any = { updated_at: new Date().toISOString() };
-    if (contacto.telefono) updates.telefono = contacto.telefono;
+    if (contacto.telefono) updates.telefono = normalizePhone(contacto.telefono);
     if (contacto.instagram) updates.instagram = contacto.instagram;
     if (contacto.facebook) updates.facebook = contacto.facebook;
     if (contacto.tiktok) updates.tiktok = contacto.tiktok;
