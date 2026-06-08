@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/app/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   let jobId: string | null = null;
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     const prompt = `Busca ${limit} empresas reales en ${ubicacion}, Chile que organicen o necesiten espacios para eventos masivos, festivales, conciertos, team building o matrimonios. Para cada una encuentra: nombre, teléfono, sitio web, ciudad. Responde SOLO un JSON array de objetos con las llaves "empresa", "telefono", "website", "ubicacion" sin formato adicional de Markdown.`;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 9000); // 9s timeout para Vercel Hobby
+    const timeoutId = setTimeout(() => controller.abort(), 25000); // 25s timeout
 
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,

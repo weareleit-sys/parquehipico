@@ -58,3 +58,28 @@ CREATE TABLE IF NOT EXISTS search_jobs (
 );
 
 CREATE INDEX IF NOT EXISTS idx_search_jobs_status ON search_jobs (status);
+
+-- ============================================
+-- RLS POLICIES (ejecutar si las tablas ya existen)
+-- ============================================
+ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE outreach ENABLE ROW LEVEL SECURITY;
+ALTER TABLE search_jobs ENABLE ROW LEVEL SECURITY;
+
+-- Leads: acceso público temporal (igual que tickets)
+CREATE POLICY "leads_select" ON leads FOR SELECT USING (true);
+CREATE POLICY "leads_insert" ON leads FOR INSERT WITH CHECK (true);
+CREATE POLICY "leads_update" ON leads FOR UPDATE USING (true);
+CREATE POLICY "leads_delete" ON leads FOR DELETE USING (true);
+
+-- Outreach
+CREATE POLICY "outreach_select" ON outreach FOR SELECT USING (true);
+CREATE POLICY "outreach_insert" ON outreach FOR INSERT WITH CHECK (true);
+CREATE POLICY "outreach_update" ON outreach FOR UPDATE USING (true);
+CREATE POLICY "outreach_delete" ON outreach FOR DELETE USING (true);
+
+-- Search Jobs
+CREATE POLICY "search_jobs_select" ON search_jobs FOR SELECT USING (true);
+CREATE POLICY "search_jobs_insert" ON search_jobs FOR INSERT WITH CHECK (true);
+CREATE POLICY "search_jobs_update" ON search_jobs FOR UPDATE USING (true);
+CREATE POLICY "search_jobs_delete" ON search_jobs FOR DELETE USING (true);

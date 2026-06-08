@@ -1,5 +1,5 @@
 import React from 'react';
-import { getSupabase } from '@/app/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import DashboardClient from './DashboardClient';
 
 export const dynamic = 'force-dynamic';

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/app/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   let jobId: string | null = null;
@@ -18,37 +18,28 @@ export async function POST(req: NextRequest) {
     await supabase.from('search_jobs').update({ status: 'running' }).eq('id', job_id);
 
     // Prompt adaptado con el scoring, contexto del parque y guion
-    const prompt = `Eres Alberto del Parque Hípico La Montaña (Villarrica, Araucanía).
-Busca en Google datos reales de este potencial cliente.
+    const prompt = `Eres Alberto del Parque Hípico La Montaña (Villarrica, Araucanía). Evalúa este potencial cliente para arriendo de espacios para eventos.
 
-EL PARQUE: 3 hectáreas planas (30.000 m²), capacidad 5.000+ personas, 400+ estacionamientos, luz trifásica T1, cancha de carreras profesional certificada, "la mejor del sur". Ideal para: festivales, conciertos, eventos corporativos, team building, matrimonios al aire libre, ferias costumbristas.
+EL PARQUE: 3 hectáreas planas (30.000 m²), capacidad 5.000+ personas, 400+ estacionamientos, luz trifásica T1, cancha de carreras certificada. Ideal para: festivales, conciertos, eventos corporativos, team building, matrimonios, ferias.
 
 CLIENTE: ${empresa} | Tipo: ${categoria} | Web: ${website || 'No especificada'}
 
 SCORING (1-10):
-+3 gran evento (>3000 personas)
-+2 necesita electricidad industrial / trifásica
-+2 misma región (Araucanía, Los Ríos, Los Lagos)
-+2 contacto directo de WhatsApp detectable
-+2 cliente recurrente (ya hizo eventos)
-+1 presupuesto conocido > $5M CLP
-Mínimo: 1, Máximo: 10. Evalúa con criterio realista.
++3 si organiza eventos grandes (>3000 personas)
++2 si necesita electricidad industrial / trifásica
++2 si está en la Araucanía, Los Ríos o Los Lagos
++2 si tiene WhatsApp público detectable
++2 si es cliente recurrente (ya hizo eventos antes)
++1 si presupuesto conocido > $5M CLP
+Mínimo 1, máximo 10. Evalúa con criterio realista basado en lo que sabes de esta empresa.
 
-CATEGORIAS: ["productoras","corporativo","matrimonios","municipal"]
+GUION: Redacta un mensaje de WhatsApp directo de 2-3 líneas máximo. Sé claro, amigable y profesional. Menciona hectáreas, capacidad o luz trifásica si son relevantes. Firma: "soy Alberto del Parque Hípico La Montaña". NUNCA uses "24/7", "recepcionista", "diagnóstico gratis", ni saludos robóticos.
 
-GUION: Redacta un mensaje de WhatsApp directo para este cliente de 2-3 líneas máximo. Sé claro, amigable y profesional. Menciona las hectáreas, capacidad o luz trifásica si son relevantes para el tipo de cliente.
-Firma: "soy Alberto del Parque Hípico La Montaña". Prohibido usar palabras como "24/7", "recepcionista", "diagnóstico gratis", o saludos robóticos.
-
-Responde estrictamente en formato JSON sin Markdown adicional, respetando la siguiente estructura:
-{
-  "perfil": "[descripción breve de qué hacen y dónde están localizados]",
-  "categorias": ["${categoria}"],
-  "guion": "[El mensaje de WhatsApp redactado]",
-  "score": 7
-}`;
+Responde EXACTAMENTE este JSON y nada más:
+{"perfil":"descripción breve de la empresa","categorias":["${categoria}"],"guion":"mensaje WhatsApp aquí","score":7}`;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 9000); // 9s timeout para Vercel Hobby
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
 
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
@@ -57,7 +48,6 @@ Responde estrictamente en formato JSON sin Markdown adicional, respetando la sig
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          tools: [{ google_search: {} }],
           generationConfig: { temperature: 0.2, maxOutputTokens: 2000 }
         }),
         signal: controller.signal
@@ -73,15 +63,23 @@ Responde estrictamente en formato JSON sin Markdown adicional, respetando la sig
     const data = await geminiRes.json();
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     
+    console.log('[ANALIZAR] Raw Gemini text:', rawText.substring(0, 500));
+    
     // Limpieza de Markdown del output
     let cleaned = rawText.trim();
     if (cleaned.includes('```json')) {
-      cleaned = cleaned.split('```json')[1].split('```')[0];
+      cleaned = cleaned.split('```json')[1].split('```')[0].trim();
     } else if (cleaned.includes('```')) {
-      cleaned = cleaned.split('```')[1].split('```')[0];
+      cleaned = cleaned.split('```')[1].split('```')[0].trim();
     }
 
-    const analysisResult = JSON.parse(cleaned.trim());
+    console.log('[ANALIZAR] Cleaned text:', cleaned.substring(0, 500));
+    
+    if (!cleaned) {
+      throw new Error('Gemini returned empty response. Raw: ' + rawText.substring(0, 200));
+    }
+
+    const analysisResult = JSON.parse(cleaned);
 
     // Extraer variables del resultado del JSON estructurado
     const finalScore = analysisResult.score ? parseInt(analysisResult.score.toString()) : 5;
