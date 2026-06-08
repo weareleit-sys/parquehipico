@@ -37,7 +37,7 @@ Investigá "${empresa}" (${website || 'sin web'}) en ${ciudad}, categoría: ${ca
 Respondé EXACTAMENTE en este formato JSON, sin Markdown adicional:
 {
   "perfil": "1 línea describiendo qué hace esta empresa y qué tipo de eventos organiza",
-  "guion": "mensaje de WhatsApp de 3 líneas ofreciendo el parque como venue. Mencioná algo concreto que viste. Tono directo, chileno, informal. Firmá: 'soy Alberto del Parque Hípico La Montaña'. NADA genérico."
+  "guion": "mensaje de WhatsApp de 3 líneas. Reglas OBLIGATORIAS: (1) PRIMERA LÍNEA debe ser un gancho sobre algo concreto que viste de ELLOS, tipo 'Vi que hacen X para Y personas'. NUNCA empieces con 'Tenemos 3 hectáreas' ni menciones features del parque en la primera línea. (2) SEGUNDA LÍNEA: planteá el problema que resolvemos ('si necesitan más espacio', 'si el venue les queda chico', 'si buscan algo outdoor masivo'). (3) TERCERA LÍNEA: llamado a la acción ('conversemos', 'te tinca verlo'). Tono directo, chileno, informal. Firmá: 'soy Alberto del Parque Hípico La Montaña'. PROHIBIDO mencionar '3 hectáreas', 'trifásica' o '5.000 personas' a menos que sea estrictamente necesario para responder una pregunta implícita del lead."
 }`;
 
     const geminiRes = await fetch(
