@@ -1,34 +1,45 @@
 -- ============================================
 -- Parque Hípico La Montaña — Sistema de Leads
--- Ejecutar en: Supabase SQL Editor
+-- Ejecutar TODO DE UNA en: Supabase SQL Editor
+-- https://supabase.com/dashboard/project/hqpmmlrtqruoaptwzjbs/sql/new
 -- ============================================
 
 -- 1. LEADS
 CREATE TABLE IF NOT EXISTS leads (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   empresa TEXT NOT NULL UNIQUE,
-  categoria TEXT NOT NULL,              -- productoras | corporativo | matrimonios | municipal
-  categorias TEXT[] DEFAULT '{}',       -- array nativo: {"productoras","corporativo"}
-  estado_lead TEXT DEFAULT 'nuevo',     -- nuevo | en_proceso | contactado | agendado | descartado
+  categoria TEXT NOT NULL,
+  categorias TEXT[] DEFAULT '{}',
+  estado_lead TEXT DEFAULT 'nuevo',
   telefono TEXT,
   website TEXT,
   email TEXT,
-  ubicacion TEXT,                       -- ciudad/región
-  capacidad_estimada INT,               -- personas aproximadas del evento
-  web_status TEXT,                      -- activa | caida | sin_web
+  ubicacion TEXT,
+  sector TEXT,
+  capacidad_estimada INT,
+  web_status TEXT,
   score INT CHECK (score BETWEEN 1 AND 10),
-  redes TEXT,                           -- "ig,fb,wap"
-  raw_data TEXT,                        -- JSON del análisis de Gemini
-  guion TEXT,                           -- guion WhatsApp generado
+  redes TEXT,
+  instagram TEXT,
+  facebook TEXT,
+  tiktok TEXT,
+  raw_data TEXT,
+  guion TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Índices
+-- Migración para BD existentes
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS sector TEXT;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS instagram TEXT;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS facebook TEXT;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS tiktok TEXT;
+
 CREATE INDEX IF NOT EXISTS idx_leads_categoria ON leads (categoria);
 CREATE INDEX IF NOT EXISTS idx_leads_estado ON leads (estado_lead);
 CREATE INDEX IF NOT EXISTS idx_leads_score ON leads (score DESC);
 CREATE INDEX IF NOT EXISTS idx_leads_categorias ON leads USING GIN (categorias);
+CREATE INDEX IF NOT EXISTS idx_leads_sector ON leads (sector);
 
 -- 2. OUTREACH
 CREATE TABLE IF NOT EXISTS outreach (
@@ -37,16 +48,16 @@ CREATE TABLE IF NOT EXISTS outreach (
   contactado_por TEXT DEFAULT 'Alberto',
   fecha_contacto TIMESTAMPTZ DEFAULT NOW(),
   canal TEXT DEFAULT 'whatsapp',
-  resultado TEXT DEFAULT 'pendiente',   -- pendiente | contactado | respondio | agendado | rechazo
+  resultado TEXT DEFAULT 'pendiente',
   notas TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_outreach_lead ON outreach (lead_id, fecha_contacto DESC);
 
--- 3. SEARCH JOBS (async)
+-- 3. SEARCH JOBS
 CREATE TABLE IF NOT EXISTS search_jobs (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  status TEXT DEFAULT 'pending',        -- pending | running | done | error
+  status TEXT DEFAULT 'pending',
   rubro TEXT,
   ubicacion TEXT,
   total_leads INT DEFAULT 0,
@@ -59,27 +70,11 @@ CREATE TABLE IF NOT EXISTS search_jobs (
 
 CREATE INDEX IF NOT EXISTS idx_search_jobs_status ON search_jobs (status);
 
--- ============================================
--- RLS POLICIES (ejecutar si las tablas ya existen)
--- ============================================
+-- 4. RLS POLICIES
 ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE outreach ENABLE ROW LEVEL SECURITY;
 ALTER TABLE search_jobs ENABLE ROW LEVEL SECURITY;
 
--- Leads: acceso público temporal (igual que tickets)
-CREATE POLICY "leads_select" ON leads FOR SELECT USING (true);
-CREATE POLICY "leads_insert" ON leads FOR INSERT WITH CHECK (true);
-CREATE POLICY "leads_update" ON leads FOR UPDATE USING (true);
-CREATE POLICY "leads_delete" ON leads FOR DELETE USING (true);
-
--- Outreach
-CREATE POLICY "outreach_select" ON outreach FOR SELECT USING (true);
-CREATE POLICY "outreach_insert" ON outreach FOR INSERT WITH CHECK (true);
-CREATE POLICY "outreach_update" ON outreach FOR UPDATE USING (true);
-CREATE POLICY "outreach_delete" ON outreach FOR DELETE USING (true);
-
--- Search Jobs
-CREATE POLICY "search_jobs_select" ON search_jobs FOR SELECT USING (true);
-CREATE POLICY "search_jobs_insert" ON search_jobs FOR INSERT WITH CHECK (true);
-CREATE POLICY "search_jobs_update" ON search_jobs FOR UPDATE USING (true);
-CREATE POLICY "search_jobs_delete" ON search_jobs FOR DELETE USING (true);
+CREATE POLICY "leads_all" ON leads FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "outreach_all" ON outreach FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "search_jobs_all" ON search_jobs FOR ALL USING (true) WITH CHECK (true);

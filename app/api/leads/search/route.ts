@@ -5,7 +5,7 @@ export async function POST(req: NextRequest) {
   const supabase = getSupabase();
 
   try {
-    const { categoria, ubicacion = 'Temuco', limit = 10 } = await req.json();
+    const { categoria, ubicacion = 'Temuco', sector = 'temuco', limit = 10 } = await req.json();
 
     if (!categoria) {
       return NextResponse.json({ error: 'Falta campo requerido: categoria' }, { status: 400 });
@@ -16,7 +16,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing GEMINI_API_KEY' }, { status: 500 });
     }
 
-    // Construir prompt según categoría
     const prompt = `Busca ${limit} empresas, negocios o servicios reales en ${ubicacion}, Región de la Araucanía, Chile. La categoría es "${categoria}".
 
 Si la categoría es "productoras": busca productoras de eventos, festivales, conciertos, ferias.
@@ -25,7 +24,7 @@ Si la categoría es "matrimonios": busca wedding planners, centros de eventos pa
 Si la categoría es "cumpleanos": busca salones de eventos, quintas de recreo, lugares para fiestas infantiles y cumpleaños.
 Si la categoría es "municipal": busca municipalidades, corporaciones de turismo, organismos públicos que organicen ferias o eventos masivos.
 
-Para cada resultado encuentra: nombre de la empresa/organización, teléfono de contacto, sitio web, y ciudad donde operan. Responde SOLO un JSON array de objetos con las llaves "empresa", "telefono", "website", "ubicacion" sin formato adicional de Markdown.`;
+Para cada resultado encuentra: nombre de la empresa/organización, teléfono de contacto, sitio web, ciudad donde operan, y sus redes sociales (instagram, facebook, tiktok si las tienen). Responde SOLO un JSON array de objetos con las llaves "empresa", "telefono", "website", "ubicacion", "instagram", "facebook", "tiktok" sin formato adicional de Markdown.`;
 
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
@@ -66,7 +65,6 @@ Para cada resultado encuentra: nombre de la empresa/organización, teléfono de 
       return NextResponse.json({ error: 'Failed to parse Gemini response', raw: cleaned.substring(0, 300) }, { status: 502 });
     }
 
-    // Guardar leads
     const saved: any[] = [];
     for (let i = 0; i < Math.min(leads.length, limit); i++) {
       const lead = leads[i];
@@ -80,6 +78,10 @@ Para cada resultado encuentra: nombre de la empresa/organización, teléfono de 
           telefono: lead.telefono || '',
           website: lead.website || '',
           ubicacion: lead.ubicacion || '',
+          sector: sector,
+          instagram: lead.instagram || '',
+          facebook: lead.facebook || '',
+          tiktok: lead.tiktok || '',
           raw_data: JSON.stringify(lead),
           estado_lead: 'nuevo'
         }, { onConflict: 'empresa' })
@@ -91,7 +93,7 @@ Para cada resultado encuentra: nombre de la empresa/organización, teléfono de 
         continue;
       }
 
-      saved.push({ ...lead, id: savedLead?.id });
+      saved.push({ ...lead, id: savedLead?.id, sector });
     }
 
     return NextResponse.json({

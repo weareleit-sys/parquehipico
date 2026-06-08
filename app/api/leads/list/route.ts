@@ -8,12 +8,12 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const categoria = searchParams.get('categoria');
     const estado = searchParams.get('estado');
+    const sector = searchParams.get('sector');
     const search = searchParams.get('search');
 
     let query = supabase
       .from('leads')
       .select('*')
-      .order('score', { ascending: false })
       .order('created_at', { ascending: false });
 
     // Filtro por categoría (usando ANY sobre el array categorias)
@@ -24,6 +24,11 @@ export async function GET(request: NextRequest) {
     // Filtro por estado
     if (estado && estado !== 'todos') {
       query = query.eq('estado_lead', estado);
+    }
+
+    // Filtro por sector
+    if (sector && sector !== 'todos') {
+      query = query.eq('sector', sector);
     }
 
     // Filtro de búsqueda por texto (nombre de la empresa o ubicación)
