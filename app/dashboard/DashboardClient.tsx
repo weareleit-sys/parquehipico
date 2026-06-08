@@ -481,14 +481,12 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
                           </td>
                           <td className="px-4 py-4 text-right">
                             <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                              {lead.website && (
-                                <button onClick={() => setSelectedLeadForGuion(lead)}
+                              <button onClick={() => setSelectedLeadForGuion(lead)}
                                   className={`text-xs font-bold flex items-center gap-1 px-2 py-1.5 rounded-lg border transition-all ${lead.guion ? 'text-purple-400 bg-purple-500/10 border-purple-500/20 hover:bg-purple-500/20' : 'text-purple-400 hover:text-purple-300 bg-purple-500/10 border-purple-500/20'}`}
                                   title={lead.guion ? 'Ver guion personalizado' : 'Generar guion con IA'}>
                                   {lead.guion ? <FaEye className="text-[10px]" /> : <FaMagic className="text-[10px]" />}
-                                  {lead.guion ? 'Guion' : 'Guion'}
+                                  Guion
                                 </button>
-                              )}
                               {lead.website && (
                                 <a href={lead.website.startsWith('http')?lead.website:`https://${lead.website}`} target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:text-amber-400 text-xs font-bold flex items-center gap-1 bg-slate-800 px-2 py-1.5 rounded-lg border border-slate-700">web <FaExternalLinkAlt className="text-[9px]"/></a>
                               )}
