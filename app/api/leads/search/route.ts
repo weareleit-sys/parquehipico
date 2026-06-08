@@ -27,11 +27,20 @@ function isWhatsAppCompatible(tel: string): boolean {
 
 // Normalizar teléfono chileno a formato internacional
 function normalizePhone(tel: string): string {
-  let digits = tel.replace(/\D/g, '');
+  // Si hay múltiples teléfonos (separados por coma), tomar el WhatsApp
+  const phones = tel.split(/[,;\/]\s*/);
+  let best = phones[0];
+  for (const p of phones) {
+    const d = p.replace(/\D/g, '');
+    if (d.startsWith('569') || (d.startsWith('9') && d.length <= 9)) {
+      best = p; break;
+    }
+  }
+  let digits = best.replace(/\D/g, '');
   if (digits.startsWith('569')) return '+' + digits;
   if (digits.startsWith('9') && digits.length <= 9) return '+56' + digits;
   if (digits.length === 8) return '+569' + digits;
-  return digits; // no podemos normalizar, devolvemos limpio
+  return '+' + digits;
 }
 
 // Limpiar website (detectar emails metidos como web, urls inválidas)

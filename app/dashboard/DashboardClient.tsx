@@ -180,7 +180,16 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
 
   const getWhatsAppLink = (lead: Lead, customGuion?: string) => {
     if (!lead.telefono) return '#';
-    let digits = lead.telefono.replace(/\D/g, '');
+    // Si hay múltiples teléfonos separados por coma, elegir el WhatsApp (prefiere +56 9)
+    const phones = lead.telefono.split(/[,;\/]\s*/);
+    let bestPhone = phones[0];
+    for (const p of phones) {
+      const d = p.replace(/\D/g, '');
+      if (d.startsWith('569') || (d.startsWith('9') && d.length <= 9)) {
+        bestPhone = p; break;
+      }
+    }
+    let digits = bestPhone.replace(/\D/g, '');
     if (digits.startsWith('569')) { /* ok */ }
     else if (digits.startsWith('9') && digits.length <= 9) { digits = '56' + digits; }
     else if (digits.length === 8) { digits = '569' + digits; }
