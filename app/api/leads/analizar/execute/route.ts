@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     // Prompt adaptado con el scoring, contexto del parque y guion
     const prompt = `Eres Alberto del Parque Hípico La Montaña (Villarrica, Araucanía). Evalúa este potencial cliente para arriendo de espacios para eventos.
 
-EL PARQUE: 3 hectáreas planas (30.000 m²), capacidad 5.000+ personas, 400+ estacionamientos, luz trifásica T1, cancha de carreras certificada. Ideal para: festivales, conciertos, eventos corporativos, team building, matrimonios, ferias.
+EL PARQUE: 3 hectáreas planas (30.000 m²), capacidad 5.000+ personas, 400+ estacionamientos, luz trifásica T1, cancha de carreras certificada. Ideal para: festivales, conciertos, eventos corporativos, team building, matrimonios, cumpleaños, fiestas infantiles, ferias costumbristas.
 
 CLIENTE: ${empresa} | Tipo: ${categoria} | Web: ${website || 'No especificada'}
 
@@ -93,7 +93,6 @@ Responde EXACTAMENTE este JSON y nada más:
         score: finalScore,
         guion: finalGuion,
         raw_data: JSON.stringify(analysisResult),
-        ubicacion: finalPerfil.substring(0, 200), // Usar perfil como ubicación o descripción en su defecto
         updated_at: new Date().toISOString()
       })
       .eq('id', lead_id);

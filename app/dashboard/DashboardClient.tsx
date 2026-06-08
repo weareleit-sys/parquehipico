@@ -36,7 +36,70 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
   // Lógica del buscador asíncrono
   const [searchQuery, setSearchQuery] = useState('');
   const [searchCategory, setSearchCategory] = useState('productoras');
-  const [searchLocation, setSearchLocation] = useState('Temuco, Araucanía');
+  const [searchLocation, setSearchLocation] = useState('Temuco');
+  const [searchSector, setSearchSector] = useState('temuco');
+
+  const sectoresAraucania: Record<string, { label: string; ciudades: { value: string; label: string }[] }> = {
+    temuco: {
+      label: 'Temuco y alrededores',
+      ciudades: [
+        { value: 'Temuco', label: 'Temuco' },
+        { value: 'Padre Las Casas', label: 'Padre Las Casas' },
+        { value: 'Vilcún', label: 'Vilcún' },
+        { value: 'Freire', label: 'Freire' },
+        { value: 'Pitrufquén', label: 'Pitrufquén' },
+        { value: 'Nueva Imperial', label: 'Nueva Imperial' },
+        { value: 'Cholchol', label: 'Cholchol' },
+        { value: 'Galvarino', label: 'Galvarino' },
+      ]
+    },
+    lacustre: {
+      label: 'Zona Lacustre (Villarrica-Pucón)',
+      ciudades: [
+        { value: 'Villarrica', label: 'Villarrica' },
+        { value: 'Pucón', label: 'Pucón' },
+        { value: 'Lican Ray', label: 'Lican Ray' },
+        { value: 'Caburgua', label: 'Caburgua' },
+        { value: 'Curarrehue', label: 'Curarrehue' },
+        { value: 'Coñaripe', label: 'Coñaripe' },
+      ]
+    },
+    sur: {
+      label: 'Zona Sur (Loncoche-Gorbea)',
+      ciudades: [
+        { value: 'Loncoche', label: 'Loncoche' },
+        { value: 'Gorbea', label: 'Gorbea' },
+        { value: 'Toltén', label: 'Toltén' },
+        { value: 'Teodoro Schmidt', label: 'Teodoro Schmidt' },
+      ]
+    },
+    costa: {
+      label: 'Costa Araucanía',
+      ciudades: [
+        { value: 'Carahue', label: 'Carahue' },
+        { value: 'Puerto Saavedra', label: 'Puerto Saavedra' },
+      ]
+    },
+    norte: {
+      label: 'Zona Norte (Malleco)',
+      ciudades: [
+        { value: 'Victoria', label: 'Victoria' },
+        { value: 'Curacautín', label: 'Curacautín' },
+        { value: 'Lautaro', label: 'Lautaro' },
+        { value: 'Collipulli', label: 'Collipulli' },
+        { value: 'Angol', label: 'Angol' },
+        { value: 'Lonquimay', label: 'Lonquimay' },
+      ]
+    },
+    lagos: {
+      label: 'Zona Lagos (Panguipulli y alrededores)',
+      ciudades: [
+        { value: 'Panguipulli', label: 'Panguipulli' },
+        { value: 'Lanco', label: 'Lanco' },
+        { value: 'Mariquina', label: 'Mariquina' },
+      ]
+    },
+  };
   const [searchLimit, setSearchLimit] = useState(10);
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobProgress, setJobProgress] = useState(0);
@@ -218,6 +281,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
       case 'corporativo': return '🏢';
       case 'matrimonios': return '💒';
       case 'municipal': return '🏛️';
+      case 'cumpleanos': return '🎂';
       default: return '📍';
     }
   };
@@ -266,19 +330,41 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
                 <option value="productoras">🎪 Productoras de Eventos</option>
                 <option value="corporativo">🏢 Corporativo / Empresas</option>
                 <option value="matrimonios">💒 Wedding Planners / Bodas</option>
+                <option value="cumpleanos">🎂 Cumpleaños / Celebraciones</option>
                 <option value="municipal">🏛️ Municipalidades / Ferias</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Ubicación</label>
-              <input
-                type="text"
+              <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Sector</label>
+              <select
+                value={searchSector}
+                onChange={(e) => {
+                  setSearchSector(e.target.value);
+                  const sector = sectoresAraucania[e.target.value];
+                  if (sector && sector.ciudades.length > 0) {
+                    setSearchLocation(sector.ciudades[0].value);
+                  }
+                }}
+                className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 transition-colors text-sm"
+              >
+                {Object.entries(sectoresAraucania).map(([key, sector]) => (
+                  <option key={key} value={key}>{sector.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Ciudad / Localidad</label>
+              <select
                 value={searchLocation}
                 onChange={(e) => setSearchLocation(e.target.value)}
-                placeholder="Temuco, Araucanía"
                 className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 transition-colors text-sm"
-              />
+              >
+                {(sectoresAraucania[searchSector]?.ciudades || []).map((ciudad) => (
+                  <option key={ciudad.value} value={ciudad.value}>{ciudad.label}</option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -342,7 +428,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
             {/* Chips de Categorías y Estados */}
             <div className="flex flex-col gap-2 items-start md:items-end w-full md:w-auto">
               <div className="flex flex-wrap gap-2">
-                {['todos', 'productoras', 'corporativo', 'matrimonios', 'municipal'].map((cat) => (
+                {['todos', 'productoras', 'corporativo', 'matrimonios', 'cumpleanos', 'municipal'].map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setActiveCategory(cat)}

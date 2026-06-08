@@ -18,10 +18,18 @@ export async function POST(req: NextRequest) {
     await supabase.from('search_jobs').update({ status: 'running' }).eq('id', job_id);
 
     // 1. Gemini grounding: buscar leads reales
-    const prompt = `Busca ${limit} empresas reales en ${ubicacion}, Chile que organicen o necesiten espacios para eventos masivos, festivales, conciertos, team building o matrimonios. Para cada una encuentra: nombre, teléfono, sitio web, ciudad. Responde SOLO un JSON array de objetos con las llaves "empresa", "telefono", "website", "ubicacion" sin formato adicional de Markdown.`;
+    const prompt = `Busca ${limit} empresas, negocios o servicios reales en ${ubicacion}, Región de la Araucanía, Chile. La categoría es "${categoria}".
+
+Si la categoría es "productoras": busca productoras de eventos, festivales, conciertos, ferias.
+Si la categoría es "corporativo": busca empresas grandes que hagan team building, cenas de fin de año, convenciones.
+Si la categoría es "matrimonios": busca wedding planners, centros de eventos para bodas, organizadores de matrimonios.
+Si la categoría es "cumpleanos": busca salones de eventos, quintas de recreo, lugares para fiestas infantiles y cumpleaños.
+Si la categoría es "municipal": busca municipalidades, corporaciones de turismo, organismos públicos que organicen ferias o eventos masivos.
+
+Para cada resultado encuentra: nombre de la empresa/organización, teléfono de contacto, sitio web, y ciudad donde operan. Responde SOLO un JSON array de objetos con las llaves "empresa", "telefono", "website", "ubicacion" sin formato adicional de Markdown.`;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000); // 25s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 35000); // 35s timeout para Grounding
 
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,

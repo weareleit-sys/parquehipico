@@ -44,8 +44,8 @@ export async function POST(req: NextRequest) {
       job_id: job.id,
       status: 'pending',
       poll_url: `/api/leads/job-status/${job.id}`,
-      estimated_time_s: limit * 2,
-      estimated_cost_clp: limit * 9,
+      estimated_time_s: limit * 8,
+      estimated_cost_clp: limit * 15,
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
