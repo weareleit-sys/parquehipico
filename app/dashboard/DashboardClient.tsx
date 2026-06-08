@@ -97,6 +97,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
   const [searchLimit, setSearchLimit] = useState(10);
   const [searchStatus, setSearchStatus] = useState<string | null>(null);
   const [searchMessage, setSearchMessage] = useState('');
+  const [searchStats, setSearchStats] = useState<any>(null);
   const [searchPhaseIdx, setSearchPhaseIdx] = useState(0);
   const [newLeads, setNewLeads] = useState<Lead[]>([]);
   const phaseInterval = useRef<NodeJS.Timeout | null>(null);
@@ -161,6 +162,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
       const data = await res.json();
       if (res.ok && data.success) {
         setNewLeads(data.leads || []);
+        setSearchStats(data.stats || null);
         setSearchStatus('done');
         setSearchMessage(`${data.total} leads encontrados en ${searchLocation}`);
         fetchLeads();
@@ -308,8 +310,28 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
           )}
 
           {searchStatus === 'done' && (
-            <div className="bg-emerald-950/30 rounded-xl p-4 border border-emerald-900">
+            <div className="bg-emerald-950/30 rounded-xl p-4 border border-emerald-900 space-y-2">
               <p className="text-xs font-bold text-emerald-400">{searchMessage}</p>
+              {searchStats && (
+                <div className="grid grid-cols-2 gap-2 text-[10px]">
+                  <div className="bg-slate-900 rounded-lg p-2 text-center">
+                    <p className="text-emerald-400 font-bold">{searchStats.withWhatsApp}</p>
+                    <p className="text-slate-500">WhatsApp</p>
+                  </div>
+                  <div className="bg-slate-900 rounded-lg p-2 text-center">
+                    <p className="text-amber-400 font-bold">{searchStats.withPhone - searchStats.withWhatsApp}</p>
+                    <p className="text-slate-500">Fijo</p>
+                  </div>
+                  <div className="bg-slate-900 rounded-lg p-2 text-center">
+                    <p className="text-blue-400 font-bold">{searchStats.withWebsite}</p>
+                    <p className="text-slate-500">Con web</p>
+                  </div>
+                  <div className="bg-slate-900 rounded-lg p-2 text-center">
+                    <p className="text-pink-400 font-bold">{searchStats.withEmail}</p>
+                    <p className="text-slate-500">Con email</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {searchStatus === 'error' && (
@@ -406,9 +428,16 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
                                 {isNew && !wasContacted && <span className="ml-2 inline-block text-[10px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded font-bold">Nuevo</span>}
                                 {isNew && wasContacted && <span className="ml-2 inline-block text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded font-bold">Ya contactado</span>}
                               </span>
-                              <div className="flex gap-3 text-xs text-slate-500 mt-1">
-                                {lead.telefono && <span className="font-mono text-slate-400">{lead.telefono}</span>}
-                                {lead.website && <a href={lead.website.startsWith('http')?lead.website:`https://${lead.website}`} target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:text-amber-400 flex items-center gap-1">web <FaExternalLinkAlt className="text-[9px]"/></a>}
+                              <div className="flex gap-3 text-xs text-slate-500 mt-1 flex-wrap">
+                                {lead.telefono && (
+                                  <span className={`font-mono ${lead.web_status === 'fijo' ? 'text-amber-500' : 'text-slate-400'}`}>
+                                    {lead.web_status === 'fijo' ? '📞 ' : ''}{lead.telefono}
+                                  </span>
+                                )}
+                                {lead.email && <span className="text-pink-400 font-mono text-[11px]">{lead.email}</span>}
+                                {lead.website && (
+                                  <a href={lead.website.startsWith('http')?lead.website:`https://${lead.website}`} target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:text-amber-400 flex items-center gap-1">web <FaExternalLinkAlt className="text-[9px]"/></a>
+                                )}
                               </div>
                             </div>
                           </td>

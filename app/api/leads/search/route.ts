@@ -1,6 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
 
+// Normalizar nombre de empresa para deduplicación
+function normalizeName(name: string): string {
+  return (name || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quitar acentos
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '') // solo letras, números, espacios
+    .replace(/\s+/g, ' ')       // normalizar espacios
+    .trim();
+}
+
+// Validar email
+function isValidEmail(email: string): boolean {
+  return !!(email && email.includes('@') && email.includes('.') && !email.includes(' '));
+}
+
+// Detectar si un teléfono es WhatsApp (+56 9 en Chile)
+function isWhatsAppCompatible(tel: string): boolean {
+  const digits = tel.replace(/\D/g, '');
+  return digits.startsWith('569') || digits.length === 9;
+}
+
+// Limpiar website (detectar emails metidos como web, urls inválidas)
+function cleanWebsite(url: string): string {
+  if (!url) return '';
+  const trimmed = url.trim().toLowerCase();
+  // Detectar emails puestos como website
+  if (trimmed.includes('@') && !trimmed.startsWith('http')) return '';
+  // Quitar prefijos raros
+  let clean = trimmed.replace(/^(https?:\/\/)?(www\.)?/, '');
+  clean = clean.replace(/\/$/, ''); // quitar slash final
+  // Si no tiene .algo, probablemente no es un dominio real
+  if (!clean.includes('.') || clean.length < 4) return '';
+  return clean;
+}
+
 export async function POST(req: NextRequest) {
   const supabase = getSupabase();
 
@@ -24,9 +59,12 @@ Si la categoría es "matrimonios": busca wedding planners, centros de eventos pa
 Si la categoría es "cumpleanos": busca salones de eventos, quintas de recreo, lugares para fiestas infantiles y cumpleaños.
 Si la categoría es "municipal": busca municipalidades, corporaciones de turismo, organismos públicos que organicen ferias o eventos masivos.
 
-IMPORTANTE: El teléfono de contacto es OBLIGATORIO. Busca en Google, Facebook, Instagram, páginas amarillas, guías locales hasta encontrar un número. Si absolutamente no encuentras teléfono, usa string vacío "". El sitio web también es importante.
+IMPORTANTE: El teléfono de contacto es OBLIGATORIO. Busca en Google, Facebook, Instagram, páginas amarillas, guías locales hasta encontrar un número. Prefiere teléfonos móviles chilenos (+56 9). Si absolutamente no encuentras teléfono, usa string vacío "".
 
-Para cada resultado incluye: nombre de la empresa, teléfono, sitio web, ciudad, instagram, facebook, tiktok (string vacío si no encuentra). Responde SOLO un JSON array de objetos con las llaves "empresa", "telefono", "website", "ubicacion", "instagram", "facebook", "tiktok" sin formato adicional de Markdown.`;
+El sitio web debe ser un dominio real (ej: "www.empresa.cl"), NO pongas emails como website.
+Si encuentras email de contacto, agrégalo en un campo "email" aparte.
+
+Para cada resultado incluye: empresa, telefono, website, email, ubicacion, instagram, facebook, tiktok (string vacío si no encuentra). Responde SOLO un JSON array sin Markdown.`;
 
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
@@ -67,41 +105,109 @@ Para cada resultado incluye: nombre de la empresa, teléfono, sitio web, ciudad,
       return NextResponse.json({ error: 'Failed to parse Gemini response', raw: cleaned.substring(0, 300) }, { status: 502 });
     }
 
+    // Validar, limpiar y guardar cada lead
     const saved: any[] = [];
+    const seenNames = new Set<string>();
+
     for (let i = 0; i < Math.min(leads.length, limit); i++) {
       const lead = leads[i];
+      const normalizedName = normalizeName(lead.empresa);
+      const empresaOriginal = (lead.empresa || '').trim();
 
-      const { data: savedLead, error: upsertError } = await supabase
-        .from('leads')
-        .upsert({
-          empresa: lead.empresa,
-          categoria: categoria,
-          categorias: [categoria],
-          telefono: lead.telefono || '',
-          website: lead.website || '',
-          ubicacion: lead.ubicacion || '',
-          sector: sector,
-          instagram: lead.instagram || '',
-          facebook: lead.facebook || '',
-          tiktok: lead.tiktok || '',
-          raw_data: JSON.stringify(lead),
-          estado_lead: 'nuevo'
-        }, { onConflict: 'empresa' })
-        .select('id')
-        .single();
-
-      if (upsertError) {
-        console.error(`Error saving lead ${lead.empresa}:`, upsertError.message);
+      // Saltar duplicados en esta misma búsqueda
+      if (seenNames.has(normalizedName)) {
+        console.warn(`[DEDUP] Saltando duplicado en búsqueda: ${empresaOriginal}`);
         continue;
       }
+      seenNames.add(normalizedName);
 
-      saved.push({ ...lead, id: savedLead?.id, sector });
+      // Verificar si ya existe un lead similar en la BD
+      const { data: existingLeads } = await supabase
+        .from('leads')
+        .select('id, empresa, telefono, website, email, instagram, facebook, tiktok')
+        .ilike('empresa', `%${normalizedName.substring(0, Math.min(20, normalizedName.length))}%`)
+        .limit(1);
+
+      // Validar y limpiar campos
+      const email = isValidEmail(lead.email) ? lead.email.trim() : '';
+      const cleanTel = (lead.telefono || '').trim();
+      const isWap = isWhatsAppCompatible(cleanTel);
+      const site = cleanWebsite(lead.website || '');
+
+      let finalEmail = email;
+      if (!finalEmail && lead.website && lead.website.includes('@')) {
+        if (isValidEmail(lead.website)) finalEmail = lead.website.trim();
+      }
+
+      // Si ya existe, hacer UPDATE (no duplicar)
+      const recordId = existingLeads && existingLeads.length > 0 ? existingLeads[0].id : null;
+      const updateData: any = {
+        categoria: categoria,
+        categorias: [categoria],
+        telefono: cleanTel || (recordId ? existingLeads?.[0]?.telefono : ''),
+        website: site || (recordId ? existingLeads?.[0]?.website : ''),
+        email: finalEmail || (recordId ? existingLeads?.[0]?.email : ''),
+        ubicacion: lead.ubicacion || '',
+        sector: sector,
+        instagram: (lead.instagram || '').trim() || (recordId ? existingLeads?.[0]?.instagram : ''),
+        facebook: (lead.facebook || '').trim() || (recordId ? existingLeads?.[0]?.facebook : ''),
+        tiktok: (lead.tiktok || '').trim() || (recordId ? existingLeads?.[0]?.tiktok : ''),
+        raw_data: JSON.stringify({ ...lead, _validated: true, _isWhatsApp: isWap, _websiteOk: !!site }),
+        estado_lead: recordId ? undefined : 'nuevo', // no pisar estado de leads existentes
+        web_status: isWap ? (site ? 'activa' : 'sin_web') : 'fijo',
+        updated_at: new Date().toISOString(),
+      };
+
+      let finalId: string;
+      if (recordId) {
+        // Actualizar existente (conservar el nombre original que tiene en BD)
+        const { error: updateError } = await supabase
+          .from('leads').update(updateData).eq('id', recordId);
+        if (updateError) {
+          console.error(`Error updating lead ${empresaOriginal}:`, updateError.message);
+          continue;
+        }
+        finalId = recordId;
+      } else {
+        // Insertar nuevo
+        const { data: savedLead, error: upsertError } = await supabase
+          .from('leads')
+          .upsert({
+            empresa: empresaOriginal,
+            ...updateData,
+          }, { onConflict: 'empresa' })
+          .select('id')
+          .single();
+
+        if (upsertError) {
+          console.error(`Error saving lead ${empresaOriginal}:`, upsertError.message);
+          continue;
+        }
+        finalId = savedLead?.id;
+      }
+
+      saved.push({
+        ...lead,
+        id: finalId,
+        sector,
+        email: finalEmail,
+        website: site,
+        telefono: cleanTel,
+        _isWhatsApp: isWap,
+        _websiteOk: !!site,
+      });
     }
 
     return NextResponse.json({
       success: true,
       leads: saved,
-      total: saved.length
+      total: saved.length,
+      stats: {
+        withPhone: saved.filter(l => l.telefono).length,
+        withWhatsApp: saved.filter((l: any) => l._isWhatsApp).length,
+        withWebsite: saved.filter((l: any) => l._websiteOk).length,
+        withEmail: saved.filter(l => l.email).length,
+      }
     });
   } catch (error: any) {
     console.error('Search Error:', error);
