@@ -46,12 +46,13 @@ export async function POST(req: NextRequest) {
     const categoria = lead.categoria;
 
     // Prompt principal (con web si existe, sino sin referencia)
-    const mainPrompt = website
-      ? `Sos Alberto del Parque Hípico La Montaña, recinto outdoor más grande del sur de Chile. Investigá "${empresa}" (${website}) en ${ciudad}. Categoría: ${categoria}. Respondé JSON: {"perfil":"1 línea de qué hacen","guion":"mensaje WhatsApp 3 líneas. Gancho sobre ELLOS, no sobre nosotros. Problema que resolvemos. CTA informal. Firmá: soy Alberto del Parque Hípico La Montaña. PROHIBIDO mencionar hectáreas o trifásica."}`
-      : `Sos Alberto del Parque Hípico La Montaña. Escribí un mensaje para "${empresa}" en ${ciudad}, categoría ${categoria}. Respondé JSON: {"perfil":"1 línea describiendo esta empresa","guion":"mensaje WhatsApp 3 líneas. Gancho sobre su rubro. Problema que resolvemos. CTA informal. Firmá: soy Alberto del Parque Hípico La Montaña."}`;
+    const mainPrompt = `Sos Alberto. ARRENDAMOS ESPACIO FÍSICO para eventos masivos: 3 hectáreas planas, capacidad 5.000+ personas, luz trifásica, 400+ estacionamientos. SOMOS UN VENUE/TERRENO, no hacemos shows de caballos ni servicios ecuestres. El nombre "Parque Hípico" es histórico, NO significa que trabajemos con caballos.
 
-    // Fallback simple si el principal falla
-    const fallbackPrompt = `Escribí un mensaje de WhatsApp de 2 líneas para "${empresa}" (${categoria}) en ${ciudad}. Ofrecé espacio outdoor para eventos masivos. Tono chileno, informal. Firmá: soy Alberto del Parque Hípico La Montaña. Respondé JSON: {"perfil":"Breve descripción","guion":"mensaje aquí"}`;
+Investigá "${empresa}" (${website || 'sin web'}) en ${ciudad}. Categoría: ${categoria}.
+Respondé JSON:
+{"perfil":"1 línea describiendo qué hace ESTA EMPRESA (no nosotros)","guion":"mensaje WhatsApp 3 líneas. Gancho sobre ELLOS. Problema que resolvemos (espacio outdoor masivo). CTA informal. PROHIBIDO mencionar caballos, equitación, shows ecuestres, hectáreas, trifásica. Firmá: soy Alberto del Parque Hípico La Montaña."}`;
+
+    const fallbackPrompt = `ARRENDAMOS ESPACIO FÍSICO PARA EVENTOS (no caballos, no shows ecuestres). Escribí mensaje WhatsApp 2 líneas para "${empresa}" (${categoria}) en ${ciudad}. Respondé JSON: {"perfil":"Breve","guion":"mensaje aquí. PROHIBIDO mencionar caballos o ecuestre. Firmá: soy Alberto del Parque Hípico La Montaña."}`;
 
     let result: any = null;
     let lastError = '';

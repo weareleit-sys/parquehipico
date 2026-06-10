@@ -80,9 +80,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing GEMINI_API_KEY' }, { status: 500 });
     }
 
-    const prompt = `Soy Alberto del Parque Hípico La Montaña, el recinto outdoor más grande del sur de Chile: 3 hectáreas planas (30.000 m²), capacidad 5.000+ personas, 400+ estacionamientos, luz trifásica T1, cancha de carreras certificada. Vendemos ARRIENDO del espacio para eventos masivos.
+    const prompt = `Soy Alberto del Parque Hípico La Montaña, un recinto outdoor en Villarrica. ARRENDAMOS EL TERRENO/ESPACIO FÍSICO para eventos masivos: 3 hectáreas planas (30.000 m²), capacidad 5.000+ personas, 400+ estacionamientos, luz trifásica T1. SOMOS UN VENUE, no hacemos shows de caballos. El nombre es histórico.
 
-Busca ${limit} empresas, productoras u organizaciones reales en ${ubicacion}, Región de la Araucanía, que podrían NECESITAR un espacio outdoor masivo. La categoría es "${categoria}".
+Busca ${limit} empresas, productoras u organizaciones reales en ${ubicacion}, Región de la Araucanía, que podrían NECESITAR arrendar un espacio outdoor masivo. La categoría es "${categoria}".
 
 Si la categoría es "productoras": busca productoras de eventos, festivales, conciertos. Necesitan venues para los eventos de SUS clientes. Nosotros somos el venue.
 Si la categoría es "corporativo": busca empresas con +50 empleados que hagan team building, cenas de fin de año, convenciones que requieran espacio al aire libre.
