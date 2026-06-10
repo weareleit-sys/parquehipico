@@ -181,7 +181,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
         setNewLeads(data.leads || []);
         setSearchStats(data.stats || null);
         setSearchStatus('done');
-        setSearchMessage(`${data.total} leads encontrados en ${searchLocation}`);
+        setSearchMessage(`${data.total} empresas encontradas en ${searchLocation}`);
         fetchLeads();
       } else {
         setSearchStatus('error');
@@ -237,6 +237,32 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
     return links;
   };
 
+  const getEstadoColor = (estado: string) => {
+    switch (estado) {
+      case 'nuevo': return 'border-l-blue-500';
+      case 'en_proceso': return 'border-l-amber-500';
+      case 'contactado': return 'border-l-amber-500';
+      case 'respondio': return 'border-l-emerald-500';
+      case 'agendado': return 'border-l-purple-500';
+      case 'rechazo': return 'border-l-red-500';
+      case 'descartado': return 'border-l-slate-600';
+      default: return 'border-l-transparent';
+    }
+  };
+
+  const getEstadoBadge = (estado: string) => {
+    switch (estado) {
+      case 'nuevo': return 'bg-blue-500/20 text-blue-400';
+      case 'en_proceso': return 'bg-amber-500/20 text-amber-400';
+      case 'contactado': return 'bg-amber-500/20 text-amber-400';
+      case 'respondio': return 'bg-emerald-500/20 text-emerald-400';
+      case 'agendado': return 'bg-purple-500/20 text-purple-400';
+      case 'rechazo': return 'bg-red-500/20 text-red-400';
+      case 'descartado': return 'bg-slate-700/50 text-slate-400';
+      default: return 'bg-slate-800 text-slate-400';
+    }
+  };
+
   const getRelativeTime = (dateStr: string | null) => {
     if (!dateStr) return null;
     const diff = Date.now() - new Date(dateStr).getTime();
@@ -289,7 +315,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6 border-b border-slate-800 pb-6">
         <div>
           <span className="text-amber-500 font-bold uppercase tracking-[0.2em] text-xs">Parque Hípico La Montaña</span>
-          <h1 className="text-4xl font-extrabold text-white mt-1 tracking-tight">Panel de Leads & Outreach</h1>
+          <h1 className="text-4xl font-extrabold text-white mt-1 tracking-tight">Contactos</h1>
           <p className="text-slate-400 text-sm mt-1">Busca empresas en la Araucanía, por sector y categoría. Contacta por WhatsApp, Instagram, Facebook o TikTok.</p>
         </div>
         <button onClick={fetchLeads} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg transition-all">
@@ -302,7 +328,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
         {/* SIDEBAR */}
         <div className="lg:col-span-1 bg-slate-900 rounded-2xl p-6 border border-slate-800 h-fit space-y-6">
           <div className="flex items-center gap-3">
-            <FaSearch className="text-amber-500 text-xl" /><h3 className="text-lg font-bold text-white">Buscar Leads</h3>
+            <FaSearch className="text-amber-500 text-xl" />            <h3 className="text-lg font-bold text-white">Buscar empresas</h3>
           </div>
           <form onSubmit={handleStartSearch} className="space-y-4">
             <div>
@@ -328,11 +354,11 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Cantidad</label>
+              <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Resultados</label>
               <input type="number" min={1} max={20} value={searchLimit} onChange={e => setSearchLimit(parseInt(e.target.value) || 5)} className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 text-sm" />
             </div>
             <button type="submit" disabled={loading} className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50">
-              <FaSearch /> {loading ? 'Buscando...' : 'Buscar Leads'}
+              <FaSearch />               {loading ? 'Buscando...' : 'Buscar empresas'}
             </button>
           </form>
 
@@ -450,7 +476,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
                 </thead>
                 <tbody className="divide-y divide-slate-800">
                   {sortedLeads.length === 0 ? (
-                    <tr><td colSpan={8} className="px-6 py-12 text-center text-slate-500 text-sm">No hay leads. Usa el panel lateral para buscar empresas en la Araucanía.</td></tr>
+                    <tr><td colSpan={8} className="px-6 py-12 text-center text-slate-500 text-sm">                        No hay contactos. Usa el panel lateral para buscar empresas en la Araucanía.</td></tr>
                   ) : (
                     sortedLeads.map(lead => {
                       const { isNew, wasContacted } = getNewLeadStatus(lead);
@@ -458,7 +484,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
                       const lastTime = getRelativeTime(lead._lastOutreach?.fecha_contacto || null);
                       const lastResult = lead._lastOutreach?.resultado;
                       return (
-                        <tr key={lead.id} className={`${isNew ? (wasContacted ? 'bg-blue-500/5' : 'bg-amber-500/5') : ''} hover:bg-slate-800/30 transition-all`}>
+                        <tr key={lead.id} className={`border-l-2 ${getEstadoColor(lead.estado_lead)} hover:bg-slate-800/30 transition-all`}>
                           <td className="px-4 py-4">
                             <div>
                               <span className="text-white font-semibold text-sm block">
@@ -492,14 +518,16 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
                           <td className="px-4 py-4 text-center">
                             <button onClick={() => setSelectedLeadForOutreach(lead)} className="bg-slate-800 border border-slate-700 hover:border-slate-600 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-all capitalize">{lead.estado_lead.replace('_',' ')}</button>
                           </td>
-                          <td className="px-4 py-4 text-xs text-slate-500">
+                          <td className="px-4 py-4 text-xs text-slate-400">
                             {lastTime ? (
                               <span title={lastResult ? getOutreachResultLabel(lastResult) : ''} className="cursor-help">
-                                {lastTime}
-                                {lastResult === 'agendado' && ' 📅'}
-                                {lastResult === 'rechazo' && ' ❌'}
+                                {lastResult === 'agendado' && '📅 '}
+                                {lastResult === 'rechazo' && '❌ '}
+                                {lastTime === 'ahora' ? 'Contactado hoy' :
+                                 lastTime.startsWith('hace') ? `Contactado ${lastTime.replace('hace ', 'hace ')}` :
+                                 `Contactado ${lastTime}`}
                               </span>
-                            ) : <span className="text-slate-600">—</span>}
+                            ) : <span className="text-slate-600">Sin contacto aún</span>}
                           </td>
                           <td className="px-4 py-4 text-right">
                             <div className="flex items-center justify-end gap-1.5 flex-wrap">
@@ -507,7 +535,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
                                   className={`text-xs font-bold flex items-center gap-1 px-2 py-1.5 rounded-lg border transition-all ${lead.guion ? 'text-purple-400 bg-purple-500/10 border-purple-500/20 hover:bg-purple-500/20' : 'text-purple-400 hover:text-purple-300 bg-purple-500/10 border-purple-500/20'}`}
                                   title={lead.guion ? 'Ver guion personalizado' : 'Generar guion con IA'}>
                                   {lead.guion ? <FaEye className="text-[10px]" /> : <FaMagic className="text-[10px]" />}
-                                  Guion
+                                  Mensaje
                                 </button>
                               {lead.website && (
                                 <a href={lead.website.startsWith('http')?lead.website:`https://${lead.website}`} target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:text-amber-400 text-xs font-bold flex items-center gap-1 bg-slate-800 px-2 py-1.5 rounded-lg border border-slate-700">web <FaExternalLinkAlt className="text-[9px]"/></a>
