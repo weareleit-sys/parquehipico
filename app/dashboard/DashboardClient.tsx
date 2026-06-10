@@ -166,11 +166,16 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
     setSearchPhaseIdx(0);
     setSearchMessage(`Buscando ${searchCategory} en ${searchLocation}...`);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 50000);
+
     try {
       const res = await apiFetch('/api/leads/search', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ categoria: searchCategory, ubicacion: searchLocation, sector: searchSector, limit: searchLimit })
+        body: JSON.stringify({ categoria: searchCategory, ubicacion: searchLocation, sector: searchSector, limit: searchLimit }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const data = await res.json();
       if (res.ok && data.success) {
         setNewLeads(data.leads || []);
@@ -182,7 +187,14 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
         setSearchStatus('error');
         setSearchMessage(data.error || 'Error en la búsqueda');
       }
-    } catch {
+    } catch (err: any) {
+      clearTimeout(timeoutId);
+      if (err.name === 'AbortError') {
+        setSearchStatus('running');
+        setSearchMessage('Búsqueda sigue en servidor. Recargá en unos segundos para ver resultados.');
+        setLoading(false);
+        return;
+      }
       setSearchStatus('error');
       setSearchMessage('Error de red al buscar');
     } finally { setLoading(false); }

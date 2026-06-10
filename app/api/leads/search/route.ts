@@ -96,22 +96,37 @@ Instagram, Facebook y TikTok: usuario o URL real. Si no encuentras, string vací
 
 Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","website","email","ubicacion","instagram","facebook","tiktok"}`;
 
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          tools: [{ google_search: {} }],
-          generationConfig: { temperature: 0.1, maxOutputTokens: 4000 }
-        }),
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+    let geminiRes: Response;
+    try {
+      geminiRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            tools: [{ google_search: {} }],
+            generationConfig: { temperature: 0.1, maxOutputTokens: 4000 }
+          }),
+          signal: controller.signal,
+        }
+      );
+    } catch (e: any) {
+      clearTimeout(timeoutId);
+      if (e.name === 'AbortError') {
+        return NextResponse.json({ error: 'La búsqueda tardó más de 45 segundos. Probá con menos resultados o una ciudad más grande.' }, { status: 504 });
       }
-    );
+      return NextResponse.json({ error: 'Error de conexión con Gemini. Revisá tu internet.' }, { status: 502 });
+    }
+
+    clearTimeout(timeoutId);
 
     if (!geminiRes.ok) {
       const errText = await geminiRes.text();
-      return NextResponse.json({ error: `Gemini API error: ${geminiRes.status} ${errText}` }, { status: 502 });
+      return NextResponse.json({ error: `Gemini no respondió correctamente (${geminiRes.status}). Reintentá en unos segundos.` }, { status: 502 });
     }
 
     const data = await geminiRes.json();
@@ -233,6 +248,7 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
       success: true,
       leads: saved,
       total: saved.length,
+      remaining_searches: remaining,
       stats: {
         withPhone: saved.filter(l => l.telefono).length,
         withWhatsApp: saved.filter((l: any) => l._isWhatsApp).length,

@@ -39,23 +39,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ leads: [] });
     }
 
-    // Obtener último outreach por lead
-    const leadIds = leads.map((l: any) => l.id);
-    const { data: outreachData } = await supabase
-      .from('outreach')
-      .select('lead_id, resultado, fecha_contacto')
-      .in('lead_id', leadIds)
-      .order('fecha_contacto', { ascending: false });
+    // Obtener último outreach por lead (fallback silencioso si falla)
+    let outreachByLead: Record<string, any> = {};
+    try {
+      const { data: outreachData } = await supabase
+        .from('outreach')
+        .select('lead_id, resultado, fecha_contacto')
+        .in('lead_id', leadIds)
+        .order('fecha_contacto', { ascending: false });
 
-    // Agrupar outreach por lead_id (quedarse con el más reciente)
-    const outreachByLead: Record<string, any> = {};
-    if (outreachData) {
-      for (const o of outreachData) {
-        if (!outreachByLead[o.lead_id]) {
-          outreachByLead[o.lead_id] = o;
+      if (outreachData) {
+        for (const o of outreachData) {
+          if (!outreachByLead[o.lead_id]) {
+            outreachByLead[o.lead_id] = o;
+          }
         }
       }
-    }
+    } catch { /* outreach no disponible, seguimos sin ese dato */ }
 
     const enrichedLeads = leads.map((lead: any) => ({
       ...lead,
