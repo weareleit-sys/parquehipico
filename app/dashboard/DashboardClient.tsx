@@ -96,10 +96,13 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
   };
 
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
+  const [totalLeads, setTotalLeads] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('todos');
-  const [activeState, setActiveState] = useState('todos');
+  const [activeState, setActiveState] = useState('pendientes');
   const [activeSector, setActiveSector] = useState('todos');
 
   const [searchCategory, setSearchCategory] = useState('productoras');
@@ -149,15 +152,21 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
     try {
       const q = new URLSearchParams();
       if (activeCategory !== 'todos') q.append('categoria', activeCategory);
-      if (activeState !== 'todos') q.append('estado', activeState);
+      if (activeState !== 'todos' && activeState !== 'pendientes') q.append('estado', activeState);
+      if (activeState === 'pendientes') { q.append('estado', 'nuevo'); /* ampliar después */ }
       if (activeSector !== 'todos') q.append('sector', activeSector);
       if (searchTerm) q.append('search', searchTerm);
+      q.append('page', page.toString());
+      q.append('limit', '25');
       const res = await apiFetch(`/api/leads/list?${q.toString()}`);
-      if (res.ok) { const d = await res.json(); setLeads(d.leads || []); }
+      if (res.ok) { const d = await res.json(); setLeads(d.leads || []); setTotalLeads(d.total || 0); setTotalPages(d.totalPages || 0); }
     } catch (err) { console.error(err); }
-  }, [activeCategory, activeState, activeSector, searchTerm]);
+  }, [activeCategory, activeState, activeSector, searchTerm, page]);
 
-  useEffect(() => { fetchLeads(); }, [fetchLeads]);
+  useEffect(() => {
+    setPage(1);
+    fetchLeads();
+  }, [activeCategory, activeState, activeSector, searchTerm]);
 
   const handleStartSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -442,9 +451,9 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
               ))}
             </div>
             <div className="flex flex-wrap gap-2">
-              {['todos','nuevo','en_proceso','contactado','agendado','descartado'].map(st => (
+              {['pendientes', 'contactado', 'respondio', 'agendado', 'rechazo', 'todos'].map(st => (
                 <button key={st} onClick={() => setActiveState(st)} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase border transition-all ${activeState===st?'bg-emerald-500 text-white border-emerald-500':'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-750'}`}>
-                  {st==='todos'?'Todos los Estados':st.replace('_',' ')}
+                  {st==='todos'?'Todos':st==='pendientes'?'🔵 Pendientes':st.replace('_',' ')}
                 </button>
               ))}
             </div>
@@ -554,6 +563,18 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
                 </tbody>
               </table>
             </div>
+            {/* PAGINACIÓN */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-6 py-3 border-t border-slate-800 bg-slate-950/50">
+                <span className="text-xs text-slate-500">{totalLeads} contactos · Página {page} de {totalPages}</span>
+                <div className="flex gap-2">
+                  <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
+                    className="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg disabled:opacity-30 transition-all">← Anterior</button>
+                  <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}
+                    className="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg disabled:opacity-30 transition-all">Siguiente →</button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
