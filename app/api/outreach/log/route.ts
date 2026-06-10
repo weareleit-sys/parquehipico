@@ -12,15 +12,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Insertar registro en outreach
+    const outreachData: any = {
+      lead_id,
+      contactado_por: contactado_por || 'Alberto',
+      canal: canal || 'whatsapp',
+      resultado: resultado || 'pendiente',
+      notas
+    };
+    // Si respondieron o agendaron, registrar la fecha de respuesta
+    if (resultado === 'respondio' || resultado === 'agendado') {
+      outreachData.respuesta_fecha = new Date().toISOString();
+    }
+
     const { data: outreach, error: outreachError } = await supabase
       .from('outreach')
-      .insert({
-        lead_id,
-        contactado_por: contactado_por || 'Alberto',
-        canal: canal || 'whatsapp',
-        resultado: resultado || 'pendiente',
-        notas
-      })
+      .insert(outreachData)
       .select()
       .single();
 

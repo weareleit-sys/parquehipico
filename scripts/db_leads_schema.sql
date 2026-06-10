@@ -41,6 +41,9 @@ CREATE INDEX IF NOT EXISTS idx_leads_score ON leads (score DESC);
 CREATE INDEX IF NOT EXISTS idx_leads_categorias ON leads USING GIN (categorias);
 CREATE INDEX IF NOT EXISTS idx_leads_sector ON leads (sector);
 
+-- Índice único parcial para deduplicación por teléfono (solo WhatsApp, ignora vacíos)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_leads_telefono_unico ON leads (telefono) WHERE telefono IS NOT NULL AND telefono != '' AND telefono LIKE '+569%';
+
 -- 2. OUTREACH
 CREATE TABLE IF NOT EXISTS outreach (
   id SERIAL PRIMARY KEY,
@@ -49,10 +52,15 @@ CREATE TABLE IF NOT EXISTS outreach (
   fecha_contacto TIMESTAMPTZ DEFAULT NOW(),
   canal TEXT DEFAULT 'whatsapp',
   resultado TEXT DEFAULT 'pendiente',
-  notas TEXT
+  notas TEXT,
+  respuesta_fecha TIMESTAMPTZ
 );
 
 CREATE INDEX IF NOT EXISTS idx_outreach_lead ON outreach (lead_id, fecha_contacto DESC);
+CREATE INDEX IF NOT EXISTS idx_outreach_respuesta ON outreach (respuesta_fecha);
+
+-- Migración para BD existentes
+ALTER TABLE outreach ADD COLUMN IF NOT EXISTS respuesta_fecha TIMESTAMPTZ;
 
 -- 3. SEARCH JOBS
 CREATE TABLE IF NOT EXISTS search_jobs (

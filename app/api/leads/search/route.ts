@@ -85,9 +85,9 @@ export async function POST(req: NextRequest) {
 Busca ${limit} empresas, productoras u organizaciones reales en ${ubicacion}, Región de la Araucanía, que podrían NECESITAR arrendar un espacio outdoor masivo. La categoría es "${categoria}".
 
 Si la categoría es "productoras": busca productoras de eventos, festivales, conciertos. Necesitan venues para los eventos de SUS clientes. Nosotros somos el venue.
-Si la categoría es "corporativo": busca empresas con +50 empleados que hagan team building, cenas de fin de año, convenciones que requieran espacio al aire libre.
+Si la categoría es "corporativo": busca empresas que organicen team building, cenas de fin de año, convenciones o eventos corporativos. EXCLUYE empresas agrícolas, ganaderas, forestales o industriales que no organizan eventos.
 Si la categoría es "matrimonios": busca wedding planners, centros de eventos, organizadores de bodas que busquen locaciones outdoor.
-Si la categoría es "cumpleanos": busca salones de eventos, quintas de recreo, animadores infantiles, lugares para fiestas y celebraciones.
+Si la categoría es "cumpleanos": busca SOLO centros de eventos, quintas de recreo, salones de fiesta, animadores infantiles y organizadores de celebraciones. EXCLUYE tiendas de artículos para fiestas, cotillón, decoración y venta de productos.
 Si la categoría es "municipal": busca municipalidades, corporaciones de turismo y cultura que organicen ferias costumbristas, eventos masivos.
 
 IMPORTANTE: Busca teléfonos de contacto REALES, preferentemente móviles con WhatsApp (+56 9). Busca en Google Maps, páginas amarillas, Facebook, Instagram. Si no encuentras teléfono, déjalo vacío "".
@@ -153,29 +153,48 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
     // Validar, limpiar y guardar cada lead
     const saved: any[] = [];
     const seenNames = new Set<string>();
+    const seenPhones = new Set<string>();
 
     for (let i = 0; i < Math.min(leads.length, limit); i++) {
       const lead = leads[i];
       const normalizedName = normalizeName(lead.empresa);
       const empresaOriginal = (lead.empresa || '').trim();
+      const rawTel = (lead.telefono || '').trim();
+      const cleanPhone = rawTel.replace(/\D/g, '');
 
-      // Saltar duplicados en esta misma búsqueda
+      // Saltar duplicados por nombre en esta misma búsqueda
       if (seenNames.has(normalizedName)) {
-        console.warn(`[DEDUP] Saltando duplicado en búsqueda: ${empresaOriginal}`);
+        console.warn(`[DEDUP] Saltando duplicado por nombre: ${empresaOriginal}`);
+        continue;
+      }
+      // Saltar duplicados por teléfono en esta misma búsqueda
+      if (cleanPhone && seenPhones.has(cleanPhone)) {
+        console.warn(`[DEDUP] Saltando duplicado por teléfono: ${empresaOriginal} (${cleanPhone})`);
         continue;
       }
       seenNames.add(normalizedName);
+      if (cleanPhone) seenPhones.add(cleanPhone);
 
-      // Verificar si ya existe un lead similar en la BD
-      const { data: existingLeads } = await supabase
+      // Verificar si ya existe en BD por nombre similar o mismo teléfono
+      let existingDb: any = null;
+      const { data: byName } = await supabase
         .from('leads')
         .select('id, empresa, telefono, website, email, instagram, facebook, tiktok')
         .ilike('empresa', `%${normalizedName.substring(0, Math.min(20, normalizedName.length))}%`)
         .limit(1);
+      if (byName && byName.length > 0) {
+        existingDb = byName[0];
+      } else if (cleanPhone) {
+        const { data: byPhone } = await supabase
+          .from('leads')
+          .select('id, empresa, telefono, website, email, instagram, facebook, tiktok')
+          .eq('telefono', `+${cleanPhone}`)
+          .limit(1);
+        if (byPhone && byPhone.length > 0) existingDb = byPhone[0];
+      }
 
       // Validar y limpiar campos
       const email = isValidEmail(lead.email) ? lead.email.trim() : '';
-      const rawTel = (lead.telefono || '').trim();
       const cleanTel = normalizePhone(rawTel);
       const isWap = isWhatsAppCompatible(rawTel);
       const site = cleanWebsite(lead.website || '');
@@ -186,20 +205,20 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
       }
 
       // Si ya existe, hacer UPDATE (no duplicar)
-      const recordId = existingLeads && existingLeads.length > 0 ? existingLeads[0].id : null;
+      const recordId = existingDb?.id || null;
       const updateData: any = {
         categoria: categoria,
         categorias: [categoria],
-        telefono: cleanTel || (recordId ? existingLeads?.[0]?.telefono : ''),
-        website: site || (recordId ? existingLeads?.[0]?.website : ''),
-        email: finalEmail || (recordId ? existingLeads?.[0]?.email : ''),
+        telefono: cleanTel || existingDb?.telefono || '',
+        website: site || existingDb?.website || '',
+        email: finalEmail || existingDb?.email || '',
         ubicacion: lead.ubicacion || '',
         sector: sector,
-        instagram: (lead.instagram || '').trim() || (recordId ? existingLeads?.[0]?.instagram : ''),
-        facebook: (lead.facebook || '').trim() || (recordId ? existingLeads?.[0]?.facebook : ''),
-        tiktok: (lead.tiktok || '').trim() || (recordId ? existingLeads?.[0]?.tiktok : ''),
+        instagram: (lead.instagram || '').trim() || existingDb?.instagram || '',
+        facebook: (lead.facebook || '').trim() || existingDb?.facebook || '',
+        tiktok: (lead.tiktok || '').trim() || existingDb?.tiktok || '',
         raw_data: JSON.stringify({ ...lead, _validated: true, _isWhatsApp: isWap, _websiteOk: !!site }),
-        estado_lead: recordId ? undefined : 'nuevo', // no pisar estado de leads existentes
+        estado_lead: recordId ? undefined : 'nuevo',
         web_status: isWap ? (site ? 'activa' : 'sin_web') : 'fijo',
         updated_at: new Date().toISOString(),
       };
