@@ -70,7 +70,37 @@ CREATE TABLE IF NOT EXISTS search_jobs (
 
 CREATE INDEX IF NOT EXISTS idx_search_jobs_status ON search_jobs (status);
 
--- 4. RLS POLICIES
+-- 5. RATE LIMITS
+CREATE TABLE IF NOT EXISTS rate_limits (
+  ip TEXT NOT NULL,
+  endpoint TEXT NOT NULL,
+  count INT DEFAULT 0,
+  reset_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (ip, endpoint)
+);
+
+ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "rate_limits_all" ON rate_limits FOR ALL USING (true) WITH CHECK (true);
+
+CREATE OR REPLACE FUNCTION check_rate_limit(p_ip TEXT, p_endpoint TEXT, p_max INT, p_window_min INT)
+RETURNS TABLE(count INT, reset_at TIMESTAMPTZ, allowed BOOLEAN) AS $$
+BEGIN
+  INSERT INTO rate_limits (ip, endpoint, count, reset_at)
+  VALUES (p_ip, p_endpoint, 1, NOW() + (p_window_min || ' minutes')::INTERVAL)
+  ON CONFLICT (ip, endpoint) DO UPDATE
+  SET count = CASE
+    WHEN rate_limits.reset_at <= NOW() THEN 1
+    ELSE rate_limits.count + 1
+  END,
+  reset_at = CASE
+    WHEN rate_limits.reset_at <= NOW() THEN NOW() + (p_window_min || ' minutes')::INTERVAL
+    ELSE rate_limits.reset_at
+  END
+  RETURNING rate_limits.count, rate_limits.reset_at, (rate_limits.count <= p_max) AS allowed;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 6. RLS POLICIES
 ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE outreach ENABLE ROW LEVEL SECURITY;
 ALTER TABLE search_jobs ENABLE ROW LEVEL SECURITY;

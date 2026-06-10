@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { getSupabase, getSupabaseAdmin } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabaseAdmin();
     const body = await request.json();
     const { lead_id, contactado_por, canal, resultado, notas, nuevo_estado_lead } = body;
 
@@ -46,6 +47,7 @@ export async function POST(request: NextRequest) {
 }
 export async function GET(request: NextRequest) {
   try {
+    const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const lead_id = searchParams.get('lead_id');
 

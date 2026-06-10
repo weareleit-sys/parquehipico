@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/supabase';
+import { getSupabase, getSupabaseAdmin } from '@/lib/supabase';
 
 function normalizePhone(tel: string): string {
   let digits = tel.replace(/\D/g, '');
@@ -10,7 +10,7 @@ function normalizePhone(tel: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = getSupabase();
+  const supabase = getSupabase(); // solo lectura para obtener el lead
 
   try {
     const { lead_id } = await req.json();
@@ -86,7 +86,8 @@ Responde SOLO un JSON con las llaves "telefono", "instagram", "facebook", "tikto
     if (contacto.facebook) updates.facebook = contacto.facebook;
     if (contacto.tiktok) updates.tiktok = contacto.tiktok;
 
-    await supabase.from('leads').update(updates).eq('id', lead_id);
+    const admin = getSupabaseAdmin();
+    await admin.from('leads').update(updates).eq('id', lead_id);
 
     return NextResponse.json({ success: true, contacto, lead_id });
   } catch (error: any) {

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { FaWhatsapp, FaSyncAlt, FaSearch, FaExternalLinkAlt, FaSort, FaSortUp, FaSortDown, FaMagic, FaEye } from 'react-icons/fa';
 import { FaInstagram, FaFacebook, FaTiktok } from 'react-icons/fa';
 import OutreachModal from './OutreachModal';
@@ -85,6 +86,15 @@ type SortDir = 'asc' | 'desc';
 interface DashboardClientProps { initialLeads: Lead[]; }
 
 export default function DashboardClient({ initialLeads }: DashboardClientProps) {
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token') || '';
+
+  // Helper para todas las llamadas API
+  const apiFetch = (url: string, options?: RequestInit) => {
+    const separator = url.includes('?') ? '&' : '?';
+    return fetch(`${url}${token ? `${separator}token=${token}` : ''}`, options);
+  };
+
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -126,7 +136,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
   const handleFindContact = async (leadId: string) => {
     setFindingContactId(leadId);
     try {
-      const res = await fetch('/api/leads/find-contact', {
+      const res = await apiFetch('/api/leads/find-contact', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lead_id: leadId })
       });
@@ -142,7 +152,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
       if (activeState !== 'todos') q.append('estado', activeState);
       if (activeSector !== 'todos') q.append('sector', activeSector);
       if (searchTerm) q.append('search', searchTerm);
-      const res = await fetch(`/api/leads/list?${q.toString()}`);
+      const res = await apiFetch(`/api/leads/list?${q.toString()}`);
       if (res.ok) { const d = await res.json(); setLeads(d.leads || []); }
     } catch (err) { console.error(err); }
   }, [activeCategory, activeState, activeSector, searchTerm]);
@@ -157,7 +167,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
     setSearchMessage(`Buscando ${searchCategory} en ${searchLocation}...`);
 
     try {
-      const res = await fetch('/api/leads/search', {
+      const res = await apiFetch('/api/leads/search', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ categoria: searchCategory, ubicacion: searchLocation, sector: searchSector, limit: searchLimit })
       });
@@ -491,7 +501,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
                                 <a href={lead.website.startsWith('http')?lead.website:`https://${lead.website}`} target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:text-amber-400 text-xs font-bold flex items-center gap-1 bg-slate-800 px-2 py-1.5 rounded-lg border border-slate-700">web <FaExternalLinkAlt className="text-[9px]"/></a>
                               )}
                               {lead.telefono ? (
-                                <a href={getWhatsAppLink(lead)} target="_blank" rel="noopener noreferrer" onClick={() => { fetch('/api/outreach/log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lead_id:lead.id,resultado:'contactado',nuevo_estado_lead:'contactado'})}).then(()=>fetchLeads()); }} className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs shadow-lg transition-all"><FaWhatsapp className="text-xs"/> WhatsApp</a>
+                                <a href={getWhatsAppLink(lead)} target="_blank" rel="noopener noreferrer" onClick={() => { apiFetch('/api/outreach/log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lead_id:lead.id,resultado:'contactado',nuevo_estado_lead:'contactado'})}).then(()=>fetchLeads()); }} className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs shadow-lg transition-all"><FaWhatsapp className="text-xs"/> WhatsApp</a>
                               ) : (
                                 <button onClick={() => handleFindContact(lead.id)} disabled={findingContactId===lead.id} className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition-all disabled:opacity-50"><FaSearch className="text-xs"/> {findingContactId===lead.id?'Buscando...':'Buscar contacto'}</button>
                               )}
@@ -512,7 +522,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
         <OutreachModal lead={selectedLeadForOutreach} isOpen={true} onClose={() => setSelectedLeadForOutreach(null)} onSaved={fetchLeads} />
       )}
       {selectedLeadForGuion && (
-        <GuionModal lead={selectedLeadForGuion} isOpen={true} onClose={() => setSelectedLeadForGuion(null)} onSaved={fetchLeads} getWhatsAppLink={getWhatsAppLink} />
+        <GuionModal lead={selectedLeadForGuion} isOpen={true} onClose={() => setSelectedLeadForGuion(null)} onSaved={fetchLeads} getWhatsAppLink={getWhatsAppLink} token={token} />
       )}
     </div>
   );

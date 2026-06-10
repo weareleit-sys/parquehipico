@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/supabase';
+import { getSupabase, getSupabaseAdmin } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   const supabase = getSupabase();
@@ -85,8 +85,9 @@ Respondé EXACTAMENTE en este formato JSON, sin Markdown adicional:
       return NextResponse.json({ error: 'Gemini returned empty guion' }, { status: 502 });
     }
 
-    // Guardar en BD
-    await supabase.from('leads').update({
+    // Guardar en BD con admin
+    const admin = getSupabaseAdmin();
+    await admin.from('leads').update({
       guion: guion,
       raw_data: JSON.stringify({ ...(lead.raw_data ? JSON.parse(lead.raw_data) : {}), perfil_ia: perfil }),
       updated_at: new Date().toISOString()

@@ -1,6 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 let supabaseInstance: SupabaseClient | null = null
+let supabaseAdminInstance: SupabaseClient | null = null
 
 export function getSupabase(): SupabaseClient {
     if (!supabaseInstance) {
@@ -17,7 +18,23 @@ export function getSupabase(): SupabaseClient {
     return supabaseInstance
 }
 
-// Legacy export for backward compatibility
+// Cliente con permisos elevados (service_role) para escrituras en API routes
+export function getSupabaseAdmin(): SupabaseClient {
+    if (!supabaseAdminInstance) {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+        if (!supabaseUrl || !serviceRoleKey) {
+            throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY')
+        }
+
+        supabaseAdminInstance = createClient(supabaseUrl, serviceRoleKey)
+    }
+
+    return supabaseAdminInstance
+}
+
+// Legacy export for backward compatibility (anon key, solo para lecturas)
 export const supabase = {
     get from() {
         return getSupabase().from.bind(getSupabase())

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 // Normalizar nombre de empresa para deduplicación
 function normalizeName(name: string): string {
@@ -58,7 +59,14 @@ function cleanWebsite(url: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = getSupabase();
+  const supabase = getSupabaseAdmin();
+
+  // Rate limiting
+  const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+  const { allowed, remaining } = await checkRateLimit(ip, 'search');
+  if (!allowed) {
+    return NextResponse.json({ error: `Límite de búsquedas alcanzado. Esperá unos minutos.` }, { status: 429 });
+  }
 
   try {
     const { categoria, ubicacion = 'Temuco', sector = 'temuco', limit = 10 } = await req.json();
