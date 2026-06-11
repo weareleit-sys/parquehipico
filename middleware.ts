@@ -8,8 +8,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Proteger dashboard y API de leads
-  if (pathname.startsWith('/dashboard') || pathname.startsWith('/api/leads')) {
+  // Proteger dashboard, API de leads y outreach
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/api/leads') || pathname.startsWith('/api/outreach')) {
     const urlToken = request.nextUrl.searchParams.get('token');
     const headerToken = request.headers.get('authorization')?.replace('Bearer ', '');
     const validToken = urlToken === process.env.DASHBOARD_TOKEN || headerToken === process.env.DASHBOARD_TOKEN;
@@ -23,5 +23,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/api/leads/:path*'],
+  matcher: ['/dashboard/:path*', '/api/leads/:path*', '/api/outreach/:path*'],
 };

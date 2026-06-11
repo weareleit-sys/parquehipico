@@ -2,22 +2,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { FaWhatsapp, FaCopy, FaMagic, FaCheck, FaTimes, FaSpinner } from 'react-icons/fa';
-
-interface Lead {
-  id: string;
-  empresa: string;
-  website: string;
-  telefono: string;
-  guion: string;
-  raw_data: string;
-}
+import type { Lead } from './hooks/useLeads';
 
 interface GuionModalProps {
   lead: Lead;
   isOpen: boolean;
   onClose: () => void;
   onSaved: () => void;
-  getWhatsAppLink: (lead: Lead, guion: string) => string;
+  getWhatsAppLink: (lead: Lead, guion?: string) => string;
   token: string;
 }
 
@@ -101,7 +93,7 @@ export default function GuionModal({ lead, isOpen, onClose, onSaved, getWhatsApp
       const res = await apiFetch('/api/leads/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: lead.id, guion })
+        body: JSON.stringify({ id: lead.id, empresa: lead.empresa, categoria: lead.categoria, guion })
       });
       if (res.ok) {
         setEditing(false);

@@ -9,6 +9,7 @@ async function callGemini(prompt: string, key: string): Promise<string> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        tools: [{ google_search: {} }],
         generationConfig: { temperature: 0.4, maxOutputTokens: 2000 }
       }),
     }

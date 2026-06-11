@@ -28,7 +28,7 @@ function isWhatsAppCompatible(tel: string): boolean {
 
 // Normalizar teléfono chileno a formato internacional
 function normalizePhone(tel: string): string {
-  // Si hay múltiples teléfonos (separados por coma), tomar el WhatsApp
+  if (!tel || !tel.trim()) return '';
   const phones = tel.split(/[,;\/]\s*/);
   let best = phones[0];
   for (const p of phones) {
@@ -38,6 +38,7 @@ function normalizePhone(tel: string): string {
     }
   }
   let digits = best.replace(/\D/g, '');
+  if (!digits) return '';
   if (digits.startsWith('569')) return '+' + digits;
   if (digits.startsWith('9') && digits.length <= 9) return '+56' + digits;
   if (digits.length === 8) return '+569' + digits;
@@ -125,7 +126,6 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
     clearTimeout(timeoutId);
 
     if (!geminiRes.ok) {
-      const errText = await geminiRes.text();
       return NextResponse.json({ error: `Gemini no respondió correctamente (${geminiRes.status}). Reintentá en unos segundos.` }, { status: 502 });
     }
 

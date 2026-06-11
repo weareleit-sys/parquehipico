@@ -68,7 +68,6 @@ Responde SOLO un JSON: {"telefono":"","email":"","instagram":"","facebook":"","t
     );
 
     if (!geminiRes.ok) {
-      const errText = await geminiRes.text();
       return NextResponse.json({ error: `Gemini API error: ${geminiRes.status}` }, { status: 502 });
     }
 

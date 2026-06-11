@@ -116,7 +116,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
       </div>
 
       {selectedLeadForOutreach && (
-        <OutreachModal lead={selectedLeadForOutreach} isOpen={true} onClose={() => setSelectedLeadForOutreach(null)} onSaved={leadsState.fetchLeads} />
+        <OutreachModal lead={selectedLeadForOutreach} isOpen={true} onClose={() => setSelectedLeadForOutreach(null)} onSaved={leadsState.fetchLeads} token={token} />
       )}
       {selectedLeadForGuion && (
         <GuionModal lead={selectedLeadForGuion} isOpen={true} onClose={() => setSelectedLeadForGuion(null)} onSaved={leadsState.fetchLeads} getWhatsAppLink={getWhatsAppLink} token={token} />

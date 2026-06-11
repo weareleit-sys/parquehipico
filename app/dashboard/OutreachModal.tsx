@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
-
-interface Lead {
-  id: string;
-  empresa: string;
-  estado_lead: string;
-}
+import type { Lead } from './hooks/useLeads';
 
 interface OutreachModalProps {
   lead: Lead;
   isOpen: boolean;
   onClose: () => void;
   onSaved: () => void;
+  token: string;
 }
 
-export default function OutreachModal({ lead, isOpen, onClose, onSaved }: OutreachModalProps) {
+export default function OutreachModal({ lead, isOpen, onClose, onSaved, token }: OutreachModalProps) {
   const [loading, setLoading] = useState(false);
   const [notas, setNotas] = useState('');
   const [resultado, setResultado] = useState('contactado'); // pendiente | contactado | respondio | agendado | rechazo
@@ -26,7 +22,8 @@ export default function OutreachModal({ lead, isOpen, onClose, onSaved }: Outrea
     setLoading(true);
 
     try {
-      const response = await fetch('/api/outreach/log', {
+      const separator = token ? '?' : '';
+      const response = await fetch(`/api/outreach/log${separator}token=${token}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
