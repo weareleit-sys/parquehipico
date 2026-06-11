@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getSupabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 async function callGemini(prompt: string, key: string): Promise<string> {
   const res = await fetch(
@@ -27,8 +27,17 @@ function parseGeminiJson(text: string): any {
   return JSON.parse(cleaned);
 }
 
+function parseRawData(rawData: unknown): Record<string, any> {
+  if (!rawData || typeof rawData !== 'string') return {};
+  try {
+    return JSON.parse(rawData);
+  } catch {
+    return {};
+  }
+}
+
 export async function POST(req: NextRequest) {
-  const supabase = getSupabase();
+  const supabase = getSupabaseAdmin();
 
   try {
     const { lead_id } = await req.json();
@@ -85,12 +94,12 @@ Respondé JSON:
     const perfil = result?.perfil?.trim() || '';
 
     // Guardar
-    const admin = getSupabaseAdmin();
-    await admin.from('leads').update({
+    const { error: updateError } = await supabase.from('leads').update({
       guion,
-      raw_data: JSON.stringify({ ...(lead.raw_data ? JSON.parse(lead.raw_data) : {}), perfil_ia: perfil }),
+      raw_data: JSON.stringify({ ...parseRawData(lead.raw_data), perfil_ia: perfil }),
       updated_at: new Date().toISOString()
     }).eq('id', lead_id);
+    if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
 
     return NextResponse.json({ success: true, guion, perfil });
   } catch (error: any) {

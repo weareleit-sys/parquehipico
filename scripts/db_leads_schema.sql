@@ -88,7 +88,10 @@ CREATE TABLE IF NOT EXISTS rate_limits (
 );
 
 ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "rate_limits_all" ON rate_limits FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "rate_limits_select" ON rate_limits FOR SELECT USING ((SELECT auth.role() = 'service_role'));
+CREATE POLICY "rate_limits_insert" ON rate_limits FOR INSERT WITH CHECK ((SELECT auth.role() = 'service_role'));
+CREATE POLICY "rate_limits_update" ON rate_limits FOR UPDATE USING ((SELECT auth.role() = 'service_role'));
+CREATE POLICY "rate_limits_delete" ON rate_limits FOR DELETE USING ((SELECT auth.role() = 'service_role'));
 
 CREATE OR REPLACE FUNCTION check_rate_limit(p_ip TEXT, p_endpoint TEXT, p_max INT, p_window_min INT)
 RETURNS TABLE(count INT, reset_at TIMESTAMPTZ, allowed BOOLEAN) AS $$
@@ -113,6 +116,17 @@ ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE outreach ENABLE ROW LEVEL SECURITY;
 ALTER TABLE search_jobs ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "leads_all" ON leads FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "outreach_all" ON outreach FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "search_jobs_all" ON search_jobs FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "leads_select" ON leads FOR SELECT USING ((SELECT auth.role() = 'service_role'));
+CREATE POLICY "leads_insert" ON leads FOR INSERT WITH CHECK ((SELECT auth.role() = 'service_role'));
+CREATE POLICY "leads_update" ON leads FOR UPDATE USING ((SELECT auth.role() = 'service_role'));
+CREATE POLICY "leads_delete" ON leads FOR DELETE USING ((SELECT auth.role() = 'service_role'));
+
+CREATE POLICY "outreach_select" ON outreach FOR SELECT USING ((SELECT auth.role() = 'service_role'));
+CREATE POLICY "outreach_insert" ON outreach FOR INSERT WITH CHECK ((SELECT auth.role() = 'service_role'));
+CREATE POLICY "outreach_update" ON outreach FOR UPDATE USING ((SELECT auth.role() = 'service_role'));
+CREATE POLICY "outreach_delete" ON outreach FOR DELETE USING ((SELECT auth.role() = 'service_role'));
+
+CREATE POLICY "search_jobs_select" ON search_jobs FOR SELECT USING ((SELECT auth.role() = 'service_role'));
+CREATE POLICY "search_jobs_insert" ON search_jobs FOR INSERT WITH CHECK ((SELECT auth.role() = 'service_role'));
+CREATE POLICY "search_jobs_update" ON search_jobs FOR UPDATE USING ((SELECT auth.role() = 'service_role'));
+CREATE POLICY "search_jobs_delete" ON search_jobs FOR DELETE USING ((SELECT auth.role() = 'service_role'));

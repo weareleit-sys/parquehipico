@@ -24,8 +24,9 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
   const token = searchParams.get('token') || '';
 
   const apiFetch = useCallback((url: string, options?: RequestInit) => {
-    const separator = url.includes('?') ? '&' : '?';
-    return fetch(`${url}${token ? `${separator}token=${token}` : ''}`, options);
+    const headers = new Headers(options?.headers);
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+    return fetch(url, { ...options, headers });
   }, [token]);
 
   const leadsState = useLeads(initialLeads, apiFetch);

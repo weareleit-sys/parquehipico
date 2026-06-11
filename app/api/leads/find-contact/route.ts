@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getSupabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 function normalizePhone(tel: string): string {
+  if (!tel || !tel.trim()) return '';
   let digits = tel.replace(/\D/g, '');
   if (digits.startsWith('569')) return '+' + digits;
-  if (digits.startsWith('9') && digits.length <= 9) return '+56' + digits;
-  if (digits.length === 8) return '+569' + digits;
-  return digits;
+  if (digits.startsWith('9') && digits.length === 9) return '+56' + digits;
+  if (digits.startsWith('56')) return '+' + digits;
+  return digits ? '+' + digits : '';
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = getSupabase(); // solo lectura para obtener el lead
+  const supabase = getSupabaseAdmin();
 
   try {
     const { lead_id } = await req.json();
@@ -102,7 +103,10 @@ Responde SOLO un JSON: {"telefono":"","email":"","instagram":"","facebook":"","t
     if (contacto.tiktok) updates.tiktok = contacto.tiktok;
 
     const admin = getSupabaseAdmin();
-    await admin.from('leads').update(updates).eq('id', lead_id);
+    const { error: updateError } = await admin.from('leads').update(updates).eq('id', lead_id);
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true, contacto, lead_id });
   } catch (error: any) {

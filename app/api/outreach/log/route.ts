@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getSupabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
+
+const ALLOWED_RESULTADOS = new Set(['pendiente', 'contactado', 'respondio', 'agendado', 'rechazo']);
+const ALLOWED_ESTADOS = new Set(['nuevo', 'en_proceso', 'contactado', 'respondio', 'agendado', 'rechazo', 'descartado']);
+const ALLOWED_CANALES = new Set(['whatsapp', 'instagram', 'facebook', 'tiktok', 'email', 'telefono', 'otro']);
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,16 +15,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Falta campo requerido (lead_id)' }, { status: 400 });
     }
 
+    const safeResultado = ALLOWED_RESULTADOS.has(resultado) ? resultado : 'pendiente';
+    const safeCanal = ALLOWED_CANALES.has(canal) ? canal : 'whatsapp';
+    const safeNuevoEstado = nuevo_estado_lead && ALLOWED_ESTADOS.has(nuevo_estado_lead)
+      ? nuevo_estado_lead
+      : null;
+
     // Insertar registro en outreach
     const outreachData: any = {
       lead_id,
       contactado_por: contactado_por || 'Alberto',
-      canal: canal || 'whatsapp',
-      resultado: resultado || 'pendiente',
+      canal: safeCanal,
+      resultado: safeResultado,
       notas
     };
     // Si respondieron o agendaron, registrar la fecha de respuesta
-    if (resultado === 'respondio' || resultado === 'agendado') {
+    if (safeResultado === 'respondio' || safeResultado === 'agendado') {
       outreachData.respuesta_fecha = new Date().toISOString();
     }
 
@@ -35,10 +45,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Actualizar el estado del lead de forma opcional (si nuevo_estado_lead es enviado)
-    if (nuevo_estado_lead) {
+    if (safeNuevoEstado) {
       const { error: leadError } = await supabase
         .from('leads')
-        .update({ estado_lead: nuevo_estado_lead })
+        .update({ estado_lead: safeNuevoEstado })
         .eq('id', lead_id);
 
       if (leadError) {
@@ -53,7 +63,7 @@ export async function POST(request: NextRequest) {
 }
 export async function GET(request: NextRequest) {
   try {
-    const supabase = getSupabase();
+    const supabase = getSupabaseAdmin();
     const { searchParams } = new URL(request.url);
     const lead_id = searchParams.get('lead_id');
 

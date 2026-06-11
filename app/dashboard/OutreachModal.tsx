@@ -22,10 +22,11 @@ export default function OutreachModal({ lead, isOpen, onClose, onSaved, token }:
     setLoading(true);
 
     try {
-      const separator = token ? '?' : '';
-      const response = await fetch(`/api/outreach/log${separator}token=${token}`, {
+      const headers = new Headers({ 'Content-Type': 'application/json' });
+      if (token) headers.set('Authorization', `Bearer ${token}`);
+      const response = await fetch('/api/outreach/log', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           lead_id: lead.id,
           contactado_por: 'Alberto',

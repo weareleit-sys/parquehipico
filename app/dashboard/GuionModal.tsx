@@ -20,8 +20,9 @@ export default function GuionModal({ lead, isOpen, onClose, onSaved, getWhatsApp
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const apiFetch = (url: string, options?: RequestInit) => {
-    const separator = url.includes('?') ? '&' : '?';
-    return fetch(`${url}${token ? `${separator}token=${token}` : ''}`, options);
+    const headers = new Headers(options?.headers);
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+    return fetch(url, { ...options, headers });
   };
   const [editing, setEditing] = useState(false);
   const [confirmRegen, setConfirmRegen] = useState(false);

@@ -1,11 +1,11 @@
 import React from 'react';
-import { getSupabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import DashboardClient from './DashboardClient';
 
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  const supabase = getSupabase();
+  const supabase = getSupabaseAdmin();
 
   const { data: initialLeads, error } = await supabase
     .from('leads')

@@ -12,7 +12,8 @@ export function middleware(request: NextRequest) {
   if (pathname.startsWith('/dashboard') || pathname.startsWith('/api/leads') || pathname.startsWith('/api/outreach')) {
     const urlToken = request.nextUrl.searchParams.get('token');
     const headerToken = request.headers.get('authorization')?.replace('Bearer ', '');
-    const validToken = urlToken === process.env.DASHBOARD_TOKEN || headerToken === process.env.DASHBOARD_TOKEN;
+    const dashboardToken = process.env.DASHBOARD_TOKEN;
+    const validToken = !!dashboardToken && (urlToken === dashboardToken || headerToken === dashboardToken);
 
     if (!validToken) {
       return new NextResponse('No autorizado', { status: 401 });

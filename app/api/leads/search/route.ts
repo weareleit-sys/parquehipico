@@ -21,8 +21,7 @@ function isValidEmail(email: string): boolean {
 function isWhatsAppCompatible(tel: string): boolean {
   const digits = tel.replace(/\D/g, '');
   if (digits.startsWith('569')) return true;
-  if (digits.startsWith('9') && digits.length <= 9) return true;
-  if (digits.length === 8) return true; // podría ser fijo sin código, asumimos que con +56 9 podría ser
+  if (digits.startsWith('9') && digits.length === 9) return true;
   return false;
 }
 
@@ -40,8 +39,8 @@ function normalizePhone(tel: string): string {
   let digits = best.replace(/\D/g, '');
   if (!digits) return '';
   if (digits.startsWith('569')) return '+' + digits;
-  if (digits.startsWith('9') && digits.length <= 9) return '+56' + digits;
-  if (digits.length === 8) return '+569' + digits;
+  if (digits.startsWith('9') && digits.length === 9) return '+56' + digits;
+  if (digits.startsWith('56')) return '+' + digits;
   return '+' + digits;
 }
 
