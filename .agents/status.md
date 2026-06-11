@@ -1,35 +1,61 @@
-# Current Status
+# System Status
 
-Last known commit:
+Last updated: 10 Jun 2026 by OpenCode
 
-`315d651 fix: RLS realmente cerrada (service_role en todo), Bearer auth (no ?token= en URL), WhatsApp sin falsos positivos, save parcial, outreach validacion enums, middleware fail-open cerrado`
+## Production Readiness: 84/100 — Ready for controlled deploy
 
-Working tree when this file was created:
+## Current State
 
-Clean before adding `.agents/` and `AGENTS.md`.
+| Item | Status |
+|------|--------|
+| Build (`npx next build`) | ✅ Clean (no TypeScript errors) |
+| Dev server (`localhost:3000`) | ✅ Running |
+| Dashboard | ✅ Functional |
+| Card view (Table/Cards toggle) | ✅ Working |
+| Search (Gemini Grounding) | ✅ 45s timeout, rate limited |
+| Guion generation | ✅ With Grounding, 2 retries, no horse hallucinations |
+| Find contact | ✅ Finds email, phone, social |
+| Outreach logging | ✅ With respuesta_fecha |
+| Pagination | ✅ 25/page, default "pendientes" |
+| RLS in code | ✅ All endpoints use service_role for reads+writes |
+| RLS in Supabase | ⚠️ PENDING — `scripts/rls_fix.sql` needs execution |
+| Deploy to Vercel | ⚠️ PENDING |
+| BD leads | 52 |
+| BD outreach | 10 |
 
-## Lead System State
+## Architecture
 
-Score estimate: 84/100 as an internal controlled tool.
+```
+app/dashboard/
+├── DashboardClient.tsx         137 lines — orchestrator
+├── hooks/
+│   ├── useLeads.ts              state + filters + pagination
+│   ├── useSearch.ts             form + search + phases
+│   └── useOutreach.ts           find-contact + log
+├── components/
+│   ├── SearchPanel.tsx          sidebar
+│   ├── FilterBar.tsx            chips
+│   ├── LeadRow.tsx              table row + exported helpers
+│   ├── LeadsTable.tsx           table + sort + pagination
+│   └── LeadCardView.tsx         card grid
+├── LeadCard.tsx                 individual card
+├── data/sectores.ts             Araucanía sectors + WhatsApp templates
+├── GuionModal.tsx               message modal
+└── OutreachModal.tsx            contact tracking modal
+```
 
-Build status:
+## Security
 
-- `npx.cmd tsc --noEmit --pretty false`: passing after `315d651`.
-- `npm.cmd run build`: passing after `315d651`.
+- Middleware: token required in production, localhost bypass
+- Auth: Bearer token in all API calls (no ?token= in URL for API)
+- Supabase: Dual client (anon for nothing, service_role for everything via API routes)
+- Rate limiting: 10 searches/5min per IP, PG function atomic
+- RLS: Ready to close (code supports it, SQL pending)
 
-Known production requirement:
+## Next Steps (ordered)
 
-- `scripts/rls_fix.sql` must be executed in Supabase SQL Editor or through Supabase MCP.
-
-Required production env vars:
-
-- `DASHBOARD_TOKEN`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `GEMINI_API_KEY`
-
-## Important Warning
-
-The code is prepared for closed RLS, but the remote Supabase database may still have old policies until `scripts/rls_fix.sql` is applied.
-
+1. Execute `scripts/rls_fix.sql` in Supabase
+2. Add 7 env vars to Vercel
+3. Deploy from Vercel dashboard
+4. Smoke test production
+5. 1-2 weeks controlled use, measure conversion metrics
