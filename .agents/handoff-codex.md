@@ -1,75 +1,155 @@
 # Handoff From Codex
 
-Codex updates this file when handing work back to OpenCode.
+Last updated: 11 Jun 2026 by Codex.
 
-## Latest Update — 10 Jun 2026
+## Current State
 
-OpenCode session completed. System at 84/100, ready for production deploy.
+- Working tree has uncommitted Codex changes.
+- Dev server is running on `http://localhost:3000`.
+- Production build passes: `npm.cmd run build`.
+- TypeScript passes: `npx.cmd tsc --noEmit --pretty false`.
+- Smoke test passes: `powershell -ExecutionPolicy Bypass -File scripts\smoke_leads_system.ps1`.
+- Supabase anon REST was verified: anon key cannot read lead data.
+- Current lead count is **85**.
 
-## State for Codex
+## What Changed Since The Previous Handoff
 
-- **Commit:** `8a66441` (capa compartida) — `315d651` es el último con cambios de código
-- **Build:** `npx next build` pasa limpio (sin errores TypeScript)
-- **Dev server:** Funcionando en `localhost:3000`
-- **Dashboard:** Funcionando, toggle Tabla/Tarjetas activo, 52 leads en BD
-- **RLS:** Código listo pero SQL PENDIENTE de ejecución en Supabase
+### Mobile-first dashboard
 
-## What OpenCode Did This Session
+- Dashboard defaults to card view.
+- Old search sidebar was removed from the main dashboard surface.
+- Filters are larger and simpler for phone use.
+- Sector filter is a native select.
+- Metrics strip added: Total, Pendientes, Prioridad alta, Agendados, Revisar.
+- Metrics now refresh after outreach/guion changes, not only after manual reload.
 
-1. **Fase 1 - Seguridad:** middleware auth, Supabase dual (service_role + anon), rate limiting con PG function
-2. **Fase 2 - Estabilidad:** 502 fix, try/catch sólido, timeout 45s, warning sobrescribir guion
-3. **Fase 4 - UX rápido:** Colores por estado, texto claro, lenguaje de negocio (Contactos, Mensaje, Buscar empresas)
-4. **Fase 5 - Paginación:** 25/page, default pendientes, chips de estado con conteos
-5. **Fase 3 - Refactor:** DashboardClient 552→137 líneas, 3 hooks + 5 componentes, LeadCard integrado
-6. **Fixes post-evaluación:** 7 bugs críticos corregidos (errText, tipos Lead, middleware outreach, normalizePhone(''), GuionModal save, generar-guion Grounding)
-7. **Codex improvements applied:** Bearer auth en lugar de ?token=, RLS realmente cerrada, save parcial, outreach validación, middleware fail-open
+### Category taxonomy
 
-## Files Changed (last code commit: 315d651)
+Source of truth is now `app/lib/lead-categories.ts`.
 
+Current categories:
+
+- `productoras` — Productoras de eventos
+- `corporativo` — Empresas y corporativos
+- `matrimonios` — Matrimonios
+- `cumpleanos` — Eventos familiares
+- `turismo` — Turismo y venues
+- `educacion` — Colegios e instituciones
+- `municipal` — Público y gobierno
+- `comunidad` — Comunidad y clubes
+
+Important decisions:
+
+- `cumpleanos` stays as DB key, but the business label is **Eventos familiares**.
+- Product-only party businesses are excluded: cotillón, globos, tortas, piñaterías, dulcerías, jugueterías, regalos, artículos de fiesta.
+- Hotels, cabañas, venues, centers, salones and tourism operators are valid leads/partners when they can refer clients or need a larger outdoor venue.
+- Remote leads without clear Araucanía/zona sur signal are marked as `sector='externo'`.
+
+### API hardening
+
+- `/api/leads/list`
+  - Normalizes category aliases like `Productoras` -> `productoras`.
+  - Validates category/status/sector.
+  - Clamps pagination.
+  - Sanitizes search strings before building PostgREST `.or(...)`.
+- `/api/leads/save`
+  - Validates category/status/sector before writing.
+  - Normalizes category/categorias.
+  - Clamps score to 1-10.
+  - Supports sector updates safely.
+- `/api/leads/stats`
+  - New endpoint.
+  - Normalizes category keys in metrics.
+- `/api/leads/search`
+  - Uses centralized category prompts.
+  - Max search limit clamped to 10.
+  - Search timeout is 75s server-side.
+  - Gemini JSON parser handles fenced or extra text around JSON.
+  - Lead quality metadata added to `raw_data`.
+  - Sector inferred from actual lead location where possible.
+- `/api/leads/find-contact`
+  - Added 60s timeout.
+  - Gemini JSON parser is more tolerant.
+- `/api/leads/generar-guion`
+  - Added 60s Gemini timeout.
+  - JSON parser is more tolerant.
+  - Uses category context, not raw category key.
+  - Sanitizes duplicate signatures.
+  - Prompt avoids caballos/equino/capacity/technical specs in WhatsApp copy.
+
+### Smoke test
+
+New script: `scripts/smoke_leads_system.ps1`.
+
+Checks:
+
+- Dashboard HTTP 200.
+- Lead list API total.
+- Stats API total equals list total.
+- Category totals equal stats total.
+- Key category counts.
+- Empty save validation returns 400.
+- Supabase anon REST cannot read lead data.
+
+Latest result:
+
+```text
+Dashboard HTTP        PASS   HTTP 200
+Lead list API         PASS   85 leads
+Stats API             PASS   total=85, categories=85
+Category counts       PASS   educacion=7, turismo=11, comunidad=4, cumpleanos=29, municipal=4
+Empty save validation PASS   HTTP 400
+Supabase anon REST    PASS   no public lead data
 ```
-app/api/leads/find-contact/route.ts
-app/api/leads/generar-guion/route.ts
-app/api/leads/list/route.ts
-app/api/leads/save/route.ts
-app/api/leads/search/route.ts
-app/api/outreach/log/route.ts
-app/dashboard/DashboardClient.tsx
-app/dashboard/GuionModal.tsx
-app/dashboard/OutreachModal.tsx
-app/dashboard/page.tsx
-middleware.ts
-scripts/db_leads_schema.sql
-scripts/rls_fix.sql
+
+## Current Data Snapshot
+
+```text
+total       85
+pending     75
+contacted    9
+replied      0
+scheduled    0
+highPriority 24
+review       3
 ```
 
-## PENDING — Execute This SQL in Supabase
+By category:
 
-https://supabase.com/dashboard/project/hqpmmlrtqruoaptwzjbs/sql/new
-
-The RLS section (5) now has ALL policies as `(SELECT auth.role() = 'service_role')` for leads, outreach, search_jobs, and rate_limits. The old policies with `SELECT USING (true)` were removed.
-
-After running, verify with:
-```bash
-curl -H "apikey: sb_publishable_..." "https://hqpmmlrtqruoaptwzjbs.supabase.co/rest/v1/leads?limit=1"
-```
-Should return `[]` or error. If it returns data, RLS is still open.
-
-## Environment Variables for Vercel
-
-```
-DASHBOARD_TOKEN=(stored in .env.local)
-NEXT_PUBLIC_SUPABASE_URL=https://hqpmmlrtqruoaptwzjbs.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=(stored in .env.local)
-SUPABASE_SERVICE_ROLE_KEY=(stored in .env.local)
-GEMINI_API_KEY=(stored in .env.local)
-RESEND_API_KEY=(stored in .env.local)
-MP_ACCESS_TOKEN=(stored in .env.local)
+```text
+matrimonios  11
+cumpleanos   29
+corporativo  13
+turismo      11
+productoras   6
+educacion     7
+comunidad     4
+municipal     4
 ```
 
-## What Codex Should Review Next
+## Production Pending
 
-1. Verify RLS SQL was executed by testing anon key access to Supabase REST
-2. Check build still passes: `npx next build`
-3. If ready, deploy to Vercel (root: `parquehipico-nextjs`, repo: `weareleit-sys/parquehipico`)
-4. Smoke test: search, generar-guion, find-contact, outreach
-5. Update `.agents/status.md` with production URL and any issues found
+1. Confirm the same env vars exist in Vercel:
+   - `DASHBOARD_TOKEN`
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `GEMINI_API_KEY`
+   - `RESEND_API_KEY`
+   - `MP_ACCESS_TOKEN`
+2. Deploy to Vercel.
+3. Smoke test production:
+   - `/dashboard?token=...` loads.
+   - `/api/leads/list` without token returns 401.
+   - `/api/leads/list` with Bearer token returns leads.
+   - Generate guion works.
+   - Find contact works.
+   - Outreach log works.
+   - Supabase anon REST returns `[]` or denied.
+
+## Notes For OpenCode
+
+- Do not reintroduce the old dashboard search sidebar unless the user explicitly asks. The user wants the operational surface to stay simple/mobile-first.
+- If adding categories, update `app/lib/lead-categories.ts` first.
+- If changing filters, keep phone/touch use as the priority.
+- Avoid changing RLS by making anon direct reads work. Browser should go through protected Next API routes.

@@ -10,6 +10,32 @@ function normalizePhone(tel: string): string {
   return digits ? '+' + digits : '';
 }
 
+function cleanGeminiJson(text: string): string {
+  let cleaned = text.trim();
+  if (cleaned.includes('```json')) {
+    cleaned = cleaned.split('```json')[1].split('```')[0].trim();
+  } else if (cleaned.includes('```')) {
+    cleaned = cleaned.split('```')[1].split('```')[0].trim();
+  }
+  return cleaned;
+}
+
+function parseContactObject(text: string): any {
+  const cleaned = cleanGeminiJson(text);
+  if (!cleaned) throw new Error('Gemini returned empty response');
+
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    const start = cleaned.indexOf('{');
+    const end = cleaned.lastIndexOf('}');
+    if (start >= 0 && end > start) {
+      return JSON.parse(cleaned.slice(start, end + 1));
+    }
+    throw new Error('Failed to parse Gemini response');
+  }
+}
+
 export async function POST(req: NextRequest) {
   const supabase = getSupabaseAdmin();
 
@@ -55,18 +81,33 @@ Si el teléfono no está disponible, al menos encontrá email e Instagram. Busc�
 
 Responde SOLO un JSON: {"telefono":"","email":"","instagram":"","facebook":"","tiktok":"","website":""}. Strings vacíos si no encontrás. Sin Markdown.`;
 
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          tools: [{ google_search: {} }],
-          generationConfig: { temperature: 0.1, maxOutputTokens: 2000 }
-        }),
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+    let geminiRes: Response;
+    try {
+      geminiRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            tools: [{ google_search: {} }],
+            generationConfig: { temperature: 0.1, maxOutputTokens: 2000 }
+          }),
+          signal: controller.signal,
+        }
+      );
+    } catch (e: any) {
+      clearTimeout(timeoutId);
+      if (e.name === 'AbortError') {
+        return NextResponse.json({ error: 'La búsqueda de contacto tardó más de 60 segundos. Reintentá más tarde.' }, { status: 504 });
       }
-    );
+      return NextResponse.json({ error: 'Error de conexión con Gemini.' }, { status: 502 });
+    }
+
+    clearTimeout(timeoutId);
 
     if (!geminiRes.ok) {
       return NextResponse.json({ error: `Gemini API error: ${geminiRes.status}` }, { status: 502 });
@@ -75,22 +116,11 @@ Responde SOLO un JSON: {"telefono":"","email":"","instagram":"","facebook":"","t
     const data = await geminiRes.json();
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-    let cleaned = rawText.trim();
-    if (cleaned.includes('```json')) {
-      cleaned = cleaned.split('```json')[1].split('```')[0].trim();
-    } else if (cleaned.includes('```')) {
-      cleaned = cleaned.split('```')[1].split('```')[0].trim();
-    }
-
-    if (!cleaned) {
-      return NextResponse.json({ error: 'Gemini returned empty response' }, { status: 502 });
-    }
-
     let contacto: any;
     try {
-      contacto = JSON.parse(cleaned);
-    } catch {
-      return NextResponse.json({ error: 'Failed to parse', raw: cleaned.substring(0, 200) }, { status: 502 });
+      contacto = parseContactObject(rawText);
+    } catch (parseError: any) {
+      return NextResponse.json({ error: parseError.message || 'Failed to parse', raw: cleanGeminiJson(rawText).substring(0, 200) }, { status: 502 });
     }
 
     // Actualizar lead con los datos encontrados

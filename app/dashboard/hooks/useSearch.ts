@@ -93,7 +93,7 @@ export function useSearch(
     setSearchMessage(`Buscando ${form.searchCategory} en ${form.searchLocation}...`);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 50000);
+    const timeoutId = setTimeout(() => controller.abort(), 85000);
 
     try {
       const res = await apiFetch('/api/leads/search', {

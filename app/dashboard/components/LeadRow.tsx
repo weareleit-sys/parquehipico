@@ -8,18 +8,12 @@ import {
 import { FaTiktok } from 'react-icons/fa';
 import type { Lead } from '../hooks/useLeads';
 import { whatsappTemplates } from '../data/sectores';
+import { getCategoryIcon, getCategoryLabel } from '../data/categories';
 
 // ─── Pure helpers ────────────────────────────────────────────────────────────
 
 export const getCategoryEmoji = (cat: string) => {
-  switch (cat) {
-    case 'productoras': return '🎪';
-    case 'corporativo': return '🏢';
-    case 'matrimonios': return '💒';
-    case 'municipal': return '🏛️';
-    case 'cumpleanos': return '🎂';
-    default: return '📍';
-  }
+  return getCategoryIcon(cat);
 };
 
 export const getEstadoBadge = (estado: string) => {
@@ -171,7 +165,7 @@ export default function LeadRow({
       </td>
       <td className="px-4 py-4 text-xs text-slate-400">{getSectorLabel(lead.sector)}</td>
       <td className="px-4 py-4 text-sm text-slate-300">
-        <span className="capitalize">{getCategoryEmoji(lead.categoria)} {lead.categoria}</span>
+        <span>{getCategoryEmoji(lead.categoria)} {getCategoryLabel(lead.categoria)}</span>
       </td>
       <td className="px-4 py-4 text-sm text-slate-400">{lead.ubicacion || '—'}</td>
       <td className="px-4 py-4 text-center">

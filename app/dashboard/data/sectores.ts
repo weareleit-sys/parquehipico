@@ -1,3 +1,5 @@
+import { leadCategoryDefinitions } from '@/lib/lead-categories';
+
 export const sectoresAraucania: Record<string, { label: string; ciudades: { value: string; label: string }[] }> = {
   temuco: { label: 'Temuco y alrededores', ciudades: [
     { value: 'Temuco', label: 'Temuco' }, { value: 'Padre Las Casas', label: 'Padre Las Casas' },
@@ -26,12 +28,11 @@ export const sectoresAraucania: Record<string, { label: string; ciudades: { valu
     { value: 'Panguipulli', label: 'Panguipulli' }, { value: 'Lanco', label: 'Lanco' },
     { value: 'Mariquina', label: 'Mariquina' },
   ]},
+  externo: { label: 'Fuera de zona / revisar', ciudades: [
+    { value: 'Fuera de zona', label: 'Fuera de zona' },
+  ]},
 };
 
-export const whatsappTemplates: Record<string, string> = {
-  productoras: 'Hola, soy Alberto del Parque Hípico La Montaña en Villarrica. Somos el recinto outdoor más grande del sur de Chile: 3 hectáreas planas, 5.000+ personas, luz trifásica T1. Vi que {empresa} produce eventos en {ciudad}. Si tus clientes necesitan espacio masivo que ningún salón techado puede dar, acá somos la opción. ¿Conversamos?',
-  corporativo: 'Hola, soy Alberto del Parque Hípico La Montaña. Vi que {empresa} está en {ciudad}. Hacemos team building, cenas de fin de año y convenciones al aire libre a una escala que ningún hotel de la zona ofrece: 3 hectáreas, 400+ estacionamientos, libertad total de montaje. ¿Les tinca hacer algo distinto este año?',
-  matrimonios: 'Hola, soy Alberto del Parque Hípico La Montaña. Vi el trabajo de {empresa} en {ciudad}. Para matrimonios sin límites de espacio: 3 hectáreas planas donde entra cualquier montaje que la novia imagine. Sin vecinos que reclamen por la música, con estacionamiento para todos. ¿Quieren venir a ver el lugar?',
-  cumpleanos: 'Hola, soy Alberto del Parque Hípico La Montaña en Villarrica. Vi que {empresa} organiza celebraciones en {ciudad}. Para cumpleaños y fiestas donde el espacio no es problema: inflables gigantes, food trucks, juegos infantiles, todo cabe en 3 hectáreas. ¿Te gustaría conocer el parque?',
-  municipal: 'Hola, soy Alberto del Parque Hípico La Montaña. Vi el trabajo de {empresa} en {ciudad}. Para ferias costumbristas, eventos masivos y encuentros que necesitan espacio real: 3 hectáreas planas, cancha de carreras certificada, 5.000+ personas. Infraestructura lista. ¿Conversamos?',
-};
+export const whatsappTemplates: Record<string, string> = Object.fromEntries(
+  leadCategoryDefinitions.map(category => [category.value, category.template])
+);

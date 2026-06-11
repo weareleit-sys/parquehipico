@@ -52,3 +52,23 @@ CREATE POLICY "rate_limits_select" ON rate_limits FOR SELECT USING ((SELECT auth
 CREATE POLICY "rate_limits_insert" ON rate_limits FOR INSERT WITH CHECK ((SELECT auth.role() = 'service_role'));
 CREATE POLICY "rate_limits_update" ON rate_limits FOR UPDATE USING ((SELECT auth.role() = 'service_role'));
 CREATE POLICY "rate_limits_delete" ON rate_limits FOR DELETE USING ((SELECT auth.role() = 'service_role'));
+
+-- Fix rate-limit RPC used by app/lib/rate-limit.ts.
+CREATE OR REPLACE FUNCTION check_rate_limit(p_ip TEXT, p_endpoint TEXT, p_max INT, p_window_min INT)
+RETURNS TABLE(count INT, reset_at TIMESTAMPTZ, allowed BOOLEAN) AS $$
+BEGIN
+  RETURN QUERY
+  INSERT INTO rate_limits (ip, endpoint, count, reset_at)
+  VALUES (p_ip, p_endpoint, 1, NOW() + (p_window_min || ' minutes')::INTERVAL)
+  ON CONFLICT (ip, endpoint) DO UPDATE
+  SET count = CASE
+    WHEN rate_limits.reset_at <= NOW() THEN 1
+    ELSE rate_limits.count + 1
+  END,
+  reset_at = CASE
+    WHEN rate_limits.reset_at <= NOW() THEN NOW() + (p_window_min || ' minutes')::INTERVAL
+    ELSE rate_limits.reset_at
+  END
+  RETURNING rate_limits.count, rate_limits.reset_at, (rate_limits.count <= p_max) AS allowed;
+END;
+$$ LANGUAGE plpgsql;

@@ -96,6 +96,7 @@ CREATE POLICY "rate_limits_delete" ON rate_limits FOR DELETE USING ((SELECT auth
 CREATE OR REPLACE FUNCTION check_rate_limit(p_ip TEXT, p_endpoint TEXT, p_max INT, p_window_min INT)
 RETURNS TABLE(count INT, reset_at TIMESTAMPTZ, allowed BOOLEAN) AS $$
 BEGIN
+  RETURN QUERY
   INSERT INTO rate_limits (ip, endpoint, count, reset_at)
   VALUES (p_ip, p_endpoint, 1, NOW() + (p_window_min || ' minutes')::INTERVAL)
   ON CONFLICT (ip, endpoint) DO UPDATE

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { FaSearch } from 'react-icons/fa';
+import { leadCategoryDefinitions } from '@/lib/lead-categories';
 import { sectoresAraucania } from '../data/sectores';
 import type { SearchState, SearchActions } from '../hooks/useSearch';
 
@@ -26,11 +27,11 @@ export default function SearchPanel({
             onChange={e => setForm({ searchCategory: e.target.value })}
             className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 text-sm"
           >
-            <option value="productoras">🎪 Productoras de Eventos</option>
-            <option value="corporativo">🏢 Corporativo / Empresas</option>
-            <option value="matrimonios">💒 Wedding Planners / Bodas</option>
-            <option value="cumpleanos">🎂 Cumpleaños / Celebraciones</option>
-            <option value="municipal">🏛️ Municipalidades / Ferias</option>
+            {leadCategoryDefinitions.map(category => (
+              <option key={category.value} value={category.value}>
+                {category.icon} {category.label}
+              </option>
+            ))}
           </select>
         </div>
 

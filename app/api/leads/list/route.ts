@@ -1,22 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { isLeadCategoryValue, normalizeLeadCategoryValue } from '@/lib/lead-categories';
 
 export const dynamic = 'force-dynamic';
+
+const ALLOWED_ESTADOS = new Set(['pendientes', 'nuevo', 'en_proceso', 'contactado', 'respondio', 'agendado', 'rechazo', 'descartado', 'todos']);
+const ALLOWED_SECTORES = new Set(['temuco', 'lacustre', 'sur', 'costa', 'norte', 'lagos', 'externo', 'todos']);
+
+function parsePositiveInt(value: string | null, fallback: number, max: number): number {
+  const parsed = Number.parseInt(value || '', 10);
+  if (!Number.isFinite(parsed) || parsed < 1) return fallback;
+  return Math.min(parsed, max);
+}
+
+function sanitizeSearchTerm(value: string | null): string {
+  return (value || '')
+    .replace(/[,%()]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 80);
+}
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabaseAdmin();
     const { searchParams } = new URL(request.url);
-    const categoria = searchParams.get('categoria');
+    const rawCategoria = searchParams.get('categoria');
+    const categoria = rawCategoria && rawCategoria !== 'todos'
+      ? normalizeLeadCategoryValue(rawCategoria)
+      : null;
     const estado = searchParams.get('estado');
     const sector = searchParams.get('sector');
-    const search = searchParams.get('search');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '25'), 50);
+    const search = sanitizeSearchTerm(searchParams.get('search'));
+    const page = parsePositiveInt(searchParams.get('page'), 1, 500);
+    const limit = parsePositiveInt(searchParams.get('limit'), 25, 50);
+
+    if (categoria && !isLeadCategoryValue(categoria)) {
+      return NextResponse.json({ error: 'Categoría no válida' }, { status: 400 });
+    }
+    if (estado && !ALLOWED_ESTADOS.has(estado)) {
+      return NextResponse.json({ error: 'Estado no válido' }, { status: 400 });
+    }
+    if (sector && !ALLOWED_SECTORES.has(sector)) {
+      return NextResponse.json({ error: 'Sector no válido' }, { status: 400 });
+    }
 
     // Base query para contar total
     let countQuery = supabase.from('leads').select('*', { count: 'exact', head: true });
-    if (categoria && categoria !== 'todos') countQuery = countQuery.filter('categorias', 'cs', `{${categoria}}`);
+    if (categoria) countQuery = countQuery.eq('categoria', categoria);
     if (estado && estado !== 'todos') {
       if (estado === 'pendientes') {
         countQuery = countQuery.in('estado_lead', ['nuevo', 'en_proceso']);
@@ -35,7 +66,7 @@ export async function GET(request: NextRequest) {
     const to = from + limit - 1;
 
     let query = supabase.from('leads').select('*').range(from, to).order('created_at', { ascending: false });
-    if (categoria && categoria !== 'todos') query = query.filter('categorias', 'cs', `{${categoria}}`);
+    if (categoria) query = query.eq('categoria', categoria);
     if (estado && estado !== 'todos') {
       if (estado === 'pendientes') {
         query = query.in('estado_lead', ['nuevo', 'en_proceso']);

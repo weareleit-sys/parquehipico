@@ -1,61 +1,127 @@
 # System Status
 
-Last updated: 10 Jun 2026 by OpenCode
+Last updated: 11 Jun 2026 by Codex
 
-## Production Readiness: 84/100 — Ready for controlled deploy
+## Production Readiness: 88/100 — Ready for controlled deploy
+
+This is no longer a fragile prototype. It is an internal, single-tenant lead tool that is deployable if Vercel env vars are correct and production smoke tests pass.
 
 ## Current State
 
 | Item | Status |
 |------|--------|
-| Build (`npx next build`) | ✅ Clean (no TypeScript errors) |
+| TypeScript (`npx.cmd tsc --noEmit --pretty false`) | ✅ Pass |
+| Build (`npm.cmd run build`) | ✅ Pass |
 | Dev server (`localhost:3000`) | ✅ Running |
 | Dashboard | ✅ Functional |
-| Card view (Table/Cards toggle) | ✅ Working |
-| Search (Gemini Grounding) | ✅ 45s timeout, rate limited |
-| Guion generation | ✅ With Grounding, 2 retries, no horse hallucinations |
-| Find contact | ✅ Finds email, phone, social |
-| Outreach logging | ✅ With respuesta_fecha |
+| Mobile-first card view | ✅ Default view, table hidden on mobile |
+| Filter bar | ✅ Large mobile controls, sector select, clear category labels |
+| Search (Gemini Grounding) | ✅ 75s server timeout, 10-lead cap, rate limited |
+| Guion generation | ✅ Grounded, timeout, duplicate signature sanitizer |
+| Find contact | ✅ Grounded, timeout, tolerant JSON parsing |
+| Outreach logging | ✅ Protected and validates status/result/channel |
 | Pagination | ✅ 25/page, default "pendientes" |
-| RLS in code | ✅ All endpoints use service_role for reads+writes |
-| RLS in Supabase | ⚠️ PENDING — `scripts/rls_fix.sql` needs execution |
-| Deploy to Vercel | ⚠️ PENDING |
-| BD leads | 52 |
-| BD outreach | 10 |
+| Stats endpoint | ✅ List/stats totals verified |
+| RLS public exposure | ✅ Anon REST smoke test returns no lead data |
+| Deploy to Vercel | ⚠️ Pending |
+| DB leads | 85 |
+
+## Current Metrics
+
+```text
+Total          85
+Pendientes     75
+Contactados     9
+Respondieron    0
+Agendados       0
+Prioridad alta 24
+Revisar         3
+```
+
+By category:
+
+```text
+matrimonios  11
+cumpleanos   29
+corporativo  13
+turismo      11
+productoras   6
+educacion     7
+comunidad     4
+municipal     4
+```
 
 ## Architecture
 
-```
+```text
 app/dashboard/
-├── DashboardClient.tsx         137 lines — orchestrator
+├── DashboardClient.tsx         mobile-first dashboard orchestrator
 ├── hooks/
-│   ├── useLeads.ts              state + filters + pagination
-│   ├── useSearch.ts             form + search + phases
-│   └── useOutreach.ts           find-contact + log
+│   ├── useLeads.ts             state + filters + pagination
+│   ├── useSearch.ts            search flow (currently not on main dashboard)
+│   └── useOutreach.ts          find-contact + log
 ├── components/
-│   ├── SearchPanel.tsx          sidebar
-│   ├── FilterBar.tsx            chips
-│   ├── LeadRow.tsx              table row + exported helpers
-│   ├── LeadsTable.tsx           table + sort + pagination
-│   └── LeadCardView.tsx         card grid
-├── LeadCard.tsx                 individual card
-├── data/sectores.ts             Araucanía sectors + WhatsApp templates
-├── GuionModal.tsx               message modal
-└── OutreachModal.tsx            contact tracking modal
+│   ├── SearchPanel.tsx         available component, not shown on main dashboard
+│   ├── FilterBar.tsx           search + large category/status buttons + sector select
+│   ├── LeadRow.tsx             table row + WhatsApp helpers
+│   ├── LeadsTable.tsx          table + sort + pagination
+│   └── LeadCardView.tsx        card grid
+├── LeadCard.tsx                individual card
+├── data/categories.ts          re-export from lib taxonomy
+├── data/sectores.ts            Araucanía sectors + WhatsApp templates
+├── GuionModal.tsx              message modal
+└── OutreachModal.tsx           contact tracking modal
 ```
+
+Shared lead taxonomy lives in:
+
+```text
+app/lib/lead-categories.ts
+```
+
+## Product Notes
+
+- Users are expected to use the system occasionally, often from mobile, and prefer visible/simple controls.
+- The dashboard should behave like a simple contact list, not a dense CRM.
+- Internal category `cumpleanos` is shown as **Eventos familiares**.
+- Exclude product-only party businesses from Eventos familiares.
+- Include hotels, cabañas, centers, salones, venues and tourism operators when they can refer clients or need a larger outdoor venue.
+- Sector should come from the lead's actual location when recognizable, not only from the search form.
 
 ## Security
 
-- Middleware: token required in production, localhost bypass
-- Auth: Bearer token in all API calls (no ?token= in URL for API)
-- Supabase: Dual client (anon for nothing, service_role for everything via API routes)
-- Rate limiting: 10 searches/5min per IP, PG function atomic
-- RLS: Ready to close (code supports it, SQL pending)
+- Middleware requires `DASHBOARD_TOKEN` in production for `/dashboard`, `/api/leads/*`, and `/api/outreach/*`.
+- Localhost bypass is intentional for development.
+- Browser calls protected Next.js API routes; it should not read/write Supabase tables directly.
+- API routes use `getSupabaseAdmin()`.
+- Supabase anon REST was tested and cannot read lead data.
+- Rate limit protects Gemini search.
 
-## Next Steps (ordered)
+## Verification
 
-1. Execute `scripts/rls_fix.sql` in Supabase
-2. Add 7 env vars to Vercel
-3. Deploy from Vercel dashboard
-4. Smoke test production
-5. 1-2 weeks controlled use, measure conversion metrics
+Latest smoke:
+
+```text
+Dashboard HTTP        PASS   HTTP 200
+Lead list API         PASS   85 leads
+Stats API             PASS   total=85, categories=85
+Category counts       PASS   educacion=7, turismo=11, comunidad=4, cumpleanos=29, municipal=4
+Empty save validation PASS   HTTP 400
+Supabase anon REST    PASS   no public lead data
+```
+
+Extra negative checks:
+
+```text
+invalid estado: HTTP 400
+invalid categoria save: HTTP 400
+list sanitized: PASS
+```
+
+## Next Steps
+
+1. Confirm env vars in Vercel.
+2. Deploy to Vercel.
+3. Run production smoke tests.
+4. Controlled use for 1-2 weeks.
+5. Review low-fit leads and tune scoring/category prompts based on real replies.

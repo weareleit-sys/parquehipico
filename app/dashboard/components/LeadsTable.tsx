@@ -95,7 +95,7 @@ export default function LeadsTable({
             {sortedLeads.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-6 py-12 text-center text-slate-500 text-sm">
-                  No hay contactos. Usa el panel lateral para buscar empresas en la Araucanía.
+                  No hay contactos para estos filtros.
                 </td>
               </tr>
             ) : (

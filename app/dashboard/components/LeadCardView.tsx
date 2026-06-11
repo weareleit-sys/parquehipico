@@ -22,7 +22,7 @@ export default function LeadCardView({
   if (leads.length === 0) {
     return (
       <div className="bg-slate-900 rounded-2xl border border-slate-800 px-6 py-12 text-center text-slate-500 text-sm">
-        No hay contactos. Usa el panel lateral para buscar empresas en la Araucanía.
+        No hay contactos para estos filtros.
       </div>
     );
   }
