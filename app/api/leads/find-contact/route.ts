@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { cleanSocialHandle, cleanWebsite } from '@/lib/lead-links';
 
 function normalizePhone(tel: string): string {
   if (!tel || !tel.trim()) return '';
@@ -73,11 +74,12 @@ Buscá en TODAS estas fuentes:
 Necesito encontrar:
 - Teléfono de contacto (prioridad máxima, formato chileno +56 9)
 - Email de contacto
-- Instagram (nombre de usuario o URL)
-- Facebook (nombre o URL)
-- TikTok (nombre o URL)
+- Instagram (solo usuario o URL real visible; si no hay fuente confiable, vacío)
+- Facebook (solo usuario/página o URL real visible; si no hay fuente confiable, vacío)
+- TikTok (solo usuario o URL real visible; si no hay fuente confiable, vacío)
 
 Si el teléfono no está disponible, al menos encontrá email e Instagram. Buscá con DETALLE, no te rindas rápido.
+No inventes redes sociales y no mezcles URLs, por ejemplo nunca respondas "instagram.com/https://...".
 
 Responde SOLO un JSON: {"telefono":"","email":"","instagram":"","facebook":"","tiktok":"","website":""}. Strings vacíos si no encontrás. Sin Markdown.`;
 
@@ -127,10 +129,17 @@ Responde SOLO un JSON: {"telefono":"","email":"","instagram":"","facebook":"","t
     const updates: any = { updated_at: new Date().toISOString() };
     if (contacto.telefono) updates.telefono = normalizePhone(contacto.telefono);
     if (contacto.email) updates.email = contacto.email;
-    if (contacto.website) updates.website = contacto.website;
-    if (contacto.instagram) updates.instagram = contacto.instagram;
-    if (contacto.facebook) updates.facebook = contacto.facebook;
-    if (contacto.tiktok) updates.tiktok = contacto.tiktok;
+    const website = cleanWebsite(contacto.website);
+    const instagram = cleanSocialHandle(contacto.instagram, 'instagram')
+      || cleanSocialHandle(contacto.website, 'instagram');
+    const facebook = cleanSocialHandle(contacto.facebook, 'facebook')
+      || cleanSocialHandle(contacto.website, 'facebook');
+    const tiktok = cleanSocialHandle(contacto.tiktok, 'tiktok')
+      || cleanSocialHandle(contacto.website, 'tiktok');
+    if (contacto.website !== undefined) updates.website = website;
+    if (contacto.instagram !== undefined || instagram) updates.instagram = instagram;
+    if (contacto.facebook !== undefined || facebook) updates.facebook = facebook;
+    if (contacto.tiktok !== undefined || tiktok) updates.tiktok = tiktok;
 
     const admin = getSupabaseAdmin();
     const { error: updateError } = await admin.from('leads').update(updates).eq('id', lead_id);
@@ -138,7 +147,17 @@ Responde SOLO un JSON: {"telefono":"","email":"","instagram":"","facebook":"","t
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, contacto, lead_id });
+    return NextResponse.json({
+      success: true,
+      contacto: {
+        ...contacto,
+        website,
+        instagram,
+        facebook,
+        tiktok,
+      },
+      lead_id
+    });
   } catch (error: any) {
     console.error('Find Contact Error:', error);
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });

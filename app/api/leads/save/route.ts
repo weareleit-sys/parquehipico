@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { isLeadCategoryValue, normalizeLeadCategoryValue } from '@/lib/lead-categories';
+import { cleanSocialHandle, cleanWebsite } from '@/lib/lead-links';
 
 function addIfPresent(target: Record<string, any>, key: string, value: any) {
   if (value !== undefined) target[key] = value;
@@ -42,6 +43,9 @@ export async function POST(request: NextRequest) {
       web_status,
       score,
       redes,
+      instagram,
+      facebook,
+      tiktok,
       raw_data,
       guion
     } = body;
@@ -68,12 +72,15 @@ export async function POST(request: NextRequest) {
     const leadData: Record<string, any> = {
       updated_at: new Date().toISOString()
     };
+    const websiteInstagram = website !== undefined ? cleanSocialHandle(website, 'instagram') : '';
+    const websiteFacebook = website !== undefined ? cleanSocialHandle(website, 'facebook') : '';
+    const websiteTiktok = website !== undefined ? cleanSocialHandle(website, 'tiktok') : '';
     addIfPresent(leadData, 'empresa', empresa);
     addIfPresent(leadData, 'categoria', normalizedCategoria);
     addIfPresent(leadData, 'categorias', normalizedCategorias);
     addIfPresent(leadData, 'estado_lead', estado_lead);
     addIfPresent(leadData, 'telefono', telefono);
-    addIfPresent(leadData, 'website', website);
+    addIfPresent(leadData, 'website', website !== undefined ? cleanWebsite(website) : undefined);
     addIfPresent(leadData, 'email', email);
     addIfPresent(leadData, 'ubicacion', ubicacion);
     addIfPresent(leadData, 'sector', sector);
@@ -82,6 +89,9 @@ export async function POST(request: NextRequest) {
     const parsedScore = parseInteger(score);
     addIfPresent(leadData, 'score', parsedScore !== undefined ? Math.max(1, Math.min(10, parsedScore)) : undefined);
     addIfPresent(leadData, 'redes', redes);
+    addIfPresent(leadData, 'instagram', instagram !== undefined ? cleanSocialHandle(instagram, 'instagram') : (websiteInstagram || undefined));
+    addIfPresent(leadData, 'facebook', facebook !== undefined ? cleanSocialHandle(facebook, 'facebook') : (websiteFacebook || undefined));
+    addIfPresent(leadData, 'tiktok', tiktok !== undefined ? cleanSocialHandle(tiktok, 'tiktok') : (websiteTiktok || undefined));
     addIfPresent(leadData, 'raw_data', typeof raw_data === 'object' ? JSON.stringify(raw_data) : raw_data);
     addIfPresent(leadData, 'guion', guion);
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { getLeadCategoryDefinition, normalizeLeadCategoryValue } from '@/lib/lead-categories';
+import { cleanSocialHandle, cleanWebsite } from '@/lib/lead-links';
 
 const ALLOWED_SECTORES = new Set(['temuco', 'lacustre', 'sur', 'costa', 'norte', 'lagos', 'externo']);
 const LEAD_LOOKUP_FIELDS = 'id, empresa, estado_lead, telefono, website, email, instagram, facebook, tiktok, guion, raw_data, web_status';
@@ -65,20 +66,6 @@ function normalizePhone(tel: string): string {
   if (digits.startsWith('9') && digits.length === 9) return '+56' + digits;
   if (digits.startsWith('56')) return '+' + digits;
   return '+' + digits;
-}
-
-// Limpiar website (detectar emails metidos como web, urls inválidas)
-function cleanWebsite(url: string): string {
-  if (!url) return '';
-  const trimmed = url.trim().toLowerCase();
-  // Detectar emails puestos como website
-  if (trimmed.includes('@') && !trimmed.startsWith('http')) return '';
-  // Quitar prefijos raros
-  let clean = trimmed.replace(/^(https?:\/\/)?(www\.)?/, '');
-  clean = clean.replace(/\/$/, ''); // quitar slash final
-  // Si no tiene .algo, probablemente no es un dominio real
-  if (!clean.includes('.') || clean.length < 4) return '';
-  return clean;
 }
 
 function cleanGeminiJson(text: string): string {
@@ -308,7 +295,7 @@ Definición de la categoría "${categoryDefinition.label}": ${categoryDefinition
 
 IMPORTANTE: Busca teléfonos de contacto REALES, preferentemente móviles con WhatsApp (+56 9). Busca en Google Maps, páginas amarillas, Facebook, Instagram. Si no encuentras teléfono, déjalo vacío "".
 El sitio web debe ser un dominio real (ej: "www.empresa.cl"), NO pongas emails como website. Si hay email, usa campo "email".
-Instagram, Facebook y TikTok: usuario o URL real. Si no encuentras, string vacío "".
+Instagram, Facebook y TikTok: solo usuario o URL real visible. Si no encuentras una red verificable, usa string vacío "". No inventes usuarios y no mezcles URLs, por ejemplo nunca respondas "instagram.com/https://...".
 
 Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","website","email","ubicacion","instagram","facebook","tiktok"}`;
 
@@ -413,6 +400,18 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
       const cleanTel = normalizePhone(rawTel);
       const isWap = isWhatsAppCompatible(rawTel);
       const site = cleanWebsite(lead.website || '');
+      const instagram = cleanSocialHandle(lead.instagram, 'instagram')
+        || cleanSocialHandle(lead.website, 'instagram')
+        || existingDb?.instagram
+        || '';
+      const facebook = cleanSocialHandle(lead.facebook, 'facebook')
+        || cleanSocialHandle(lead.website, 'facebook')
+        || existingDb?.facebook
+        || '';
+      const tiktok = cleanSocialHandle(lead.tiktok, 'tiktok')
+        || cleanSocialHandle(lead.website, 'tiktok')
+        || existingDb?.tiktok
+        || '';
       const quality = buildLeadQuality(lead, normalizedCategoria, cleanTel, site, isWap);
       const autoDiscard = shouldAutoDiscardLead(quality, leadSector);
 
@@ -446,9 +445,9 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
         email: finalEmail || existingDb?.email || '',
         ubicacion: lead.ubicacion || '',
         sector: leadSector,
-        instagram: (lead.instagram || '').trim() || existingDb?.instagram || '',
-        facebook: (lead.facebook || '').trim() || existingDb?.facebook || '',
-        tiktok: (lead.tiktok || '').trim() || existingDb?.tiktok || '',
+        instagram,
+        facebook,
+        tiktok,
         score: quality.score,
         raw_data: rawData,
         estado_lead: nextEstadoLead,
@@ -494,6 +493,9 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
         email: finalEmail,
         website: site,
         telefono: cleanTel,
+        instagram,
+        facebook,
+        tiktok,
         capacidad_estimada: null,
         web_status: nextWebStatus,
         score: quality.score,

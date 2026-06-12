@@ -4,6 +4,7 @@ import React from 'react';
 import { FaWhatsapp, FaSearch, FaExternalLinkAlt, FaMagic, FaEye, FaInstagram, FaFacebook } from 'react-icons/fa';
 import { FaTiktok } from 'react-icons/fa';
 import type { Lead } from './hooks/useLeads';
+import { buildSocialUrl, buildWebsiteUrl } from '@/lib/lead-links';
 import {
   getEstadoColor,
   getEstadoBadge,
@@ -52,6 +53,10 @@ export default function LeadCard({
   const lastResult = lead._lastOutreach?.resultado;
   const priority = getPriorityLabel(lead.score);
   const leadRole = getLeadRole(lead.raw_data);
+  const websiteUrl = buildWebsiteUrl(lead.website);
+  const instagramUrl = buildSocialUrl('instagram', lead.instagram);
+  const facebookUrl = buildSocialUrl('facebook', lead.facebook);
+  const tiktokUrl = buildSocialUrl('tiktok', lead.tiktok);
 
   const lastContactLabel = (() => {
     if (!lastTime) return null;
@@ -108,22 +113,22 @@ export default function LeadCard({
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
-        {lead.website && (
-          <a href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`} target="_blank" rel="noopener noreferrer"
+        {websiteUrl && (
+          <a href={websiteUrl} target="_blank" rel="noopener noreferrer"
             className="text-amber-500 hover:text-amber-400 text-xs flex items-center gap-1 font-bold">
             web <FaExternalLinkAlt className="text-[9px]" />
           </a>
         )}
-        {lead.instagram && (
-          <a href={`https://instagram.com/${lead.instagram.replace('@','').replace('instagram.com/','')}`} target="_blank" rel="noopener noreferrer"
+        {instagramUrl && (
+          <a href={instagramUrl} target="_blank" rel="noopener noreferrer"
             className="text-slate-500 hover:text-pink-400 transition-colors"><FaInstagram /></a>
         )}
-        {lead.facebook && (
-          <a href={lead.facebook.startsWith('http') ? lead.facebook : `https://facebook.com/${lead.facebook}`} target="_blank" rel="noopener noreferrer"
+        {facebookUrl && (
+          <a href={facebookUrl} target="_blank" rel="noopener noreferrer"
             className="text-slate-500 hover:text-blue-400 transition-colors"><FaFacebook /></a>
         )}
-        {lead.tiktok && (
-          <a href={lead.tiktok.startsWith('http') ? lead.tiktok : `https://tiktok.com/@${lead.tiktok.replace('@','')}`} target="_blank" rel="noopener noreferrer"
+        {tiktokUrl && (
+          <a href={tiktokUrl} target="_blank" rel="noopener noreferrer"
             className="text-slate-500 hover:text-cyan-400 transition-colors"><FaTiktok /></a>
         )}
         <span className="text-sm text-slate-500 sm:ml-auto">{getSectorLabel(lead.sector)}</span>

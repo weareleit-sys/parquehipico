@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaWhatsapp, FaCopy, FaMagic, FaCheck, FaTimes, FaSpinner } from 'react-icons/fa';
 import type { Lead } from './hooks/useLeads';
+import { buildWebsiteUrl } from '@/lib/lead-links';
 
 interface GuionModalProps {
   lead: Lead;
@@ -110,6 +111,7 @@ export default function GuionModal({ lead, isOpen, onClose, onSaved, getWhatsApp
   if (!isOpen) return null;
 
   const wapLink = lead.telefono ? getWhatsAppLink(lead, guion) : '#';
+  const websiteUrl = buildWebsiteUrl(lead.website);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
@@ -117,8 +119,8 @@ export default function GuionModal({ lead, isOpen, onClose, onSaved, getWhatsApp
         <div className="flex items-center justify-between p-6 border-b border-slate-800">
           <div>
             <h3 className="text-lg font-bold text-white">{lead.empresa}</h3>
-            {lead.website && (
-              <a href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`} target="_blank" rel="noopener noreferrer" className="text-xs text-amber-500 hover:text-amber-400">{lead.website}</a>
+            {websiteUrl && (
+              <a href={websiteUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-amber-500 hover:text-amber-400">{lead.website}</a>
             )}
           </div>
           <button onClick={onClose} className="text-slate-500 hover:text-white text-xl"><FaTimes /></button>

@@ -9,6 +9,7 @@ import { FaTiktok } from 'react-icons/fa';
 import type { Lead } from '../hooks/useLeads';
 import { whatsappTemplates } from '../data/sectores';
 import { getCategoryIcon, getCategoryLabel } from '../data/categories';
+import { buildSocialUrl, buildWebsiteUrl } from '@/lib/lead-links';
 
 // ─── Pure helpers ────────────────────────────────────────────────────────────
 
@@ -81,19 +82,22 @@ export const getWhatsAppLink = (lead: Lead, customGuion?: string): string => {
 
 const getSocialLinks = (lead: Lead) => {
   const links: { icon: React.ReactNode; url: string; color: string }[] = [];
-  if (lead.instagram) links.push({
+  const instagramUrl = buildSocialUrl('instagram', lead.instagram);
+  const facebookUrl = buildSocialUrl('facebook', lead.facebook);
+  const tiktokUrl = buildSocialUrl('tiktok', lead.tiktok);
+  if (instagramUrl) links.push({
     icon: <FaInstagram className="text-sm" />,
-    url: `https://instagram.com/${lead.instagram.replace('@', '').replace('instagram.com/', '')}`,
+    url: instagramUrl,
     color: 'hover:text-pink-400',
   });
-  if (lead.facebook) links.push({
+  if (facebookUrl) links.push({
     icon: <FaFacebook className="text-sm" />,
-    url: lead.facebook.startsWith('http') ? lead.facebook : `https://facebook.com/${lead.facebook}`,
+    url: facebookUrl,
     color: 'hover:text-blue-400',
   });
-  if (lead.tiktok) links.push({
+  if (tiktokUrl) links.push({
     icon: <FaTiktok className="text-sm" />,
-    url: lead.tiktok.startsWith('http') ? lead.tiktok : `https://tiktok.com/@${lead.tiktok.replace('@', '')}`,
+    url: tiktokUrl,
     color: 'hover:text-cyan-400',
   });
   return links;
@@ -130,6 +134,7 @@ export default function LeadRow({
   const socials = getSocialLinks(lead);
   const lastTime = getRelativeTime(lead._lastOutreach?.fecha_contacto || null);
   const lastResult = lead._lastOutreach?.resultado;
+  const websiteUrl = buildWebsiteUrl(lead.website);
 
   return (
     <tr className={`border-l-2 ${getEstadoColor(lead.estado_lead)} hover:bg-slate-800/30 transition-all`}>
@@ -151,9 +156,9 @@ export default function LeadRow({
               </span>
             )}
             {lead.email && <span className="text-pink-400 font-mono text-[11px]">{lead.email}</span>}
-            {lead.website && (
+            {websiteUrl && (
               <a
-                href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`}
+                href={websiteUrl}
                 target="_blank" rel="noopener noreferrer"
                 className="text-amber-500 hover:text-amber-400 flex items-center gap-1"
               >
@@ -218,9 +223,9 @@ export default function LeadRow({
             {lead.guion ? <FaEye className="text-[10px]" /> : <FaMagic className="text-[10px]" />} Mensaje
           </button>
 
-          {lead.website && (
+          {websiteUrl && (
             <a
-              href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`}
+              href={websiteUrl}
               target="_blank" rel="noopener noreferrer"
               className="text-amber-500 hover:text-amber-400 text-xs font-bold flex items-center gap-1 bg-slate-800 px-2 py-1.5 rounded-lg border border-slate-700"
             >
