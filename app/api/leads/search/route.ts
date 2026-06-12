@@ -4,7 +4,7 @@ import { checkRateLimit } from '@/lib/rate-limit';
 import { getLeadCategoryDefinition, normalizeLeadCategoryValue } from '@/lib/lead-categories';
 
 const ALLOWED_SECTORES = new Set(['temuco', 'lacustre', 'sur', 'costa', 'norte', 'lagos', 'externo']);
-const LEAD_LOOKUP_FIELDS = 'id, empresa, estado_lead, telefono, website, email, instagram, facebook, tiktok';
+const LEAD_LOOKUP_FIELDS = 'id, empresa, estado_lead, telefono, website, email, instagram, facebook, tiktok, guion, raw_data, web_status';
 
 // Normalizar nombre de empresa para deduplicación
 function normalizeName(name: string): string {
@@ -423,6 +423,21 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
 
       // Si ya existe, hacer UPDATE (no duplicar)
       const recordId = existingDb?.id || null;
+      const rawData = JSON.stringify({
+        ...lead,
+        _validated: true,
+        _isWhatsApp: isWap,
+        _websiteOk: !!site,
+        _qualityScore: quality.score,
+        _qualityTier: quality.tier,
+        _leadRole: quality.role,
+        _qualityNotes: quality.notes,
+      });
+      const nextEstadoLead = recordId
+        ? (autoDiscard && ['nuevo', 'en_proceso'].includes(existingDb?.estado_lead) ? 'descartado' : undefined)
+        : (autoDiscard ? 'descartado' : 'nuevo');
+      const nextWebStatus = isWap ? (site ? 'activa' : 'sin_web') : 'fijo';
+
       const updateData: any = {
         categoria: normalizedCategoria,
         categorias: [normalizedCategoria],
@@ -435,20 +450,9 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
         facebook: (lead.facebook || '').trim() || existingDb?.facebook || '',
         tiktok: (lead.tiktok || '').trim() || existingDb?.tiktok || '',
         score: quality.score,
-        raw_data: JSON.stringify({
-          ...lead,
-          _validated: true,
-          _isWhatsApp: isWap,
-          _websiteOk: !!site,
-          _qualityScore: quality.score,
-          _qualityTier: quality.tier,
-          _leadRole: quality.role,
-          _qualityNotes: quality.notes,
-        }),
-        estado_lead: recordId
-          ? (autoDiscard && ['nuevo', 'en_proceso'].includes(existingDb?.estado_lead) ? 'descartado' : undefined)
-          : (autoDiscard ? 'descartado' : 'nuevo'),
-        web_status: isWap ? (site ? 'activa' : 'sin_web') : 'fijo',
+        raw_data: rawData,
+        estado_lead: nextEstadoLead,
+        web_status: nextWebStatus,
         updated_at: new Date().toISOString(),
       };
 
@@ -483,10 +487,21 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
       saved.push({
         ...lead,
         id: finalId,
+        categoria: normalizedCategoria,
+        categorias: [normalizedCategoria],
+        estado_lead: nextEstadoLead || existingDb?.estado_lead || 'nuevo',
         sector: leadSector,
         email: finalEmail,
         website: site,
         telefono: cleanTel,
+        capacidad_estimada: null,
+        web_status: nextWebStatus,
+        score: quality.score,
+        redes: '',
+        guion: existingDb?.guion || '',
+        raw_data: rawData,
+        created_at: new Date().toISOString(),
+        _lastOutreach: null,
         _isWhatsApp: isWap,
         _websiteOk: !!site,
         _qualityScore: quality.score,

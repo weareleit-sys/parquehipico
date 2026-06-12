@@ -40,6 +40,7 @@ export interface SearchState {
 export interface SearchActions {
   setForm: (partial: Partial<SearchFormState>) => void;
   handleStartSearch: (e: React.FormEvent) => Promise<void>;
+  markNewLeadContacted: (leadId: string) => void;
 }
 
 export function useSearch(
@@ -92,6 +93,8 @@ export function useSearch(
     setIsSearching(true);
     setSearchStatus('running');
     setSearchPhaseIdx(0);
+    setNewLeads([]);
+    setSearchStats(null);
     setSearchMessage(`Buscando ${form.searchCategory} en ${form.searchLocation}...`);
 
     const controller = new AbortController();
@@ -144,6 +147,20 @@ export function useSearch(
     }
   }, [form, apiFetch, fetchLeads, onSearchComplete]);
 
+  const markNewLeadContacted = useCallback((leadId: string) => {
+    setNewLeads(prev => prev.map(lead => lead.id === leadId
+      ? {
+          ...lead,
+          estado_lead: 'contactado',
+          _lastOutreach: {
+            resultado: 'contactado',
+            fecha_contacto: new Date().toISOString(),
+          },
+        }
+      : lead
+    ));
+  }, []);
+
   return {
     searchStatus,
     searchMessage,
@@ -155,5 +172,6 @@ export function useSearch(
     isSearching,
     setForm,
     handleStartSearch,
+    markNewLeadContacted,
   };
 }

@@ -5,12 +5,22 @@ import { FaCheckCircle, FaPlusCircle, FaSearch } from 'react-icons/fa';
 import { leadCategoryDefinitions } from '@/lib/lead-categories';
 import { sectoresAraucania } from '../data/sectores';
 import type { SearchState, SearchActions } from '../hooks/useSearch';
+import type { Lead } from '../hooks/useLeads';
+import LeadCard from '../LeadCard';
+import { getWhatsAppLink } from './LeadRow';
 
-interface SearchPanelProps extends SearchState, SearchActions {}
+interface SearchPanelProps extends SearchState, SearchActions {
+  findingContactId: string | null;
+  onOpenOutreach: (lead: Lead) => void;
+  onOpenGuion: (lead: Lead) => void;
+  onFindContact: (leadId: string) => void;
+  onLogOutreach: (leadId: string, resultado: string, nuevoEstado: string) => void;
+}
 
 export default function SearchPanel({
   searchStatus, searchMessage, searchStats, searchPhaseIdx, newLeads,
-  searchPhases, form, isSearching, setForm, handleStartSearch,
+  searchPhases, form, isSearching, setForm, handleStartSearch, markNewLeadContacted,
+  findingContactId, onOpenOutreach, onOpenGuion, onFindContact, onLogOutreach,
 }: SearchPanelProps) {
   const foundCount = newLeads.length;
 
@@ -23,13 +33,13 @@ export default function SearchPanel({
           </div>
           <div>
             <h2 className="text-xl font-extrabold text-white">Buscar nuevos contactos</h2>
-            <p className="text-sm text-slate-400">Se agregan como pendientes y aparecen arriba para contactar.</p>
+            <p className="text-sm text-slate-400">Los resultados quedan abajo, listos para contactar.</p>
           </div>
         </div>
 
         {searchStatus === 'done' && (
           <div className="inline-flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 text-sm font-bold text-emerald-300">
-            <FaCheckCircle /> {foundCount} nuevos
+            <FaCheckCircle /> {foundCount} listos
           </div>
         )}
       </div>
@@ -136,14 +146,38 @@ export default function SearchPanel({
           )}
 
           {foundCount > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {newLeads.slice(0, 6).map((lead, index) => (
-                <div key={`${lead.empresa}-${index}`} className="rounded-lg bg-slate-900 border border-slate-800 p-3">
-                  <p className="text-white font-bold text-sm leading-tight">{lead.empresa}</p>
-                  <p className="text-slate-500 text-xs mt-1">{lead.ubicacion || form.searchLocation}</p>
-                  {lead.telefono && <p className="text-emerald-300 text-xs font-mono mt-1">{lead.telefono}</p>}
-                </div>
-              ))}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-3 border-t border-emerald-900/80 pt-3">
+                <p className="text-xs font-bold uppercase tracking-wide text-emerald-200">
+                  Contactar ahora
+                </p>
+                <p className="text-xs text-slate-500">
+                  Al buscar de nuevo, estos pasan a la lista general.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+                {newLeads.map(lead => {
+                  const wasContacted = !!lead._lastOutreach || ['contactado', 'respondio', 'agendado', 'rechazo'].includes(lead.estado_lead);
+                  return (
+                    <LeadCard
+                      key={lead.id}
+                      lead={lead}
+                      isNew={true}
+                      wasContacted={wasContacted}
+                      findingContact={findingContactId === lead.id}
+                      whatsappLink={getWhatsAppLink(lead)}
+                      onOpenOutreach={() => onOpenOutreach(lead)}
+                      onOpenGuion={() => onOpenGuion(lead)}
+                      onFindContact={() => onFindContact(lead.id)}
+                      onWhatsAppClick={() => {
+                        markNewLeadContacted(lead.id);
+                        onLogOutreach(lead.id, 'contactado', 'contactado');
+                      }}
+                    />
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

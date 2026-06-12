@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { FaSignOutAlt, FaSyncAlt, FaThList, FaTable } from 'react-icons/fa';
 
@@ -72,6 +72,16 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
 
   const searchState = useSearch(refreshDashboard, apiFetch, handleSearchComplete);
   const outreachState = useOutreach(refreshDashboard, apiFetch);
+  const currentSearchLeadIds = useMemo(
+    () => new Set(searchState.newLeads.map(lead => lead.id)),
+    [searchState.newLeads]
+  );
+  const generalLeads = useMemo(
+    () => leadsState.leads.filter(lead => !currentSearchLeadIds.has(lead.id)),
+    [leadsState.leads, currentSearchLeadIds]
+  );
+  const hiddenCurrentSearchCount = leadsState.leads.length - generalLeads.length;
+  const generalTotalLeads = Math.max(0, leadsState.totalLeads - hiddenCurrentSearchCount);
 
   const handleLogout = useCallback(async () => {
     await fetch('/api/auth/logout', { method: 'POST' }).catch(() => null);
@@ -151,17 +161,24 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
             </div>
           )}
 
-          <SearchPanel {...searchState} />
+          <SearchPanel
+            {...searchState}
+            findingContactId={outreachState.findingContactId}
+            onOpenOutreach={setSelectedLeadForOutreach}
+            onOpenGuion={setSelectedLeadForGuion}
+            onFindContact={outreachState.handleFindContact}
+            onLogOutreach={outreachState.logOutreach}
+          />
 
           <FilterBar filters={leadsState.filters} onChange={leadsState.setFilters} />
 
           {viewMode === 'table' ? (
             <LeadsTable
-              leads={leadsState.leads}
-              totalLeads={leadsState.totalLeads}
+              leads={generalLeads}
+              totalLeads={generalTotalLeads}
               totalPages={leadsState.totalPages}
               page={leadsState.page}
-              newLeads={searchState.newLeads}
+              newLeads={[]}
               findingContactId={outreachState.findingContactId}
               onPage={leadsState.setPage}
               onOpenOutreach={setSelectedLeadForOutreach}
@@ -171,8 +188,8 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
             />
           ) : (
             <LeadCardView
-              leads={leadsState.leads}
-              newLeads={searchState.newLeads}
+              leads={generalLeads}
+              newLeads={[]}
               findingContactId={outreachState.findingContactId}
               onOpenOutreach={setSelectedLeadForOutreach}
               onOpenGuion={setSelectedLeadForGuion}
