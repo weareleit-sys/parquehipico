@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { FaSignOutAlt, FaSyncAlt, FaThList, FaTable } from 'react-icons/fa';
+import { FaCheckCircle, FaSignOutAlt, FaSyncAlt, FaThList, FaTable } from 'react-icons/fa';
 
 import { useLeads, type Lead } from './hooks/useLeads';
 import { useSearch, type SearchFormState } from './hooks/useSearch';
@@ -24,6 +24,7 @@ interface LeadStats {
   pending: number;
   scheduled: number;
   highPriority: number;
+  needsVerification: number;
   review: number;
 }
 
@@ -43,6 +44,8 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
   const [selectedLeadForOutreach, setSelectedLeadForOutreach] = useState<Lead | null>(null);
   const [selectedLeadForGuion, setSelectedLeadForGuion] = useState<Lead | null>(null);
   const [stats, setStats] = useState<LeadStats | null>(null);
+  const [verifyingOldData, setVerifyingOldData] = useState(false);
+  const [verifyOldDataMessage, setVerifyOldDataMessage] = useState('');
 
   const { filters, page, fetchLeads, setFilters } = leadsState;
 
@@ -60,6 +63,35 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
   const refreshDashboard = useCallback(async () => {
     await Promise.all([fetchLeads(), fetchStats()]);
   }, [fetchLeads, fetchStats]);
+
+  const handleVerifyOldData = useCallback(async () => {
+    setVerifyingOldData(true);
+    setVerifyOldDataMessage('Revisando 10 contactos antiguos...');
+    try {
+      const response = await apiFetch('/api/leads/verify-missing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ limit: 10 }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setVerifyOldDataMessage(data.error || 'No se pudieron revisar los datos.');
+        return;
+      }
+
+      setVerifyOldDataMessage(
+        data.processed > 0
+          ? `Listo: ${data.processed} revisados, ${data.verified} verificados, ${data.partial} parciales.`
+          : 'No quedan contactos antiguos por revisar.'
+      );
+      await refreshDashboard();
+    } catch {
+      setVerifyOldDataMessage('Error de red revisando datos.');
+    } finally {
+      setVerifyingOldData(false);
+    }
+  }, [apiFetch, refreshDashboard]);
 
   const handleSearchComplete = useCallback((_newLeads: Lead[], searchForm: SearchFormState) => {
     setFilters({
@@ -151,6 +183,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
                 ['Pendientes', stats.pending],
                 ['Prioridad alta', stats.highPriority],
                 ['Agendados', stats.scheduled],
+                ['Sin revisar', stats.needsVerification],
                 ['Revisar', stats.review],
               ].map(([label, value]) => (
                 <div key={label} className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-3">
@@ -158,6 +191,24 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
                   <p className="text-2xl font-extrabold text-white mt-1">{value}</p>
                 </div>
               ))}
+            </div>
+          )}
+
+          {stats && stats.needsVerification > 0 && (
+            <div className="bg-amber-500/10 border border-amber-500/25 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="flex-1">
+                <p className="text-sm font-extrabold text-amber-200">Hay {stats.needsVerification} contactos antiguos sin revisar.</p>
+                <p className="text-sm text-slate-400 mt-1">Puedes revisar 10 por tanda para limpiar datos dudosos sin buscar contactos nuevos.</p>
+                {verifyOldDataMessage && <p className="text-sm text-amber-100 mt-2 font-semibold">{verifyOldDataMessage}</p>}
+              </div>
+              <button
+                onClick={handleVerifyOldData}
+                disabled={verifyingOldData}
+                className="min-h-12 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 disabled:text-slate-400 text-slate-950 font-extrabold px-4 inline-flex items-center justify-center gap-2"
+              >
+                <FaCheckCircle className={verifyingOldData ? 'animate-pulse' : ''} />
+                {verifyingOldData ? 'Revisando...' : 'Revisar 10 datos'}
+              </button>
             </div>
           )}
 

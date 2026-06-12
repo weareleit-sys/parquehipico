@@ -46,11 +46,16 @@ const getLeadRole = (rawData: string) => {
 };
 
 const getVerificationBadge = (rawData: string) => {
-  if (!rawData) return null;
+  const unreviewed = {
+    text: 'Sin revisar',
+    icon: <FaExclamationCircle className="text-[10px]" />,
+    className: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
+  };
+  if (!rawData) return unreviewed;
   try {
     const parsed = JSON.parse(rawData);
     const verification = parsed.verification;
-    if (!verification?.status) return null;
+    if (!verification?.status) return unreviewed;
     if (verification.status === 'verificado') {
       return {
         text: 'Verificado',
@@ -71,7 +76,7 @@ const getVerificationBadge = (rawData: string) => {
       className: 'bg-slate-700/50 text-slate-300 border-slate-600',
     };
   } catch {
-    return null;
+    return unreviewed;
   }
 };
 
@@ -151,21 +156,25 @@ export default function LeadCard({
       <div className="flex items-center gap-3 flex-wrap">
         {websiteUrl && (
           <a href={websiteUrl} target="_blank" rel="noopener noreferrer"
-            className="text-amber-500 hover:text-amber-400 text-xs flex items-center gap-1 font-bold">
-            web <FaExternalLinkAlt className="text-[9px]" />
+            className="min-h-10 inline-flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 text-amber-300 hover:bg-amber-500/20 text-sm font-bold"
+            aria-label={`Abrir web de ${lead.empresa}`}>
+            Web <FaExternalLinkAlt className="text-[10px]" />
           </a>
         )}
         {instagramUrl && (
           <a href={instagramUrl} target="_blank" rel="noopener noreferrer"
-            className="text-slate-500 hover:text-pink-400 transition-colors"><FaInstagram /></a>
+            className="min-h-10 min-w-10 inline-flex items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-pink-300 hover:bg-slate-700 transition-colors"
+            aria-label={`Abrir Instagram de ${lead.empresa}`}><FaInstagram /></a>
         )}
         {facebookUrl && (
           <a href={facebookUrl} target="_blank" rel="noopener noreferrer"
-            className="text-slate-500 hover:text-blue-400 transition-colors"><FaFacebook /></a>
+            className="min-h-10 min-w-10 inline-flex items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-blue-300 hover:bg-slate-700 transition-colors"
+            aria-label={`Abrir Facebook de ${lead.empresa}`}><FaFacebook /></a>
         )}
         {tiktokUrl && (
           <a href={tiktokUrl} target="_blank" rel="noopener noreferrer"
-            className="text-slate-500 hover:text-cyan-400 transition-colors"><FaTiktok /></a>
+            className="min-h-10 min-w-10 inline-flex items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-cyan-300 hover:bg-slate-700 transition-colors"
+            aria-label={`Abrir TikTok de ${lead.empresa}`}><FaTiktok /></a>
         )}
         <span className="text-sm text-slate-500 sm:ml-auto">{getSectorLabel(lead.sector)}</span>
       </div>

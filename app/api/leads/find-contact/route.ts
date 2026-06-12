@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { cleanSocialHandle, cleanWebsite } from '@/lib/lead-links';
+import { verifyLeadData } from '@/lib/lead-verification';
 
 function normalizePhone(tel: string): string {
   if (!tel || !tel.trim()) return '';
@@ -34,6 +35,19 @@ function parseContactObject(text: string): any {
       return JSON.parse(cleaned.slice(start, end + 1));
     }
     throw new Error('Failed to parse Gemini response');
+  }
+}
+
+function isValidEmail(email: string): boolean {
+  return !!(email && email.includes('@') && email.includes('.') && !email.includes(' '));
+}
+
+function parseRawData(rawData: unknown): Record<string, any> {
+  if (!rawData || typeof rawData !== 'string') return {};
+  try {
+    return JSON.parse(rawData);
+  } catch {
+    return {};
   }
 }
 
@@ -125,10 +139,11 @@ Responde SOLO un JSON: {"telefono":"","email":"","instagram":"","facebook":"","t
       return NextResponse.json({ error: parseError.message || 'Failed to parse', raw: cleanGeminiJson(rawText).substring(0, 200) }, { status: 502 });
     }
 
-    // Actualizar lead con los datos encontrados
-    const updates: any = { updated_at: new Date().toISOString() };
-    if (contacto.telefono) updates.telefono = normalizePhone(contacto.telefono);
-    if (contacto.email) updates.email = contacto.email;
+    // Gemini propone datos; el verificador decide que se puede guardar.
+    const candidate: any = {};
+    const candidatePhone = normalizePhone(contacto.telefono || '');
+    if (candidatePhone) candidate.telefono = candidatePhone;
+    if (isValidEmail(contacto.email || '')) candidate.email = String(contacto.email).trim().toLowerCase();
     const website = cleanWebsite(contacto.website);
     const instagram = cleanSocialHandle(contacto.instagram, 'instagram')
       || cleanSocialHandle(contacto.website, 'instagram');
@@ -136,10 +151,24 @@ Responde SOLO un JSON: {"telefono":"","email":"","instagram":"","facebook":"","t
       || cleanSocialHandle(contacto.website, 'facebook');
     const tiktok = cleanSocialHandle(contacto.tiktok, 'tiktok')
       || cleanSocialHandle(contacto.website, 'tiktok');
-    if (contacto.website !== undefined) updates.website = website;
-    if (contacto.instagram !== undefined || instagram) updates.instagram = instagram;
-    if (contacto.facebook !== undefined || facebook) updates.facebook = facebook;
-    if (contacto.tiktok !== undefined || tiktok) updates.tiktok = tiktok;
+    if (website) candidate.website = website;
+    if (instagram) candidate.instagram = instagram;
+    if (facebook) candidate.facebook = facebook;
+    if (tiktok) candidate.tiktok = tiktok;
+
+    const candidateLead = {
+      ...lead,
+      ...candidate,
+      raw_data: JSON.stringify({
+        ...parseRawData(lead.raw_data),
+        contact_candidate: {
+          ...candidate,
+          checked_at: new Date().toISOString(),
+          source: 'gemini_grounded_search',
+        },
+      }),
+    };
+    const { updates, verification } = await verifyLeadData(candidateLead);
 
     const admin = getSupabaseAdmin();
     const { error: updateError } = await admin.from('leads').update(updates).eq('id', lead_id);
@@ -151,11 +180,14 @@ Responde SOLO un JSON: {"telefono":"","email":"","instagram":"","facebook":"","t
       success: true,
       contacto: {
         ...contacto,
-        website,
-        instagram,
-        facebook,
-        tiktok,
+        telefono: candidate.telefono || '',
+        email: candidate.email || '',
+        website: candidate.website || '',
+        instagram: candidate.instagram || '',
+        facebook: candidate.facebook || '',
+        tiktok: candidate.tiktok || '',
       },
+      verification,
       lead_id
     });
   } catch (error: any) {

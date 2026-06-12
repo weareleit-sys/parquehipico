@@ -5,8 +5,15 @@ import {
   DASHBOARD_SESSION_COOKIE,
   getDashboardCookieOptions,
 } from '@/lib/auth-session';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
+
+function getClientIp(request: NextRequest): string {
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  const realIp = request.headers.get('x-real-ip');
+  return (forwardedFor?.split(',')[0] || realIp || 'unknown').trim() || 'unknown';
+}
 
 function getSupabaseAuthClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -26,6 +33,12 @@ function getSupabaseAuthClient() {
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    const { allowed } = await checkRateLimit(ip, 'login');
+    if (!allowed) {
+      return NextResponse.json({ error: 'Demasiados intentos. Espera unos minutos.' }, { status: 429 });
+    }
+
     const { email, password } = await request.json();
     const safeEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
     const safePassword = typeof password === 'string' ? password : '';
