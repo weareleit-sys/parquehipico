@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FaWhatsapp, FaSearch, FaExternalLinkAlt, FaMagic, FaEye, FaInstagram, FaFacebook } from 'react-icons/fa';
+import { FaWhatsapp, FaSearch, FaExternalLinkAlt, FaMagic, FaEye, FaInstagram, FaFacebook, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import { FaTiktok } from 'react-icons/fa';
 import type { Lead } from './hooks/useLeads';
 import { buildSocialUrl, buildWebsiteUrl } from '@/lib/lead-links';
@@ -45,6 +45,36 @@ const getLeadRole = (rawData: string) => {
   }
 };
 
+const getVerificationBadge = (rawData: string) => {
+  if (!rawData) return null;
+  try {
+    const parsed = JSON.parse(rawData);
+    const verification = parsed.verification;
+    if (!verification?.status) return null;
+    if (verification.status === 'verificado') {
+      return {
+        text: 'Verificado',
+        icon: <FaCheckCircle className="text-[10px]" />,
+        className: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25',
+      };
+    }
+    if (verification.status === 'parcial') {
+      return {
+        text: 'Parcial',
+        icon: <FaCheckCircle className="text-[10px]" />,
+        className: 'bg-blue-500/15 text-blue-300 border-blue-500/25',
+      };
+    }
+    return {
+      text: 'Sin verificar',
+      icon: <FaExclamationCircle className="text-[10px]" />,
+      className: 'bg-slate-700/50 text-slate-300 border-slate-600',
+    };
+  } catch {
+    return null;
+  }
+};
+
 export default function LeadCard({
   lead, isNew, wasContacted, findingContact,
   whatsappLink, onOpenOutreach, onOpenGuion, onFindContact, onWhatsAppClick,
@@ -53,6 +83,7 @@ export default function LeadCard({
   const lastResult = lead._lastOutreach?.resultado;
   const priority = getPriorityLabel(lead.score);
   const leadRole = getLeadRole(lead.raw_data);
+  const verificationBadge = getVerificationBadge(lead.raw_data);
   const websiteUrl = buildWebsiteUrl(lead.website);
   const instagramUrl = buildSocialUrl('instagram', lead.instagram);
   const facebookUrl = buildSocialUrl('facebook', lead.facebook);
@@ -73,8 +104,13 @@ export default function LeadCard({
           <p className="text-slate-400 text-sm mt-1">
             {getCategoryEmoji(lead.categoria)} {getCategoryLabel(lead.categoria)} · {lead.ubicacion?.split(',')[0] || '—'}
           </p>
-          {(priority || leadRole) && (
+          {(priority || leadRole || verificationBadge) && (
             <div className="flex flex-wrap gap-1.5 mt-2">
+              {verificationBadge && (
+                <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full border ${verificationBadge.className}`}>
+                  {verificationBadge.icon} {verificationBadge.text}
+                </span>
+              )}
               {priority && (
                 <span className={`text-xs font-bold px-2 py-1 rounded-full border ${priority.className}`}>
                   {priority.text}

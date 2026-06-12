@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { getLeadCategoryDefinition, normalizeLeadCategoryValue } from '@/lib/lead-categories';
 import { cleanSocialHandle, cleanWebsite } from '@/lib/lead-links';
+import { verifyLeadData } from '@/lib/lead-verification';
 
 const ALLOWED_SECTORES = new Set(['temuco', 'lacustre', 'sur', 'costa', 'norte', 'lagos', 'externo']);
 const LEAD_LOOKUP_FIELDS = 'id, empresa, estado_lead, telefono, website, email, instagram, facebook, tiktok, guion, raw_data, web_status';
@@ -483,7 +484,7 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
         finalId = savedLead?.id;
       }
 
-      saved.push({
+      const savedLeadForResponse = {
         ...lead,
         id: finalId,
         categoria: normalizedCategoria,
@@ -510,19 +511,39 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
         _qualityTier: quality.tier,
         _leadRole: quality.role,
         _qualityNotes: quality.notes,
-      });
+      };
+
+      saved.push(savedLeadForResponse);
     }
+
+    const verifiedSaved = await Promise.all(saved.map(async (lead) => {
+      try {
+        const { updates, verification } = await verifyLeadData(lead);
+        if (lead.id && Object.keys(updates).length > 0) {
+          await supabase.from('leads').update(updates).eq('id', lead.id);
+        }
+        return {
+          ...lead,
+          ...updates,
+          raw_data: updates.raw_data || lead.raw_data,
+          verification,
+        };
+      } catch (error) {
+        console.warn(`[VERIFY] No se pudo verificar ${lead.empresa}:`, error);
+        return lead;
+      }
+    }));
 
     return NextResponse.json({
       success: true,
-      leads: saved,
-      total: saved.length,
+      leads: verifiedSaved,
+      total: verifiedSaved.length,
       remaining_searches: remaining,
       stats: {
-        withPhone: saved.filter(l => l.telefono).length,
-        withWhatsApp: saved.filter((l: any) => l._isWhatsApp).length,
-        withWebsite: saved.filter((l: any) => l._websiteOk).length,
-        withEmail: saved.filter(l => l.email).length,
+        withPhone: verifiedSaved.filter(l => l.telefono).length,
+        withWhatsApp: verifiedSaved.filter((l: any) => (l.telefono || '').startsWith('+569')).length,
+        withWebsite: verifiedSaved.filter((l: any) => cleanWebsite(l.website)).length,
+        withEmail: verifiedSaved.filter(l => l.email).length,
         filteredOut: skippedOutOfZone,
       }
     });
