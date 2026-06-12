@@ -110,6 +110,10 @@ function sanitizePromptText(value: any, fallback: string): string {
   return text || fallback;
 }
 
+function delay(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function isProductOnlyFamilyEventLead(lead: any): boolean {
   const text = `${lead?.empresa || ''} ${lead?.website || ''} ${lead?.email || ''} ${lead?.ubicacion || ''}`.toLowerCase();
   const banned = [
@@ -300,51 +304,76 @@ Instagram, Facebook y TikTok: solo usuario o URL real visible. Si no encuentras 
 
 Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","website","email","ubicacion","instagram","facebook","tiktok"}`;
 
-    const controller = new AbortController();
-    const timeoutMs = 75000;
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    let leads: any[] = [];
+    let lastGeminiStatus = 0;
+    let lastFinishReason: string | null = null;
+    let lastRawText = '';
+    let lastError = '';
 
-    let geminiRes: Response;
-    try {
-      geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            tools: [{ google_search: {} }],
-            generationConfig: { temperature: 0.1, maxOutputTokens: 8000 }
-          }),
-          signal: controller.signal,
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      const controller = new AbortController();
+      const timeoutMs = 75000;
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+      try {
+        const geminiRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: prompt }] }],
+              tools: [{ google_search: {} }],
+              generationConfig: { temperature: 0.1, maxOutputTokens: 8000 }
+            }),
+            signal: controller.signal,
+          }
+        );
+        clearTimeout(timeoutId);
+        lastGeminiStatus = geminiRes.status;
+
+        if (!geminiRes.ok) {
+          lastError = `Gemini no respondio correctamente (${geminiRes.status}).`;
+          if (attempt < 2 && (geminiRes.status === 429 || geminiRes.status >= 500)) {
+            await delay(1200);
+            continue;
+          }
+          break;
         }
-      );
-    } catch (e: any) {
-      clearTimeout(timeoutId);
-      if (e.name === 'AbortError') {
-        return NextResponse.json({ error: 'La búsqueda tardó más de 75 segundos. Probá con menos resultados o una ciudad más grande.' }, { status: 504 });
+
+        const data = await geminiRes.json();
+        lastFinishReason = data.candidates?.[0]?.finishReason || null;
+        lastRawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        try {
+          leads = parseLeadArray(lastRawText);
+          lastError = '';
+          break;
+        } catch (parseError: any) {
+          lastError = parseError.message || 'Failed to parse Gemini response';
+          if (attempt < 2) {
+            await delay(1200);
+            continue;
+          }
+        }
+      } catch (e: any) {
+        clearTimeout(timeoutId);
+        lastError = e.name === 'AbortError'
+          ? 'La busqueda tardo mas de 75 segundos.'
+          : 'Error de conexion con Gemini.';
+        if (attempt < 2) {
+          await delay(1200);
+          continue;
+        }
       }
-      return NextResponse.json({ error: 'Error de conexión con Gemini. Revisá tu internet.' }, { status: 502 });
     }
 
-    clearTimeout(timeoutId);
-
-    if (!geminiRes.ok) {
-      return NextResponse.json({ error: `Gemini no respondió correctamente (${geminiRes.status}). Reintentá en unos segundos.` }, { status: 502 });
-    }
-
-    const data = await geminiRes.json();
-    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-    let leads: any[];
-    try {
-      leads = parseLeadArray(rawText);
-    } catch (parseError: any) {
+    if (lastError) {
       return NextResponse.json({
-        error: parseError.message || 'Failed to parse Gemini response',
-        finishReason: data.candidates?.[0]?.finishReason || null,
-        raw: cleanGeminiJson(rawText).substring(0, 500)
-      }, { status: 502 });
+        error: `${lastError} Reintenta en unos segundos.`,
+        finishReason: lastFinishReason,
+        geminiStatus: lastGeminiStatus || null,
+        raw: cleanGeminiJson(lastRawText).substring(0, 500),
+      }, { status: lastError.includes('75 segundos') ? 504 : 502 });
     }
 
     // Validar, limpiar y guardar cada lead
