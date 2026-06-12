@@ -494,7 +494,8 @@ export async function verifyLeadData(lead: VerifyLeadInput): Promise<VerifyLeadO
   } else if (webLookup.rejected) {
     notes.push(`Web descartada: ${webLookup.reason || 'no coincide con el lead'}.`);
     const clearConflictingWebsite = (webLookup.reason || '').includes('otra ciudad o pais');
-    if (clearConflictingWebsite && lead.website && sameHost(lead.website, websiteForCrawler)) {
+    const clearRejectedWebsite = clearConflictingWebsite || !google;
+    if (clearRejectedWebsite && lead.website && sameHost(lead.website, websiteForCrawler)) {
       updates.website = '';
     }
     const leadInstagram = cleanSocialHandle(lead.instagram, 'instagram');
