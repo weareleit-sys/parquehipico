@@ -117,12 +117,6 @@ function normalizeText(value: string | null | undefined): string {
 const GENERIC_TOKENS = new Set([
   'ag', 'a', 'de', 'del', 'la', 'las', 'los', 'el', 'y', 'en', 'para', 'por',
   'chile', 'spa', 'ltda', 'limitada', 'sa', 'sociedad', 'empresa',
-  'productora', 'producciones', 'eventos', 'servicios', 'servicio',
-  'camara', 'comercio', 'turismo', 'turistico', 'turistica',
-  'fundacion', 'asociacion', 'corporacion', 'departamento', 'direccion',
-  'unidad', 'municipalidad', 'municipal', 'ilustre', 'cultura',
-  'comunidad', 'comunitario', 'dideco', 'colegio', 'liceo', 'escuela',
-  'complejo', 'educacional', 'centro', 'hotel', 'camping', 'hostal',
 ]);
 
 function meaningfulTokens(value: string | null | undefined): string[] {
@@ -178,6 +172,23 @@ function locationTermsForLead(lead: VerifyLeadInput): string[] {
   return [...terms].filter(term => term.length >= 3);
 }
 
+function identityTokensForLead(lead: VerifyLeadInput): string[] {
+  const locationTokens = new Set(locationTermsForLead(lead).map(normalizeText));
+  return meaningfulTokens(lead.empresa).filter(token => !locationTokens.has(normalizeText(token)));
+}
+
+function identityOverlapScore(lead: VerifyLeadInput, target: string): {
+  score: number;
+  matches: number;
+  total: number;
+} {
+  const tokens = identityTokensForLead(lead);
+  if (tokens.length === 0) return { score: 0, matches: 0, total: 0 };
+  const targetText = normalizeText(target);
+  const matches = tokens.filter(token => targetText.includes(token)).length;
+  return { score: matches / tokens.length, matches, total: tokens.length };
+}
+
 function hasLeadLocationSignal(text: string, lead: VerifyLeadInput): boolean {
   const terms = locationTermsForLead(lead);
   return terms.some(term => includesPhrase(text, term));
@@ -201,22 +212,29 @@ function scoreGoogleCandidate(place: any, lead: VerifyLeadInput): {
   const website = cleanWebsite(place?.websiteUri || '');
   const candidateText = `${displayName} ${formattedAddress} ${website}`;
   const nameScore = tokenOverlapScore(lead.empresa, displayName);
+  const identity = identityOverlapScore(lead, displayName);
   const locationExpected = locationTermsForLead(lead).length > 0;
   const locationMatches = hasLeadLocationSignal(candidateText, lead);
   const outsideLocation = hasOutsideLocationSignal(candidateText, lead);
   const websiteMatches = sameHost(lead.website || '', website);
-  const score = Math.round((nameScore * 65) + (locationMatches ? 25 : 0) + (websiteMatches ? 10 : 0));
+  const score = Math.round((identity.score * 50) + (nameScore * 20) + (locationMatches ? 20 : 0) + (websiteMatches ? 10 : 0));
 
   if (outsideLocation && !locationMatches) {
     return { accepted: false, score, reason: 'resultado apunta a otra ciudad o pais' };
   }
+  if (identity.total > 0 && identity.matches === 0 && !websiteMatches) {
+    return { accepted: false, score, reason: 'resultado solo coincide por ubicacion' };
+  }
+  if (identity.total >= 3 && identity.matches < 2 && !websiteMatches) {
+    return { accepted: false, score, reason: 'resultado no coincide con suficientes senales de identidad' };
+  }
   if (locationExpected && !locationMatches && nameScore < 0.8) {
     return { accepted: false, score, reason: 'resultado no coincide con la zona solicitada' };
   }
-  if (nameScore >= 0.45 && (locationMatches || !locationExpected)) {
+  if (identity.score >= 0.45 && (locationMatches || !locationExpected)) {
     return { accepted: true, score, reason: 'nombre y zona coinciden' };
   }
-  if (nameScore >= 0.8 && websiteMatches && !outsideLocation) {
+  if ((nameScore >= 0.8 || identity.score >= 0.67) && websiteMatches && !outsideLocation) {
     return { accepted: true, score, reason: 'nombre y dominio coinciden' };
   }
   return { accepted: false, score, reason: 'nombre insuficientemente parecido' };
@@ -225,6 +243,7 @@ function scoreGoogleCandidate(place: any, lead: VerifyLeadInput): {
 function isWebsiteRelevantToLead(host: string, html: string, lead: VerifyLeadInput): { accepted: boolean; reason: string } {
   const sample = `${host} ${html.slice(0, 120000)}`;
   const nameScore = tokenOverlapScore(lead.empresa, sample);
+  const identity = identityOverlapScore(lead, sample);
   const locationExpected = locationTermsForLead(lead).length > 0;
   const locationMatches = hasLeadLocationSignal(sample, lead);
   const outsideLocation = hasOutsideLocationSignal(sample, lead);
@@ -232,10 +251,13 @@ function isWebsiteRelevantToLead(host: string, html: string, lead: VerifyLeadInp
   if (outsideLocation && !locationMatches) {
     return { accepted: false, reason: 'web apunta a otra ciudad o pais' };
   }
-  if (nameScore >= 0.67) {
+  if (identity.total > 0 && identity.matches === 0) {
+    return { accepted: false, reason: 'web solo coincide por ubicacion' };
+  }
+  if (nameScore >= 0.67 && identity.score >= 0.34) {
     return { accepted: true, reason: 'nombre coincide en la web' };
   }
-  if (nameScore >= 0.34 && (!locationExpected || locationMatches)) {
+  if (nameScore >= 0.34 && identity.score >= 0.34 && (!locationExpected || locationMatches)) {
     return { accepted: true, reason: 'nombre y zona coinciden en la web' };
   }
   if (locationExpected && !locationMatches) {
@@ -251,6 +273,7 @@ function isSocialHandleRelevant(handle: string, lead: VerifyLeadInput): boolean 
   const hasNameToken = tokens.some(token => text.includes(token));
   const hasLocationToken = locationTermsForLead(lead).some(term => text.includes(normalizeText(term).replace(/\s+/g, '')));
   const hasOutsideToken = KNOWN_OUTSIDE_LOCATION_TERMS.some(term => text.includes(normalizeText(term).replace(/\s+/g, '')));
+  if (hasOutsideToken && !hasLocationToken) return false;
   return hasNameToken || hasLocationToken || !hasOutsideToken;
 }
 
@@ -487,6 +510,18 @@ export async function verifyLeadData(lead: VerifyLeadInput): Promise<VerifyLeadO
   const cleanedInstagram = cleanSocialHandle(lead.instagram, 'instagram');
   const cleanedFacebook = cleanSocialHandle(lead.facebook, 'facebook');
   const cleanedTiktok = cleanSocialHandle(lead.tiktok, 'tiktok');
+  if (cleanedInstagram && !isSocialHandleRelevant(cleanedInstagram, lead)) {
+    updates.instagram = '';
+    notes.push(`Instagram descartado: ${cleanedInstagram} no coincide con el lead.`);
+  }
+  if (cleanedFacebook && !isSocialHandleRelevant(cleanedFacebook, lead)) {
+    updates.facebook = '';
+    notes.push(`Facebook descartado: ${cleanedFacebook} no coincide con el lead.`);
+  }
+  if (cleanedTiktok && !isSocialHandleRelevant(cleanedTiktok, lead)) {
+    updates.tiktok = '';
+    notes.push(`TikTok descartado: ${cleanedTiktok} no coincide con el lead.`);
+  }
   if (!fields.instagram && cleanedInstagram && updates.instagram !== '') setField(fields, 'instagram', cleanedInstagram, 'gemini_limpio', 'media');
   if (!fields.facebook && cleanedFacebook && updates.facebook !== '') setField(fields, 'facebook', cleanedFacebook, 'gemini_limpio', 'media');
   if (!fields.tiktok && cleanedTiktok && updates.tiktok !== '') setField(fields, 'tiktok', cleanedTiktok, 'gemini_limpio', 'media');
