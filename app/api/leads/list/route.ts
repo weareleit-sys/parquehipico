@@ -45,27 +45,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Sector no válido' }, { status: 400 });
     }
 
-    // Base query para contar total
-    let countQuery = supabase.from('leads').select('*', { count: 'exact', head: true });
-    if (categoria) countQuery = countQuery.eq('categoria', categoria);
-    if (estado && estado !== 'todos') {
-      if (estado === 'pendientes') {
-        countQuery = countQuery.in('estado_lead', ['nuevo', 'en_proceso']);
-      } else {
-        countQuery = countQuery.eq('estado_lead', estado);
-      }
-    }
-    if (sector && sector !== 'todos') countQuery = countQuery.eq('sector', sector);
-    if (search) countQuery = countQuery.or(`empresa.ilike.%${search}%,ubicacion.ilike.%${search}%`);
-
-    const { count: total, error: countError } = await countQuery;
-    if (countError) return NextResponse.json({ error: countError.message }, { status: 500 });
-
     // Query paginada
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    let query = supabase.from('leads').select('*').range(from, to).order('created_at', { ascending: false });
+    let query = supabase
+      .from('leads')
+      .select('*', { count: 'exact' })
+      .range(from, to)
+      .order('created_at', { ascending: false });
     if (categoria) query = query.eq('categoria', categoria);
     if (estado && estado !== 'todos') {
       if (estado === 'pendientes') {
@@ -77,7 +65,7 @@ export async function GET(request: NextRequest) {
     if (sector && sector !== 'todos') query = query.eq('sector', sector);
     if (search) query = query.or(`empresa.ilike.%${search}%,ubicacion.ilike.%${search}%`);
 
-    const { data: leads, error } = await query;
+    const { data: leads, count: total, error } = await query;
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     if (!leads || leads.length === 0) {

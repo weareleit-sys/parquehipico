@@ -16,7 +16,7 @@ export const leadCategoryDefinitions: LeadCategoryDefinition[] = [
     shortLabel: 'Productoras',
     icon: '🎪',
     role: 'Organizan eventos para terceros y necesitan espacios para sus clientes.',
-    searchPrompt: 'busca productoras de eventos, festivales, conciertos, ferias, activaciones de marca, producción técnica integral y organizadores de experiencias masivas. Deben producir o coordinar eventos, no solo vender equipos.',
+    searchPrompt: 'busca productoras de eventos, festivales, conciertos, ferias, activaciones de marca, producción técnica integral y organizadores de experiencias masivas. Prioriza quienes producen o coordinan eventos completos. Evita proveedores que solo arriendan sonido, iluminación, fotografía, video, pantallas o equipos, salvo que también organicen eventos.',
     guionContext: 'productoras de eventos, festivales, conciertos, ferias y activaciones que podrían necesitar un venue outdoor amplio para sus clientes',
     template: 'Hola, soy Alberto del Parque Hípico La Montaña en Villarrica. Vi que {empresa} produce eventos en {ciudad}. Cuando tus clientes necesiten un espacio outdoor grande, campestre y con infraestructura, podemos ser una muy buena alternativa. ¿Conversamos?',
   },

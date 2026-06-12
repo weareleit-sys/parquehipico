@@ -100,13 +100,13 @@ export async function POST(req: NextRequest) {
     const categoryContext = getCategoryContext(categoria);
 
     // Prompt principal (con web si existe, sino sin referencia)
-    const mainPrompt = `Sos Alberto. ARRENDAMOS ESPACIO FÍSICO para eventos masivos: 3 hectáreas planas, capacidad 5.000+ personas, luz trifásica, 400+ estacionamientos. SOMOS UN VENUE/TERRENO, no hacemos shows de caballos ni servicios ecuestres. El nombre "Parque Hípico" es histórico, NO significa que trabajemos con caballos.
+    const mainPrompt = `Eres Alberto. ARRENDAMOS ESPACIO FÍSICO para eventos masivos: 3 hectáreas planas, capacidad 5.000+ personas, luz trifásica, 400+ estacionamientos. SOMOS UN VENUE/TERRENO, no hacemos shows de caballos ni servicios ecuestres. El nombre "Parque Hípico" es histórico, NO significa que trabajemos con caballos.
 
-Investigá "${empresa}" (${website || 'sin web'}) en ${ciudad}. Categoría comercial: ${categoryContext}.
-Respondé JSON:
-{"perfil":"1 línea describiendo qué hace ESTA EMPRESA (no nosotros)","guion":"mensaje WhatsApp máximo 3 líneas y 420 caracteres. Gancho sobre ELLOS. Problema que resolvemos: espacio outdoor amplio para eventos. CTA informal. PROHIBIDO mencionar caballos, equitación, shows ecuestres, hectáreas, metros cuadrados, capacidad, 5.000 personas, estacionamientos o trifásica. No repitas la firma. Firmá una sola vez: Soy Alberto del Parque Hípico La Montaña."}`;
+Investiga "${empresa}" (${website || 'sin web'}) en ${ciudad}. Categoría comercial: ${categoryContext}.
+Responde JSON:
+{"perfil":"1 línea describiendo qué hace ESTA EMPRESA (no nosotros)","guion":"mensaje WhatsApp máximo 3 líneas y 420 caracteres. Gancho sobre ELLOS. Problema que resolvemos: espacio outdoor amplio para eventos. CTA informal. PROHIBIDO mencionar caballos, equitación, shows ecuestres, hectáreas, metros cuadrados, capacidad, 5.000 personas, estacionamientos o trifásica. No repitas la firma. Firma una sola vez: Soy Alberto del Parque Hípico La Montaña."}`;
 
-    const fallbackPrompt = `ARRENDAMOS ESPACIO FÍSICO PARA EVENTOS (no caballos, no shows ecuestres). Escribí mensaje WhatsApp máximo 2 líneas para "${empresa}" (${categoryContext}) en ${ciudad}. Respondé JSON: {"perfil":"Breve","guion":"mensaje aquí. PROHIBIDO mencionar caballos o ecuestre. Firmá una sola vez: Soy Alberto del Parque Hípico La Montaña."}`;
+    const fallbackPrompt = `ARRENDAMOS ESPACIO FÍSICO PARA EVENTOS (no caballos, no shows ecuestres). Escribe un mensaje WhatsApp máximo 2 líneas para "${empresa}" (${categoryContext}) en ${ciudad}. Responde JSON: {"perfil":"Breve","guion":"mensaje aquí. PROHIBIDO mencionar caballos o ecuestre. Firma una sola vez: Soy Alberto del Parque Hípico La Montaña."}`;
 
     let result: any = null;
     let lastError = '';

@@ -28,6 +28,7 @@ export interface SearchState {
     withPhone: number;
     withWebsite: number;
     withEmail: number;
+    filteredOut?: number;
   } | null;
   searchPhaseIdx: number;
   newLeads: Lead[];
@@ -115,7 +116,10 @@ export function useSearch(
         setNewLeads(data.leads || []);
         setSearchStats(data.stats || null);
         setSearchStatus('done');
-        setSearchMessage(`${data.total} empresas encontradas en ${form.searchLocation}`);
+        const filteredOut = Number(data.stats?.filteredOut || 0);
+        setSearchMessage(filteredOut > 0
+          ? `${data.total} contactos útiles en ${form.searchLocation}. Se omitieron ${filteredOut} fuera de zona.`
+          : `${data.total} contactos útiles en ${form.searchLocation}`);
         if (onSearchComplete) {
           onSearchComplete(data.leads || [], form);
         } else {

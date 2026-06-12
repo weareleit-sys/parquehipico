@@ -4,6 +4,7 @@ import { checkRateLimit } from '@/lib/rate-limit';
 import { getLeadCategoryDefinition, normalizeLeadCategoryValue } from '@/lib/lead-categories';
 
 const ALLOWED_SECTORES = new Set(['temuco', 'lacustre', 'sur', 'costa', 'norte', 'lagos', 'externo']);
+const LEAD_LOOKUP_FIELDS = 'id, empresa, estado_lead, telefono, website, email, instagram, facebook, tiktok';
 
 // Normalizar nombre de empresa para deduplicación
 function normalizeName(name: string): string {
@@ -13,6 +14,25 @@ function normalizeName(name: string): string {
     .replace(/[^a-z0-9\s]/g, '') // solo letras, números, espacios
     .replace(/\s+/g, ' ')       // normalizar espacios
     .trim();
+}
+
+async function findExistingLeadByName(supabase: any, normalizedName: string) {
+  if (!normalizedName) return null;
+  const words = normalizedName
+    .split(' ')
+    .filter(word => word.length >= 4)
+    .slice(0, 4);
+
+  let query = supabase.from('leads').select(LEAD_LOOKUP_FIELDS).limit(25);
+  if (words.length > 0) {
+    query = query.or(words.map(word => `empresa.ilike.%${word}%`).join(','));
+  } else {
+    query = query.ilike('empresa', `%${normalizedName.substring(0, Math.min(20, normalizedName.length))}%`);
+  }
+
+  const { data } = await query;
+  const exactMatches = data?.filter((lead: any) => normalizeName(lead.empresa) === normalizedName) || [];
+  return exactMatches.find((lead: any) => lead.estado_lead !== 'descartado') || exactMatches[0] || null;
 }
 
 // Validar email
@@ -121,8 +141,16 @@ function isRemoteOnlyLead(text: string): boolean {
   return remote && !hasLocalSignal(text);
 }
 
+function hasUncertainLocalFit(text: string): boolean {
+  return /(confirmar servicio|confirmar cobertura|sin se[nñ]al clara|por confirmar|opera remoto|servicio en villarrica\?)/.test(text);
+}
+
 function isTourismOrVenueSignal(text: string): boolean {
   return /(hotel|cabaña|cabañas|cabanas|hostal|turismo|tur[ií]stic|viajes|operador|outdoor|aventura|centro de eventos|sal[oó]n|venue|resort|camping|restaurant|restaurante|parque|termas|experiencia)/.test(text);
+}
+
+function isTechnicalSupplierSignal(text: string): boolean {
+  return /(sonido|audio|audiovisual|amplificaci[oó]n|iluminaci[oó]n|pantalla|escenario|dj|backline|fotograf[ií]a|video|filmaci[oó]n|streaming)/.test(text);
 }
 
 function buildLeadQuality(lead: any, categoria: string, cleanTel: string, site: string, isWap: boolean) {
@@ -130,6 +158,8 @@ function buildLeadQuality(lead: any, categoria: string, cleanTel: string, site: 
   const notes: string[] = [];
   let score = 5;
   let role = 'cliente directo';
+  const remoteOnly = isRemoteOnlyLead(text);
+  const uncertainLocalFit = hasUncertainLocalFit(text);
 
   if (isWap) { score += 2; notes.push('WhatsApp'); }
   else if (cleanTel) { score += 1; notes.push('teléfono fijo'); }
@@ -141,13 +171,18 @@ function buildLeadQuality(lead: any, categoria: string, cleanTel: string, site: 
     score += 1;
     notes.push('zona útil');
   }
-  if (isRemoteOnlyLead(text)) {
+  if (remoteOnly) {
     role = 'fuera de zona / revisar';
     score -= 5;
     notes.push('sin señal clara en Araucanía');
   }
+  if (uncertainLocalFit) {
+    role = 'fuera de zona / revisar';
+    score -= 4;
+    notes.push('cobertura local dudosa');
+  }
 
-  if (isTourismOrVenueSignal(text)) {
+  if (!remoteOnly && !uncertainLocalFit && isTourismOrVenueSignal(text)) {
     role = 'aliado o venue complementario';
     score += categoria === 'turismo' ? 2 : 1;
     notes.push('podría derivar o necesitar espacio mayor');
@@ -157,6 +192,12 @@ function buildLeadQuality(lead: any, categoria: string, cleanTel: string, site: 
     role = 'revisar categoría';
     score -= 3;
     notes.push('parece productora, no turismo/venue');
+  }
+
+  if (categoria === 'productoras' && isTechnicalSupplierSignal(text)) {
+    role = 'proveedor técnico / aliado';
+    score -= 2;
+    notes.push('apoyo técnico, no necesariamente decide venue');
   }
 
   if (/(productora|producciones|banqueter|catering|planner|eventos|fiestas|celebraciones)/.test(text)) {
@@ -187,6 +228,7 @@ function buildLeadQuality(lead: any, categoria: string, cleanTel: string, site: 
 
 function inferLeadSector(lead: any, requestedSector: string): string {
   const text = `${lead?.empresa || ''} ${lead?.ubicacion || ''} ${lead?.website || ''} ${lead?.email || ''}`.toLowerCase();
+  if (hasUncertainLocalFit(text)) return 'externo';
   if (isRemoteOnlyLead(text)) return 'externo';
   if (/(villarrica|puc[oó]n|lican ray|molco|caburgua|curarrehue|coñaripe|conaripe)/.test(text)) return 'lacustre';
   if (/(temuco|padre las casas|vilc[uú]n|freire|pitrufqu[eé]n|nueva imperial|cholchol|galvarino|caj[oó]n)/.test(text)) return 'temuco';
@@ -195,6 +237,34 @@ function inferLeadSector(lead: any, requestedSector: string): string {
   if (/(victoria|curacaut[ií]n|lautaro|collipulli|angol|lonquimay)/.test(text)) return 'norte';
   if (/(panguipulli|lanco|mariquina)/.test(text)) return 'lagos';
   return requestedSector;
+}
+
+function getSectorSearchGuidance(sector: string, ubicacion: string): string {
+  switch (sector) {
+    case 'lacustre':
+      return `SOLO zona lacustre: ${ubicacion}, Pucon, Villarrica, Lican Ray, Molco, Caburgua, Curarrehue o Conaripe. No uses Temuco para rellenar resultados.`;
+    case 'temuco':
+      return `SOLO Temuco y alrededores directos: ${ubicacion}, Temuco, Padre Las Casas, Cajon, Vilcun, Freire, Pitrufquen o Nueva Imperial.`;
+    case 'sur':
+      return `SOLO zona sur de La Araucania: ${ubicacion}, Loncoche, Gorbea, Tolten o Teodoro Schmidt.`;
+    case 'costa':
+      return `SOLO costa de La Araucania: ${ubicacion}, Carahue, Puerto Saavedra, Nueva Imperial o alrededores costeros.`;
+    case 'norte':
+      return `SOLO Malleco y zona norte: ${ubicacion}, Victoria, Curacautin, Lautaro, Collipulli, Angol o Lonquimay.`;
+    case 'lagos':
+      return `SOLO zona de Los Rios cercana: ${ubicacion}, Panguipulli, Lanco, Mariquina o comunas cercanas.`;
+    default:
+      return `${ubicacion}, Region de la Araucania.`;
+  }
+}
+
+function isOutsideRequestedSector(leadSector: string, requestedSector: string): boolean {
+  if (!requestedSector || requestedSector === 'externo') return false;
+  return leadSector !== requestedSector;
+}
+
+function shouldAutoDiscardLead(quality: ReturnType<typeof buildLeadQuality>, sector: string): boolean {
+  return sector === 'externo' || quality.score <= 4;
 }
 
 export async function POST(req: NextRequest) {
@@ -221,6 +291,7 @@ export async function POST(req: NextRequest) {
     const safeLimit = clampSearchLimit(limit);
     const safeUbicacion = sanitizePromptText(ubicacion, 'Temuco');
     const safeSector = ALLOWED_SECTORES.has(sector) ? sector : 'temuco';
+    const sectorGuidance = getSectorSearchGuidance(safeSector, safeUbicacion);
 
     const geminiKey = process.env.GEMINI_API_KEY;
     if (!geminiKey) {
@@ -229,8 +300,9 @@ export async function POST(req: NextRequest) {
 
     const prompt = `Soy Alberto del Parque Hípico La Montaña, un recinto outdoor en Villarrica. ARRENDAMOS EL TERRENO/ESPACIO FÍSICO para eventos masivos: 3 hectáreas planas (30.000 m²), capacidad 5.000+ personas, 400+ estacionamientos, luz trifásica T1. SOMOS UN VENUE, no hacemos shows de caballos. El nombre es histórico.
 
-Busca hasta ${safeLimit} empresas, productoras u organizaciones reales en ${safeUbicacion}, Región de la Araucanía, que podrían NECESITAR arrendar un espacio outdoor masivo. La categoría es "${normalizedCategoria}".
-Prioriza contactos de Villarrica, Pucón, Temuco y comunas cercanas. Si no hay suficientes leads locales buenos, devuelve menos resultados antes que rellenar con empresas lejanas. Solo incluye empresas de Santiago, Valparaíso u otras regiones si su información muestra claramente que trabajan en la Araucanía o zona sur.
+Busca hasta ${safeLimit} empresas, productoras u organizaciones reales en esta zona: ${sectorGuidance}
+La categoría es "${normalizedCategoria}". Deben poder NECESITAR arrendar un espacio outdoor masivo.
+Respeta la zona seleccionada. Si no hay suficientes leads buenos en esa zona, devuelve menos resultados antes que rellenar con empresas de otra ciudad. Solo incluye empresas de Santiago, Valparaíso u otras regiones si su información muestra claramente sede, operación o cobertura directa en la zona seleccionada.
 
 Definición de la categoría "${categoryDefinition.label}": ${categoryDefinition.searchPrompt}
 
@@ -291,6 +363,7 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
     const saved: any[] = [];
     const seenNames = new Set<string>();
     const seenPhones = new Set<string>();
+    let skippedOutOfZone = 0;
 
     for (let i = 0; i < Math.min(leads.length, safeLimit); i++) {
       const lead = leads[i];
@@ -317,19 +390,19 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
       seenNames.add(normalizedName);
       if (cleanPhone) seenPhones.add(cleanPhone);
 
+      const leadSector = inferLeadSector(lead, safeSector);
+      if (isOutsideRequestedSector(leadSector, safeSector)) {
+        skippedOutOfZone++;
+        console.warn(`[QUALITY] Saltando lead fuera de zona (${leadSector} != ${safeSector}): ${empresaOriginal}`);
+        continue;
+      }
+
       // Verificar si ya existe en BD por nombre similar o mismo teléfono
-      let existingDb: any = null;
-      const { data: byName } = await supabase
-        .from('leads')
-        .select('id, empresa, telefono, website, email, instagram, facebook, tiktok')
-        .ilike('empresa', `%${normalizedName.substring(0, Math.min(20, normalizedName.length))}%`)
-        .limit(1);
-      if (byName && byName.length > 0) {
-        existingDb = byName[0];
-      } else if (cleanPhone) {
+      let existingDb: any = await findExistingLeadByName(supabase, normalizedName);
+      if (!existingDb && cleanPhone) {
         const { data: byPhone } = await supabase
           .from('leads')
-          .select('id, empresa, telefono, website, email, instagram, facebook, tiktok')
+          .select(LEAD_LOOKUP_FIELDS)
           .eq('telefono', `+${cleanPhone}`)
           .limit(1);
         if (byPhone && byPhone.length > 0) existingDb = byPhone[0];
@@ -341,7 +414,7 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
       const isWap = isWhatsAppCompatible(rawTel);
       const site = cleanWebsite(lead.website || '');
       const quality = buildLeadQuality(lead, normalizedCategoria, cleanTel, site, isWap);
-      const leadSector = inferLeadSector(lead, safeSector);
+      const autoDiscard = shouldAutoDiscardLead(quality, leadSector);
 
       let finalEmail = email;
       if (!finalEmail && lead.website && lead.website.includes('@')) {
@@ -372,7 +445,9 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
           _leadRole: quality.role,
           _qualityNotes: quality.notes,
         }),
-        estado_lead: recordId ? undefined : 'nuevo',
+        estado_lead: recordId
+          ? (autoDiscard && ['nuevo', 'en_proceso'].includes(existingDb?.estado_lead) ? 'descartado' : undefined)
+          : (autoDiscard ? 'descartado' : 'nuevo'),
         web_status: isWap ? (site ? 'activa' : 'sin_web') : 'fijo',
         updated_at: new Date().toISOString(),
       };
@@ -431,6 +506,7 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
         withWhatsApp: saved.filter((l: any) => l._isWhatsApp).length,
         withWebsite: saved.filter((l: any) => l._websiteOk).length,
         withEmail: saved.filter(l => l.email).length,
+        filteredOut: skippedOutOfZone,
       }
     });
   } catch (error: any) {
