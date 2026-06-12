@@ -14,6 +14,7 @@ This is no longer a fragile prototype. It is an internal, single-tenant lead too
 | Build (`npm.cmd run build`) | ✅ Pass |
 | Dev server (`localhost:3000`) | ✅ Running |
 | Dashboard | ✅ Functional |
+| Dashboard login | ✅ Supabase email/password + signed HTTP-only cookie |
 | Mobile-first card view | ✅ Default view, table hidden on mobile |
 | Filter bar | ✅ Large mobile controls, sector select, clear category labels |
 | Search (Gemini Grounding) | ✅ 75s server timeout, 10-lead cap, rate limited |
@@ -90,8 +91,11 @@ app/lib/lead-categories.ts
 
 ## Security
 
-- Middleware requires `DASHBOARD_TOKEN` in production for `/dashboard`, `/api/leads/*`, and `/api/outreach/*`.
+- Middleware requires a valid dashboard session cookie or temporary `DASHBOARD_TOKEN` fallback in production for `/dashboard`, `/api/leads/*`, and `/api/outreach/*`.
 - Localhost bypass is intentional for development.
+- Login route: `/dashboard/login`.
+- Auth endpoints: `/api/auth/login`, `/api/auth/logout`.
+- Staff user exists in Supabase Auth: `staff@parquehipico.cl`.
 - Browser calls protected Next.js API routes; it should not read/write Supabase tables directly.
 - API routes use `getSupabaseAdmin()`.
 - Supabase anon REST was tested and cannot read lead data.

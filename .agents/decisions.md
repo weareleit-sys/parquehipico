@@ -36,6 +36,18 @@ Future:
 
 - Replace token entry with Supabase Auth or another real session mechanism.
 
+## 2026-06-12: Dashboard Uses Email/Password Login
+
+The dashboard should be accessed through `/dashboard/login` with Supabase Auth credentials instead of asking non-technical users to paste a token in the URL.
+
+Implication:
+
+- `/api/auth/login` validates email/password with Supabase Auth using the anon key.
+- A signed HTTP-only cookie (`ph_dashboard_session`) grants access to `/dashboard`, `/api/leads/*`, and `/api/outreach/*`.
+- `/api/auth/logout` clears the dashboard session cookie.
+- `DASHBOARD_TOKEN` remains as temporary fallback/maintenance access, but it should not be the normal user flow.
+- Staff user verified in Supabase Auth: `staff@parquehipico.cl`.
+
 ## 2026-06-11: Phone Normalization
 
 Only Chilean mobile numbers should be considered WhatsApp-compatible:

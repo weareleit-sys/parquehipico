@@ -11,6 +11,7 @@ Last updated: 11 Jun 2026 by Codex.
 - Smoke test passes: `powershell -ExecutionPolicy Bypass -File scripts\smoke_leads_system.ps1`.
 - Supabase anon REST was verified: anon key cannot read lead data.
 - Current lead count is **85**.
+- Dashboard login is now implemented with Supabase email/password auth.
 
 ## What Changed Since The Previous Handoff
 
@@ -77,6 +78,16 @@ Important decisions:
   - Sanitizes duplicate signatures.
   - Prompt avoids caballos/equino/capacity/technical specs in WhatsApp copy.
 
+### Dashboard auth
+
+- New login page: `/dashboard/login`.
+- New auth endpoints: `/api/auth/login`, `/api/auth/logout`.
+- Login validates email/password with Supabase Auth.
+- Server sets a signed HTTP-only cookie (`ph_dashboard_session`) for 7 days.
+- Middleware accepts either the signed cookie or the old `DASHBOARD_TOKEN` fallback.
+- Dashboard has a visible `Salir` button.
+- Verified Supabase Auth contains confirmed user `staff@parquehipico.cl`.
+
 ### Smoke test
 
 New script: `scripts/smoke_leads_system.ps1`.
@@ -84,6 +95,9 @@ New script: `scripts/smoke_leads_system.ps1`.
 Checks:
 
 - Dashboard HTTP 200.
+- Dashboard login HTTP 200.
+- Auth login validation returns 400 for empty payload.
+- Auth logout returns 200.
 - Lead list API total.
 - Stats API total equals list total.
 - Category totals equal stats total.

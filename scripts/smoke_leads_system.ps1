@@ -33,6 +33,27 @@ $checks += Check "Dashboard HTTP" {
   "HTTP $($res.StatusCode)"
 }
 
+$checks += Check "Dashboard login HTTP" {
+  $res = Invoke-WebRequest -Uri "$BaseUrl/dashboard/login" -UseBasicParsing -TimeoutSec 60
+  "HTTP $($res.StatusCode)"
+}
+
+$checks += Check "Auth login validation" {
+  try {
+    Invoke-WebRequest -Uri "$BaseUrl/api/auth/login" -Method POST -Body "{}" -ContentType "application/json" -UseBasicParsing -TimeoutSec 15 | Out-Null
+    "unexpected 200"
+  } catch {
+    $status = [int]$_.Exception.Response.StatusCode
+    if ($status -ne 400) { throw "Expected 400, got $status" }
+    "HTTP 400"
+  }
+}
+
+$checks += Check "Auth logout" {
+  $res = Invoke-WebRequest -Uri "$BaseUrl/api/auth/logout" -Method POST -UseBasicParsing -TimeoutSec 15
+  "HTTP $($res.StatusCode)"
+}
+
 $checks += Check "Lead list API" {
   $res = Invoke-RestMethod -Uri "$BaseUrl/api/leads/list?page=1&limit=1&estado=todos" -TimeoutSec 30
   "$($res.total) leads"

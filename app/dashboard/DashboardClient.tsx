@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { FaSyncAlt, FaThList, FaTable } from 'react-icons/fa';
+import { FaSignOutAlt, FaSyncAlt, FaThList, FaTable } from 'react-icons/fa';
 
 import { useLeads, type Lead } from './hooks/useLeads';
 import { useOutreach } from './hooks/useOutreach';
@@ -61,6 +61,11 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
 
   const outreachState = useOutreach(refreshDashboard, apiFetch);
 
+  const handleLogout = useCallback(async () => {
+    await fetch('/api/auth/logout', { method: 'POST' }).catch(() => null);
+    window.location.href = '/dashboard/login';
+  }, []);
+
   useEffect(() => {
     refreshDashboard();
   }, [
@@ -104,6 +109,14 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
           <button onClick={refreshDashboard}
             className="ml-auto md:ml-0 flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg transition-all">
             <FaSyncAlt className={leadsState.loading ? 'animate-spin' : ''} /> Actualizar
+          </button>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white font-bold py-2.5 px-3 rounded-xl transition-all"
+            title="Salir"
+          >
+            <FaSignOutAlt /> <span className="hidden sm:inline">Salir</span>
           </button>
         </div>
       </div>
