@@ -48,6 +48,18 @@ Implication:
 - `DASHBOARD_TOKEN` remains as temporary fallback/maintenance access, but it should not be the normal user flow.
 - Staff user verified in Supabase Auth: `staff@parquehipico.cl`.
 
+## 2026-06-12: Search New Leads Is Separate From Filtering Saved Leads
+
+Users confused the saved-lead text filter with the Gemini lead search.
+
+Implication:
+
+- The dashboard shows a prominent `Buscar nuevos contactos` section above saved lead filters.
+- Defaults are optimized for the near-term use case: Productoras, Zona Lacustre, Pucón + Villarrica, 10 results.
+- After a search succeeds, the dashboard automatically switches to the searched category/sector, clears the text filter, and leaves status as Pendientes.
+- Fresh search results are kept in `newLeads` so cards/table can mark them as `Nuevo`.
+- The saved-lead search input is labeled as a filter, not as lead generation.
+
 ## 2026-06-11: Phone Normalization
 
 Only Chilean mobile numbers should be considered WhatsApp-compatible:

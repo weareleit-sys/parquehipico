@@ -5,7 +5,9 @@ import { useSearchParams } from 'next/navigation';
 import { FaSignOutAlt, FaSyncAlt, FaThList, FaTable } from 'react-icons/fa';
 
 import { useLeads, type Lead } from './hooks/useLeads';
+import { useSearch, type SearchFormState } from './hooks/useSearch';
 import { useOutreach } from './hooks/useOutreach';
+import SearchPanel from './components/SearchPanel';
 import FilterBar from './components/FilterBar';
 import LeadsTable from './components/LeadsTable';
 import LeadCardView from './components/LeadCardView';
@@ -42,7 +44,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
   const [selectedLeadForGuion, setSelectedLeadForGuion] = useState<Lead | null>(null);
   const [stats, setStats] = useState<LeadStats | null>(null);
 
-  const { filters, page, fetchLeads } = leadsState;
+  const { filters, page, fetchLeads, setFilters } = leadsState;
 
   const fetchStats = useCallback(async () => {
     try {
@@ -59,6 +61,16 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
     await Promise.all([fetchLeads(), fetchStats()]);
   }, [fetchLeads, fetchStats]);
 
+  const handleSearchComplete = useCallback((_newLeads: Lead[], searchForm: SearchFormState) => {
+    setFilters({
+      activeCategory: searchForm.searchCategory,
+      activeState: 'pendientes',
+      activeSector: searchForm.searchSector,
+      searchTerm: '',
+    });
+  }, [setFilters]);
+
+  const searchState = useSearch(refreshDashboard, apiFetch, handleSearchComplete);
   const outreachState = useOutreach(refreshDashboard, apiFetch);
 
   const handleLogout = useCallback(async () => {
@@ -139,6 +151,8 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
             </div>
           )}
 
+          <SearchPanel {...searchState} />
+
           <FilterBar filters={leadsState.filters} onChange={leadsState.setFilters} />
 
           {viewMode === 'table' ? (
@@ -147,7 +161,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
               totalLeads={leadsState.totalLeads}
               totalPages={leadsState.totalPages}
               page={leadsState.page}
-              newLeads={[]}
+              newLeads={searchState.newLeads}
               findingContactId={outreachState.findingContactId}
               onPage={leadsState.setPage}
               onOpenOutreach={setSelectedLeadForOutreach}
@@ -158,7 +172,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
           ) : (
             <LeadCardView
               leads={leadsState.leads}
-              newLeads={[]}
+              newLeads={searchState.newLeads}
               findingContactId={outreachState.findingContactId}
               onOpenOutreach={setSelectedLeadForOutreach}
               onOpenGuion={setSelectedLeadForGuion}

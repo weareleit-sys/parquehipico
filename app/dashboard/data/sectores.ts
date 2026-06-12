@@ -8,6 +8,7 @@ export const sectoresAraucania: Record<string, { label: string; ciudades: { valu
     { value: 'Cholchol', label: 'Cholchol' }, { value: 'Galvarino', label: 'Galvarino' },
   ]},
   lacustre: { label: 'Zona Lacustre', ciudades: [
+    { value: 'Pucón y Villarrica', label: 'Pucón + Villarrica' },
     { value: 'Villarrica', label: 'Villarrica' }, { value: 'Pucón', label: 'Pucón' },
     { value: 'Lican Ray', label: 'Lican Ray' }, { value: 'Caburgua', label: 'Caburgua' },
     { value: 'Curarrehue', label: 'Curarrehue' }, { value: 'Coñaripe', label: 'Coñaripe' },

@@ -25,12 +25,17 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
 
   return (
     <div className="bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-800 space-y-5">
+      <div>
+        <h2 className="text-xl font-extrabold text-white">Contactos guardados</h2>
+        <p className="text-sm text-slate-400 mt-1">Filtra la lista actual para llamar, escribir y cambiar estados.</p>
+      </div>
+
       <div className="relative w-full">
         <input
           type="text"
           value={searchTerm}
           onChange={e => onChange({ searchTerm: e.target.value })}
-          placeholder="Buscar por empresa o ubicación..."
+          placeholder="Filtrar por empresa o ubicación guardada..."
           className="w-full bg-slate-800 border border-slate-700 text-white pl-10 pr-4 py-3 rounded-xl outline-none focus:border-amber-500 text-base"
         />
         <FaSearch className="absolute left-3 top-3.5 text-slate-500" />

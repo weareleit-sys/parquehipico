@@ -43,7 +43,8 @@ export interface SearchActions {
 
 export function useSearch(
   fetchLeads: () => Promise<void>,
-  apiFetch: (url: string, options?: RequestInit) => Promise<Response>
+  apiFetch: (url: string, options?: RequestInit) => Promise<Response>,
+  onSearchComplete?: (leads: Lead[], form: SearchFormState) => void
 ): SearchState & SearchActions {
   const [searchStatus, setSearchStatus] = useState<SearchState['searchStatus']>('idle');
   const [searchMessage, setSearchMessage] = useState('');
@@ -54,8 +55,8 @@ export function useSearch(
 
   const [form, setFormState] = useState<SearchFormState>({
     searchCategory: 'productoras',
-    searchLocation: 'Temuco',
-    searchSector: 'temuco',
+    searchLocation: 'Pucón y Villarrica',
+    searchSector: 'lacustre',
     searchLimit: 10,
   });
 
@@ -115,7 +116,11 @@ export function useSearch(
         setSearchStats(data.stats || null);
         setSearchStatus('done');
         setSearchMessage(`${data.total} empresas encontradas en ${form.searchLocation}`);
-        fetchLeads();
+        if (onSearchComplete) {
+          onSearchComplete(data.leads || [], form);
+        } else {
+          fetchLeads();
+        }
       } else {
         setSearchStatus('error');
         setSearchMessage(data.error || 'Error en la búsqueda');
@@ -133,7 +138,7 @@ export function useSearch(
     } finally {
       setIsSearching(false);
     }
-  }, [form, apiFetch, fetchLeads]);
+  }, [form, apiFetch, fetchLeads, onSearchComplete]);
 
   return {
     searchStatus,

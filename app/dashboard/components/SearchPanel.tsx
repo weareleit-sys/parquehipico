@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FaSearch } from 'react-icons/fa';
+import { FaCheckCircle, FaPlusCircle, FaSearch } from 'react-icons/fa';
 import { leadCategoryDefinitions } from '@/lib/lead-categories';
 import { sectoresAraucania } from '../data/sectores';
 import type { SearchState, SearchActions } from '../hooks/useSearch';
@@ -12,71 +12,91 @@ export default function SearchPanel({
   searchStatus, searchMessage, searchStats, searchPhaseIdx, newLeads,
   searchPhases, form, isSearching, setForm, handleStartSearch,
 }: SearchPanelProps) {
+  const foundCount = newLeads.length;
+
   return (
-    <div className="lg:col-span-1 bg-slate-900 rounded-2xl p-6 border border-slate-800 h-fit space-y-6">
-      <div className="flex items-center gap-3">
-        <FaSearch className="text-amber-500 text-xl" />
-        <h3 className="text-lg font-bold text-white">Buscar empresas</h3>
+    <section className="bg-slate-900 rounded-2xl p-4 sm:p-5 border border-amber-500/30 space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="h-11 w-11 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center flex-shrink-0">
+            <FaPlusCircle className="text-xl" />
+          </div>
+          <div>
+            <h2 className="text-xl font-extrabold text-white">Buscar nuevos contactos</h2>
+            <p className="text-sm text-slate-400">Se agregan como pendientes y aparecen arriba para contactar.</p>
+          </div>
+        </div>
+
+        {searchStatus === 'done' && (
+          <div className="inline-flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 text-sm font-bold text-emerald-300">
+            <FaCheckCircle /> {foundCount} nuevos
+          </div>
+        )}
       </div>
 
-      <form onSubmit={handleStartSearch} className="space-y-4">
-        <div>
-          <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Categoría</label>
+      <form onSubmit={handleStartSearch} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+        <div className="md:col-span-3">
+          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Tipo</label>
           <select
             value={form.searchCategory}
-            onChange={e => setForm({ searchCategory: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 text-sm"
+            onChange={event => setForm({ searchCategory: event.target.value })}
+            className="w-full min-h-12 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 outline-none focus:border-amber-500 text-base font-semibold"
           >
             {leadCategoryDefinitions.map(category => (
               <option key={category.value} value={category.value}>
-                {category.icon} {category.label}
+                {category.icon} {category.shortLabel}
               </option>
             ))}
           </select>
         </div>
 
-        <div>
-          <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Sector</label>
+        <div className="md:col-span-3">
+          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Zona</label>
           <select
             value={form.searchSector}
-            onChange={e => setForm({ searchSector: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 text-sm"
+            onChange={event => setForm({ searchSector: event.target.value })}
+            className="w-full min-h-12 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 outline-none focus:border-amber-500 text-base font-semibold"
           >
-            {Object.entries(sectoresAraucania).map(([k, s]) => (
-              <option key={k} value={k}>{s.label}</option>
-            ))}
+            {Object.entries(sectoresAraucania)
+              .filter(([key]) => key !== 'externo')
+              .map(([key, sector]) => (
+                <option key={key} value={key}>{sector.label}</option>
+              ))}
           </select>
         </div>
 
-        <div>
-          <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Ciudad</label>
+        <div className="md:col-span-3">
+          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Ciudad</label>
           <select
             value={form.searchLocation}
-            onChange={e => setForm({ searchLocation: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 text-sm"
+            onChange={event => setForm({ searchLocation: event.target.value })}
+            className="w-full min-h-12 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 outline-none focus:border-amber-500 text-base font-semibold"
           >
-            {(sectoresAraucania[form.searchSector]?.ciudades || []).map(c => (
-              <option key={c.value} value={c.value}>{c.label}</option>
+            {(sectoresAraucania[form.searchSector]?.ciudades || []).map(city => (
+              <option key={city.value} value={city.value}>{city.label}</option>
             ))}
           </select>
         </div>
 
-        <div>
-          <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Resultados</label>
-          <input
-            type="number" min={1} max={20}
+        <div className="md:col-span-1">
+          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Cantidad</label>
+          <select
             value={form.searchLimit}
-            onChange={e => setForm({ searchLimit: parseInt(e.target.value) || 5 })}
-            className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 text-sm"
-          />
+            onChange={event => setForm({ searchLimit: Number(event.target.value) })}
+            className="w-full min-h-12 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 outline-none focus:border-amber-500 text-base font-semibold"
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+          </select>
         </div>
 
         <button
           type="submit"
           disabled={isSearching}
-          className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50"
+          className="md:col-span-2 min-h-12 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 disabled:text-slate-400 text-slate-950 font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 px-4"
         >
-          <FaSearch /> {isSearching ? 'Buscando...' : 'Buscar empresas'}
+          <FaSearch />
+          {isSearching ? 'Buscando...' : 'Buscar'}
         </button>
       </form>
 
@@ -85,33 +105,45 @@ export default function SearchPanel({
           <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
             <div className="h-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 animate-pulse rounded-full" style={{ width: '100%' }} />
           </div>
-          <p className="text-xs text-amber-400 font-medium text-center">
+          <p className="text-sm text-amber-300 font-bold text-center">
             {searchPhases[searchPhaseIdx]}
           </p>
         </div>
       )}
 
       {searchStatus === 'done' && (
-        <div className="bg-emerald-950/30 rounded-xl p-4 border border-emerald-900 space-y-2">
-          <p className="text-xs font-bold text-emerald-400">{searchMessage}</p>
+        <div className="bg-emerald-950/30 rounded-xl p-4 border border-emerald-900 space-y-3">
+          <p className="text-sm font-bold text-emerald-300">{searchMessage}</p>
           {searchStats && (
-            <div className="grid grid-cols-2 gap-2 text-[10px]">
-              <div className="bg-slate-900 rounded-lg p-2 text-center">
-                <p className="text-emerald-400 font-bold">{searchStats.withWhatsApp}</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div className="bg-slate-900 rounded-lg p-3 text-center">
+                <p className="text-emerald-300 font-extrabold text-lg">{searchStats.withWhatsApp}</p>
                 <p className="text-slate-500">WhatsApp</p>
               </div>
-              <div className="bg-slate-900 rounded-lg p-2 text-center">
-                <p className="text-amber-400 font-bold">{searchStats.withPhone - searchStats.withWhatsApp}</p>
+              <div className="bg-slate-900 rounded-lg p-3 text-center">
+                <p className="text-amber-300 font-extrabold text-lg">{Math.max(0, searchStats.withPhone - searchStats.withWhatsApp)}</p>
                 <p className="text-slate-500">Fijo</p>
               </div>
-              <div className="bg-slate-900 rounded-lg p-2 text-center">
-                <p className="text-blue-400 font-bold">{searchStats.withWebsite}</p>
-                <p className="text-slate-500">Con web</p>
+              <div className="bg-slate-900 rounded-lg p-3 text-center">
+                <p className="text-blue-300 font-extrabold text-lg">{searchStats.withWebsite}</p>
+                <p className="text-slate-500">Web</p>
               </div>
-              <div className="bg-slate-900 rounded-lg p-2 text-center">
-                <p className="text-pink-400 font-bold">{searchStats.withEmail}</p>
-                <p className="text-slate-500">Con email</p>
+              <div className="bg-slate-900 rounded-lg p-3 text-center">
+                <p className="text-pink-300 font-extrabold text-lg">{searchStats.withEmail}</p>
+                <p className="text-slate-500">Email</p>
               </div>
+            </div>
+          )}
+
+          {foundCount > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {newLeads.slice(0, 6).map((lead, index) => (
+                <div key={`${lead.empresa}-${index}`} className="rounded-lg bg-slate-900 border border-slate-800 p-3">
+                  <p className="text-white font-bold text-sm leading-tight">{lead.empresa}</p>
+                  <p className="text-slate-500 text-xs mt-1">{lead.ubicacion || form.searchLocation}</p>
+                  {lead.telefono && <p className="text-emerald-300 text-xs font-mono mt-1">{lead.telefono}</p>}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -119,28 +151,9 @@ export default function SearchPanel({
 
       {searchStatus === 'error' && (
         <div className="bg-red-950/30 rounded-xl p-4 border border-red-900">
-          <p className="text-xs font-bold text-red-400">{searchMessage}</p>
+          <p className="text-sm font-bold text-red-300">{searchMessage}</p>
         </div>
       )}
-
-      {newLeads.length > 0 && searchStatus === 'done' && (
-        <div className="bg-slate-950 rounded-xl p-4 border border-slate-800 space-y-2 max-h-80 overflow-y-auto">
-          <p className="text-xs font-bold text-amber-500 uppercase">Encontrados</p>
-          {newLeads.map((lead, i) => (
-            <div key={i} className="text-xs border-b border-slate-800 pb-2 last:border-0 last:pb-0">
-              <p className="text-white font-semibold">{lead.empresa}</p>
-              <p className="text-slate-500">
-                {lead.ubicacion}{lead.telefono ? ` · ${lead.telefono}` : ''}
-              </p>
-              {lead._lastOutreach && (
-                <span className="inline-block mt-1 text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded font-bold">
-                  Ya contactado
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    </section>
   );
 }
