@@ -98,6 +98,11 @@ export function cleanSocialHandle(
   if (hasOtherSocialHost) return '';
 
   let candidate = hasNetworkHost ? extractPathAfterHost(raw, networkHosts) : raw;
+  const candidatePath = candidate.trim().replace(/^\/+/, '');
+  if (hasNetworkHost && (/^https?:\/\//i.test(candidatePath) || /^www\./i.test(candidatePath))) {
+    return '';
+  }
+
   candidate = cleanNestedUrlishHandle(candidate);
 
   if (!hasNetworkHost && candidate.includes('.')) return '';
@@ -118,6 +123,10 @@ export function cleanSocialHandle(
     'watch',
     'events',
     'pages',
+    'login',
+    'profile.php',
+    'http',
+    'https',
   ]);
   if (!segment || reserved.has(segment.toLowerCase())) return '';
 

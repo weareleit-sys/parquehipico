@@ -10,6 +10,7 @@ import type { Lead } from '../hooks/useLeads';
 import { whatsappTemplates } from '../data/sectores';
 import { getCategoryIcon, getCategoryLabel } from '../data/categories';
 import { buildSocialUrl, buildWebsiteUrl } from '@/lib/lead-links';
+import { LEAD_VERIFICATION_VERSION } from '@/lib/lead-verification-version';
 
 // ─── Pure helpers ────────────────────────────────────────────────────────────
 
@@ -80,11 +81,30 @@ export const getWhatsAppLink = (lead: Lead, customGuion?: string): string => {
   return `https://wa.me/${digits}?text=${encodeURIComponent(msg)}`;
 };
 
+const getTrustedLinks = (rawData: string) => {
+  const hidden = { website: false, instagram: false, facebook: false, tiktok: false };
+  if (!rawData) return hidden;
+  try {
+    const verification = JSON.parse(rawData).verification;
+    if (!verification?.status || Number(verification.version || 0) < LEAD_VERIFICATION_VERSION) return hidden;
+    const fields = verification.fields || {};
+    return {
+      website: !!fields.website || verification.website_health?.ok === true,
+      instagram: !!fields.instagram,
+      facebook: !!fields.facebook,
+      tiktok: !!fields.tiktok,
+    };
+  } catch {
+    return hidden;
+  }
+};
+
 const getSocialLinks = (lead: Lead) => {
   const links: { icon: React.ReactNode; url: string; color: string }[] = [];
-  const instagramUrl = buildSocialUrl('instagram', lead.instagram);
-  const facebookUrl = buildSocialUrl('facebook', lead.facebook);
-  const tiktokUrl = buildSocialUrl('tiktok', lead.tiktok);
+  const trustedLinks = getTrustedLinks(lead.raw_data);
+  const instagramUrl = trustedLinks.instagram ? buildSocialUrl('instagram', lead.instagram) : '';
+  const facebookUrl = trustedLinks.facebook ? buildSocialUrl('facebook', lead.facebook) : '';
+  const tiktokUrl = trustedLinks.tiktok ? buildSocialUrl('tiktok', lead.tiktok) : '';
   if (instagramUrl) links.push({
     icon: <FaInstagram className="text-sm" />,
     url: instagramUrl,
@@ -134,7 +154,7 @@ export default function LeadRow({
   const socials = getSocialLinks(lead);
   const lastTime = getRelativeTime(lead._lastOutreach?.fecha_contacto || null);
   const lastResult = lead._lastOutreach?.resultado;
-  const websiteUrl = buildWebsiteUrl(lead.website);
+  const websiteUrl = getTrustedLinks(lead.raw_data).website ? buildWebsiteUrl(lead.website) : '';
 
   return (
     <tr className={`border-l-2 ${getEstadoColor(lead.estado_lead)} hover:bg-slate-800/30 transition-all`}>

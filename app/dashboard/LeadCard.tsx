@@ -5,6 +5,7 @@ import { FaWhatsapp, FaSearch, FaExternalLinkAlt, FaMagic, FaEye, FaInstagram, F
 import { FaTiktok } from 'react-icons/fa';
 import type { Lead } from './hooks/useLeads';
 import { buildSocialUrl, buildWebsiteUrl } from '@/lib/lead-links';
+import { LEAD_VERIFICATION_VERSION } from '@/lib/lead-verification-version';
 import {
   getEstadoColor,
   getEstadoBadge,
@@ -56,6 +57,7 @@ const getVerificationBadge = (rawData: string) => {
     const parsed = JSON.parse(rawData);
     const verification = parsed.verification;
     if (!verification?.status) return unreviewed;
+    if (Number(verification.version || 0) < LEAD_VERIFICATION_VERSION) return unreviewed;
     if (verification.status === 'verificado') {
       return {
         text: 'Verificado',
@@ -70,6 +72,13 @@ const getVerificationBadge = (rawData: string) => {
         className: 'bg-blue-500/15 text-blue-300 border-blue-500/25',
       };
     }
+    if (verification.status === 'conflicto') {
+      return {
+        text: 'Conflicto',
+        icon: <FaExclamationCircle className="text-[10px]" />,
+        className: 'bg-red-500/15 text-red-300 border-red-500/25',
+      };
+    }
     return {
       text: 'Sin verificar',
       icon: <FaExclamationCircle className="text-[10px]" />,
@@ -77,6 +86,24 @@ const getVerificationBadge = (rawData: string) => {
     };
   } catch {
     return unreviewed;
+  }
+};
+
+const getTrustedLinks = (rawData: string) => {
+  const hidden = { website: false, instagram: false, facebook: false, tiktok: false };
+  if (!rawData) return hidden;
+  try {
+    const verification = JSON.parse(rawData).verification;
+    if (!verification?.status || Number(verification.version || 0) < LEAD_VERIFICATION_VERSION) return hidden;
+    const fields = verification.fields || {};
+    return {
+      website: !!fields.website || verification.website_health?.ok === true,
+      instagram: !!fields.instagram,
+      facebook: !!fields.facebook,
+      tiktok: !!fields.tiktok,
+    };
+  } catch {
+    return hidden;
   }
 };
 
@@ -89,10 +116,11 @@ export default function LeadCard({
   const priority = getPriorityLabel(lead.score);
   const leadRole = getLeadRole(lead.raw_data);
   const verificationBadge = getVerificationBadge(lead.raw_data);
-  const websiteUrl = buildWebsiteUrl(lead.website);
-  const instagramUrl = buildSocialUrl('instagram', lead.instagram);
-  const facebookUrl = buildSocialUrl('facebook', lead.facebook);
-  const tiktokUrl = buildSocialUrl('tiktok', lead.tiktok);
+  const trustedLinks = getTrustedLinks(lead.raw_data);
+  const websiteUrl = trustedLinks.website ? buildWebsiteUrl(lead.website) : '';
+  const instagramUrl = trustedLinks.instagram ? buildSocialUrl('instagram', lead.instagram) : '';
+  const facebookUrl = trustedLinks.facebook ? buildSocialUrl('facebook', lead.facebook) : '';
+  const tiktokUrl = trustedLinks.tiktok ? buildSocialUrl('tiktok', lead.tiktok) : '';
 
   const lastContactLabel = (() => {
     if (!lastTime) return null;

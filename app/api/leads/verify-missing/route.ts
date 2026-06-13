@@ -1,21 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { verifyLeadData } from '@/lib/lead-verification';
+import { hasCurrentLeadVerification, verifyLeadData } from '@/lib/lead-verification';
 
 export const dynamic = 'force-dynamic';
-
-function parseRawData(rawData: unknown): Record<string, any> {
-  if (!rawData || typeof rawData !== 'string') return {};
-  try {
-    return JSON.parse(rawData);
-  } catch {
-    return {};
-  }
-}
-
-function hasVerification(rawData: unknown): boolean {
-  return !!parseRawData(rawData).verification?.status;
-}
 
 function parseLimit(value: unknown): number {
   const parsed = Number.parseInt(String(value || ''), 10);
@@ -40,7 +27,7 @@ export async function POST(req: NextRequest) {
     }
 
     const targets = (candidates || [])
-      .filter((lead: any) => !hasVerification(lead.raw_data))
+      .filter((lead: any) => !hasCurrentLeadVerification(lead.raw_data))
       .slice(0, safeLimit);
 
     const results = [];
