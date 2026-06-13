@@ -1,9 +1,20 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { normalizeLeadCategoryValue } from '@/lib/lead-categories';
-import { hasCurrentLeadVerification } from '@/lib/lead-verification';
+import { LEAD_VERIFICATION_VERSION } from '@/lib/lead-verification-version';
 
 export const dynamic = 'force-dynamic';
+
+function hasCurrentVerification(rawData: unknown): boolean {
+  if (!rawData) return false;
+  try {
+    const parsed = typeof rawData === 'string' ? JSON.parse(rawData) : rawData as any;
+    const verification = parsed?.verification;
+    return !!verification?.status && Number(verification.version || 0) >= LEAD_VERIFICATION_VERSION;
+  } catch {
+    return false;
+  }
+}
 
 export async function GET() {
   try {
@@ -20,7 +31,7 @@ export async function GET() {
     const replied = leads.filter((lead: any) => lead.estado_lead === 'respondio').length;
     const scheduled = leads.filter((lead: any) => lead.estado_lead === 'agendado').length;
     const highPriority = leads.filter((lead: any) => Number(lead.score || 0) >= 8).length;
-    const needsVerification = leads.filter((lead: any) => !hasCurrentLeadVerification(lead.raw_data)).length;
+    const needsVerification = leads.filter((lead: any) => !hasCurrentVerification(lead.raw_data)).length;
     const review = leads.filter((lead: any) =>
       lead.sector === 'externo' ||
       lead.estado_lead === 'descartado' ||
