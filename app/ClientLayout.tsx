@@ -7,9 +7,12 @@ import FloatingWhatsApp from "./components/UI/FloatingWhatsApp";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const isAdminRoute = pathname?.startsWith('/admin') || pathname?.startsWith('/login');
+    const isInternalRoute =
+        pathname?.startsWith('/admin') ||
+        pathname?.startsWith('/dashboard') ||
+        pathname?.startsWith('/login');
 
-    if (isAdminRoute) {
+    if (isInternalRoute) {
         // Admin routes: sin Navbar, Footer, ni WhatsApp
         return <>{children}</>;
     }
