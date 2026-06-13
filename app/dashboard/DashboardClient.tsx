@@ -17,18 +17,24 @@ import { getWhatsAppLink } from './components/LeadRow';
 
 interface DashboardClientProps {
   initialLeads: Lead[];
+  initialTotalLeads: number;
 }
 
 interface LeadStats {
   total: number;
   pending: number;
   scheduled: number;
+  goodCandidates?: number;
   highPriority: number;
   needsVerification: number;
+  verified: number;
+  partial: number;
+  conflict: number;
+  verificationFailed: number;
   review: number;
 }
 
-export default function DashboardClient({ initialLeads }: DashboardClientProps) {
+export default function DashboardClient({ initialLeads, initialTotalLeads }: DashboardClientProps) {
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
 
@@ -38,7 +44,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
     return fetch(url, { ...options, headers });
   }, [token]);
 
-  const leadsState = useLeads(initialLeads, apiFetch);
+  const leadsState = useLeads(initialLeads, initialTotalLeads, apiFetch);
 
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
   const [selectedLeadForOutreach, setSelectedLeadForOutreach] = useState<Lead | null>(null);
@@ -66,12 +72,12 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
 
   const handleVerifyOldData = useCallback(async () => {
     setVerifyingOldData(true);
-    setVerifyOldDataMessage('Revisando 10 contactos antiguos...');
+    setVerifyOldDataMessage('Revisando 5 contactos antiguos...');
     try {
       const response = await apiFetch('/api/leads/verify-missing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ limit: 10 }),
+        body: JSON.stringify({ limit: 5 }),
       });
       const data = await response.json().catch(() => ({}));
 
@@ -80,11 +86,16 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
         return;
       }
 
-      setVerifyOldDataMessage(
-        data.processed > 0
-          ? `Listo: ${data.processed} revisados, ${data.verified} verificados, ${data.partial} parciales.`
-          : 'No quedan contactos antiguos por revisar.'
-      );
+      if (data.processed > 0) {
+        const skippedText = data.skippedRecentFailures > 0 ? ` ${data.skippedRecentFailures} con error reciente se saltaron.` : '';
+        setVerifyOldDataMessage(`Listo: ${data.processed} revisados, ${data.verified} verificados, ${data.partial} parciales, ${data.failed} con error.${skippedText}`);
+      } else {
+        setVerifyOldDataMessage(
+          data.skippedRecentFailures > 0
+            ? `Hay ${data.skippedRecentFailures} contactos con error reciente. Se intentarán de nuevo más tarde.`
+            : 'No quedan contactos antiguos por revisar.'
+        );
+      }
       await refreshDashboard();
     } catch {
       setVerifyOldDataMessage('Error de red revisando datos.');
@@ -167,7 +178,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
             </div>
 
             <div className="min-h-11 inline-flex items-center justify-center bg-slate-900 border border-slate-800 text-slate-200 font-bold px-3 sm:px-4 rounded-xl">
-              {leadsState.totalLeads} contactos
+              {leadsState.totalLeads} visibles
             </div>
 
             <button onClick={refreshDashboard}
@@ -177,7 +188,7 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
 
             <button
               onClick={handleLogout}
-              className="min-h-11 inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white font-bold px-3 rounded-xl transition-all"
+              className="col-span-2 sm:col-span-1 min-h-11 inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white font-bold px-3 rounded-xl transition-all"
               title="Salir"
             >
               <FaSignOutAlt /> <span>Salir</span>
@@ -187,14 +198,23 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
       </header>
 
       <div className="space-y-6">
+        <SearchPanel
+          {...searchState}
+          findingContactId={outreachState.findingContactId}
+          onOpenOutreach={setSelectedLeadForOutreach}
+          onOpenGuion={setSelectedLeadForGuion}
+          onFindContact={outreachState.handleFindContact}
+          onLogOutreach={outreachState.logOutreach}
+        />
+
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3">
             {[
               ['Total', stats.total],
               ['Pendientes', stats.pending],
-              ['Prioridad alta', stats.highPriority],
+              ['Buenos candidatos', stats.goodCandidates ?? stats.highPriority],
               ['Agendados', stats.scheduled],
-              ['Sin revisar', stats.needsVerification],
+              ['Datos pendientes', stats.needsVerification],
               ['Revisar', stats.review],
             ].map(([label, value]) => (
               <div key={label} className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-3">
@@ -208,8 +228,9 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
         {stats && stats.needsVerification > 0 && (
           <div className="bg-amber-500/10 border border-amber-500/25 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex-1">
-              <p className="text-sm font-extrabold text-amber-200">Hay {stats.needsVerification} contactos antiguos sin revisar.</p>
-              <p className="text-sm text-slate-400 mt-1">Puedes revisar 10 por tanda para limpiar datos dudosos sin buscar contactos nuevos.</p>
+              <p className="text-sm font-extrabold text-amber-200">Hay {stats.needsVerification} contactos con datos pendientes.</p>
+              <p className="text-sm text-slate-400 mt-1">Avance: {stats.verified} verificados, {stats.partial} parciales, {stats.conflict} dudosos, {stats.verificationFailed} con error.</p>
+              <p className="text-sm text-slate-400 mt-1">Puedes revisar 5 por tanda para limpiar datos dudosos sin buscar contactos nuevos.</p>
               {verifyOldDataMessage && <p className="text-sm text-amber-100 mt-2 font-semibold">{verifyOldDataMessage}</p>}
             </div>
             <button
@@ -218,19 +239,10 @@ export default function DashboardClient({ initialLeads }: DashboardClientProps) 
               className="min-h-12 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 disabled:text-slate-400 text-slate-950 font-extrabold px-4 inline-flex items-center justify-center gap-2"
             >
               <FaCheckCircle className={verifyingOldData ? 'animate-pulse' : ''} />
-              {verifyingOldData ? 'Revisando...' : 'Revisar 10 datos'}
+              {verifyingOldData ? 'Revisando...' : 'Revisar 5 datos'}
             </button>
           </div>
         )}
-
-        <SearchPanel
-          {...searchState}
-          findingContactId={outreachState.findingContactId}
-          onOpenOutreach={setSelectedLeadForOutreach}
-          onOpenGuion={setSelectedLeadForGuion}
-          onFindContact={outreachState.handleFindContact}
-          onLogOutreach={outreachState.logOutreach}
-        />
 
         <FilterBar filters={leadsState.filters} onChange={leadsState.setFilters} />
 

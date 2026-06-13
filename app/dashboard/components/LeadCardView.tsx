@@ -40,7 +40,7 @@ export default function LeadCardView({
           onOpenOutreach={() => onOpenOutreach(lead)}
           onOpenGuion={() => onOpenGuion(lead)}
           onFindContact={() => onFindContact(lead.id)}
-          onWhatsAppClick={() => onLogOutreach(lead.id, 'contactado', 'contactado')}
+          onPrimaryContactClick={() => onLogOutreach(lead.id, 'contactado', 'contactado')}
         />
       ))}
     </div>

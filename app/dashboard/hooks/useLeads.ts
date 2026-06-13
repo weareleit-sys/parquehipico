@@ -50,11 +50,12 @@ export interface LeadsActions {
 
 export function useLeads(
   initialLeads: Lead[],
+  initialTotalLeads: number,
   apiFetch: (url: string, options?: RequestInit) => Promise<Response>
 ): LeadsState & LeadsActions {
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
-  const [totalLeads, setTotalLeads] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [totalLeads, setTotalLeads] = useState(initialTotalLeads);
+  const [totalPages, setTotalPages] = useState(Math.ceil(initialTotalLeads / 25));
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [filters, setFiltersState] = useState<LeadsFilters>({

@@ -1,17 +1,51 @@
 # Handoff From Codex
 
-Last updated: 11 Jun 2026 by Codex.
+Last updated: 13 Jun 2026 by Codex.
 
 ## Current State
 
-- Working tree has uncommitted Codex changes.
+- Working tree has uncommitted Codex changes. Do not push until the user is ready for one consolidated deploy.
 - Dev server is running on `http://localhost:3000`.
 - Production build passes: `npm.cmd run build`.
 - TypeScript passes: `npx.cmd tsc --noEmit --pretty false`.
 - Smoke test passes: `powershell -ExecutionPolicy Bypass -File scripts\smoke_leads_system.ps1`.
 - Supabase anon REST was verified: anon key cannot read lead data.
-- Current lead count is **85**.
+- Current lead count observed locally/API is **127**.
 - Dashboard login is now implemented with Supabase email/password auth.
+
+## 13 Jun Pending Changes Not Yet Pushed
+
+- `/api/leads/search`
+  - Adds category-fit rejection before saving results.
+  - Rejects product-only/retail party leads for Eventos familiares.
+  - Rejects weak matches for matrimonios, turismo, educación, gobierno and comunidad.
+  - Asks Gemini for `actividad` and `motivo` and uses them as fit signals.
+  - Requires at least one actionable contact channel before saving: phone, email, website or social.
+  - Normalizes phones more strictly; rejects `+`, truncated values and incomplete Chilean mobiles.
+  - Returns `filteredBadFit` so UI can explain why fewer results appear.
+- `/api/leads/verify-missing`
+  - Caps manual verification batches to 5.
+  - Records failed verification attempts in `raw_data.verification_attempt`.
+  - Skips failed leads for 12 hours so one bad lead does not block the queue.
+- `/api/leads/stats`
+  - Counts `verified`, `partial`, `conflict`, and `verificationFailed`.
+- Dashboard mobile UX
+  - Search panel moved above metrics so mobile users start with the main action.
+  - Header count renamed to `{n} visibles` to avoid conflict with total metrics.
+  - Fixed phones now show `Llamar` (`tel:`), not WhatsApp.
+  - Invalid placeholder phones no longer show `WhatsApp` or `Llamar`.
+  - Unverified stored web/social links show `Web/redes en revisión` instead of clickable bad links.
+  - Cards show `motivo` from new searches when available.
+
+Latest local validation for these pending changes:
+
+```text
+npx.cmd tsc --noEmit --pretty false  PASS
+npm.cmd run build                    PASS
+Mobile browser check                 PASS
+Live search test                     PASS, 5 plausible education leads
+Find-contact recovery                PASS, completed missing contact for Colegio Epu Klei
+```
 
 ## What Changed Since The Previous Handoff
 
@@ -119,27 +153,39 @@ Supabase anon REST    PASS   no public lead data
 ## Current Data Snapshot
 
 ```text
-total       85
-pending     75
-contacted    9
+total       127
+pending     113
+contacted    10
 replied      0
 scheduled    0
-highPriority 24
-review       3
+goodCandidates 69
+highPriority   6
+needsVerification 108
+verified     12
+partial       2
+conflict      5
+verificationFailed 0
+review        5
 ```
 
 By category:
 
 ```text
-matrimonios  11
-cumpleanos   29
-corporativo  13
-turismo      11
-productoras   6
-educacion     7
-comunidad     4
-municipal     4
+corporativo  20
+cumpleanos   28
+turismo      15
+matrimonios  13
+productoras  16
+educacion    14
+comunidad     9
+municipal    12
 ```
+
+Quality notes:
+
+- Direct Supabase query and `/api/leads/stats` now agree on total=127 after adding exact count/range to stats.
+- Existing data still contains some old invalid phone placeholders and no-action leads; the UI now hides invalid phone actions, but a data cleanup/reverification pass is still recommended.
+- Local `.env.local` does not include `GOOGLE_MAPS_API_KEY`; Vercel has it, but local Places verification will stay disabled until the value is added locally.
 
 ## Production Pending
 
@@ -149,6 +195,7 @@ municipal     4
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `GEMINI_API_KEY`
+   - `GOOGLE_MAPS_API_KEY`
    - `RESEND_API_KEY`
    - `MP_ACCESS_TOKEN`
 2. Deploy to Vercel.

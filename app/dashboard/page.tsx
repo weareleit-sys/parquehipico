@@ -7,9 +7,9 @@ export const dynamic = 'force-dynamic';
 export default async function DashboardPage() {
   const supabase = getSupabaseAdmin();
 
-  const { data: initialLeads, error } = await supabase
+  const { data: initialLeads, error, count } = await supabase
     .from('leads')
-    .select('*')
+    .select('*', { count: 'exact' })
     .in('estado_lead', ['nuevo', 'en_proceso'])
     .order('created_at', { ascending: false })
     .limit(25);
@@ -48,7 +48,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans">
-      <DashboardClient initialLeads={enrichedLeads} />
+      <DashboardClient initialLeads={enrichedLeads} initialTotalLeads={count ?? enrichedLeads.length} />
     </div>
   );
 }

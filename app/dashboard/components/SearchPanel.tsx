@@ -145,6 +145,12 @@ export default function SearchPanel({
             </div>
           )}
 
+          {searchStats && ((searchStats.filteredOut || 0) + (searchStats.filteredBadFit || 0)) > 0 && (
+            <p className="text-xs font-semibold text-slate-400">
+              Se omitieron {(searchStats.filteredOut || 0) + (searchStats.filteredBadFit || 0)} resultados fuera de zona o poco útiles.
+            </p>
+          )}
+
           {foundCount > 0 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-3 border-t border-emerald-900/80 pt-3">
@@ -170,7 +176,7 @@ export default function SearchPanel({
                       onOpenOutreach={() => onOpenOutreach(lead)}
                       onOpenGuion={() => onOpenGuion(lead)}
                       onFindContact={() => onFindContact(lead.id)}
-                      onWhatsAppClick={() => {
+                      onPrimaryContactClick={() => {
                         markNewLeadContacted(lead.id);
                         onLogOutreach(lead.id, 'contactado', 'contactado');
                       }}

@@ -3,7 +3,7 @@
 import React from 'react';
 import {
   FaWhatsapp, FaSearch, FaExternalLinkAlt, FaMagic, FaEye,
-  FaInstagram, FaFacebook,
+  FaInstagram, FaFacebook, FaPhone,
 } from 'react-icons/fa';
 import { FaTiktok } from 'react-icons/fa';
 import type { Lead } from '../hooks/useLeads';
@@ -28,6 +28,26 @@ export const getEstadoBadge = (estado: string) => {
     case 'rechazo': return 'bg-red-500/20 text-red-400';
     case 'descartado': return 'bg-slate-700/50 text-slate-400';
     default: return 'bg-slate-800 text-slate-400';
+  }
+};
+
+export const getEstadoLabel = (estado: string) => {
+  switch (estado) {
+    case 'nuevo':
+    case 'en_proceso':
+      return 'Pendiente';
+    case 'contactado':
+      return 'Contactado';
+    case 'respondio':
+      return 'Respondió';
+    case 'agendado':
+      return 'Agendado';
+    case 'rechazo':
+      return 'Rechazo';
+    case 'descartado':
+      return 'Descartado';
+    default:
+      return estado || 'Pendiente';
   }
 };
 
@@ -57,21 +77,69 @@ export const getRelativeTime = (dateStr: string | null): string | null => {
   return new Date(dateStr).toLocaleDateString('es-CL');
 };
 
+function splitPhones(phone: string): string[] {
+  return (phone || '').split(/[,;\/]\s*/).filter(Boolean);
+}
+
+function phoneDigits(phone: string): string {
+  return (phone || '').replace(/\D/g, '');
+}
+
+function isMobileDigits(digits: string): boolean {
+  return (digits.startsWith('569') && digits.length === 11) || (digits.startsWith('9') && digits.length === 9);
+}
+
+function isCallableDigits(digits: string): boolean {
+  if (isMobileDigits(digits)) return true;
+  if (digits.startsWith('56')) return digits.length >= 10 && digits.length <= 11;
+  if (digits.length === 8 && digits.startsWith('9')) return false;
+  return digits.length >= 8 && digits.length <= 9;
+}
+
+function isPlaceholderPhone(phone: string): boolean {
+  return !phone || phone.includes('...') || phone.trim() === '+';
+}
+
+function firstCallablePhone(phone: string): string {
+  return splitPhones(phone).find(value => !isPlaceholderPhone(value) && isCallableDigits(phoneDigits(value))) || '';
+}
+
+export const isWhatsAppCompatiblePhone = (phone: string): boolean =>
+  splitPhones(phone).some(value => !isPlaceholderPhone(value) && isMobileDigits(phoneDigits(value)));
+
+export const hasCallablePhone = (phone: string): boolean =>
+  !!firstCallablePhone(phone);
+
+export const getDisplayPhone = (phone: string): string =>
+  firstCallablePhone(phone);
+
+export const getPhoneCallLink = (phone: string): string => {
+  const firstPhone = firstCallablePhone(phone);
+  let digits = phoneDigits(firstPhone);
+  if (!digits) return '#';
+  if (digits.startsWith('569') || digits.startsWith('56')) return `tel:+${digits}`;
+  if (digits.startsWith('9') && digits.length === 9) return `tel:+56${digits}`;
+  if (digits.length === 8 && digits.startsWith('9')) return '#';
+  if (digits.length >= 8 && digits.length <= 9) return `tel:+56${digits}`;
+  return `tel:+${digits}`;
+};
+
 export const getWhatsAppLink = (lead: Lead, customGuion?: string): string => {
   if (!lead.telefono) return '#';
   const phones = lead.telefono.split(/[,;\/]\s*/);
-  let bestPhone = phones[0];
+  let bestPhone = '';
   for (const p of phones) {
     const d = p.replace(/\D/g, '');
-    if (d.startsWith('569') || (d.startsWith('9') && d.length <= 9)) {
+    if (!isPlaceholderPhone(p) && isMobileDigits(d)) {
       bestPhone = p;
       break;
     }
   }
+  if (!bestPhone) return '#';
   let digits = bestPhone.replace(/\D/g, '');
+  if (!isMobileDigits(digits)) return '#';
   if (digits.startsWith('569')) { /* ok */ }
-  else if (digits.startsWith('9') && digits.length <= 9) { digits = '56' + digits; }
-  else if (digits.length === 8) { digits = '569' + digits; }
+  else if (digits.startsWith('9') && digits.length === 9) { digits = '56' + digits; }
   else if (!digits.startsWith('56')) { digits = '56' + digits; }
 
   const template = whatsappTemplates[lead.categoria] || whatsappTemplates.productoras;
@@ -154,7 +222,13 @@ export default function LeadRow({
   const socials = getSocialLinks(lead);
   const lastTime = getRelativeTime(lead._lastOutreach?.fecha_contacto || null);
   const lastResult = lead._lastOutreach?.resultado;
-  const websiteUrl = getTrustedLinks(lead.raw_data).website ? buildWebsiteUrl(lead.website) : '';
+  const trustedLinks = getTrustedLinks(lead.raw_data);
+  const websiteUrl = trustedLinks.website ? buildWebsiteUrl(lead.website) : '';
+  const hasStoredLinks = !!(lead.website || lead.instagram || lead.facebook || lead.tiktok);
+  const hasTrustedLinks = !!(websiteUrl || socials.length > 0);
+  const canUseWhatsApp = isWhatsAppCompatiblePhone(lead.telefono);
+  const displayPhone = getDisplayPhone(lead.telefono);
+  const canCall = hasCallablePhone(lead.telefono);
 
   return (
     <tr className={`border-l-2 ${getEstadoColor(lead.estado_lead)} hover:bg-slate-800/30 transition-all`}>
@@ -170,9 +244,9 @@ export default function LeadRow({
             )}
           </span>
           <div className="flex gap-3 text-xs text-slate-500 mt-1 flex-wrap">
-            {lead.telefono && (
+            {displayPhone && (
               <span className={`font-mono ${lead.web_status === 'fijo' ? 'text-amber-500' : 'text-slate-400'}`}>
-                {lead.web_status === 'fijo' ? '📞 ' : ''}{lead.telefono}
+                {lead.web_status === 'fijo' ? '📞 ' : ''}{displayPhone}
               </span>
             )}
             {lead.email && <span className="text-pink-400 font-mono text-[11px]">{lead.email}</span>}
@@ -196,7 +270,9 @@ export default function LeadRow({
       <td className="px-4 py-4 text-center">
         <div className="flex justify-center gap-3">
           {socials.length === 0
-            ? <span className="text-xs text-slate-600">—</span>
+            ? (hasStoredLinks && !hasTrustedLinks
+                ? <span className="text-xs font-semibold text-amber-300">En revisión</span>
+                : <span className="text-xs text-slate-600">—</span>)
             : socials.map((s, i) => (
                 <a key={i} href={s.url} target="_blank" rel="noopener noreferrer"
                   className={`text-slate-500 ${s.color} transition-colors`}>
@@ -211,7 +287,7 @@ export default function LeadRow({
           onClick={() => onOpenOutreach(lead)}
           className="bg-slate-800 border border-slate-700 hover:border-slate-600 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-all capitalize"
         >
-          {lead.estado_lead.replace('_', ' ')}
+          {getEstadoLabel(lead.estado_lead)}
         </button>
       </td>
       <td className="px-4 py-4 text-xs text-slate-400">
@@ -253,15 +329,25 @@ export default function LeadRow({
             </a>
           )}
 
-          {lead.telefono ? (
-            <a
-              href={getWhatsAppLink(lead)}
-              target="_blank" rel="noopener noreferrer"
-              onClick={() => onLogOutreach(lead.id, 'contactado', 'contactado')}
-              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs shadow-lg transition-all"
-            >
-              <FaWhatsapp className="text-xs" /> WhatsApp
-            </a>
+          {canCall ? (
+            canUseWhatsApp ? (
+              <a
+                href={getWhatsAppLink(lead)}
+                target="_blank" rel="noopener noreferrer"
+                onClick={() => onLogOutreach(lead.id, 'contactado', 'contactado')}
+                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs shadow-lg transition-all"
+              >
+                <FaWhatsapp className="text-xs" /> WhatsApp
+              </a>
+            ) : (
+              <a
+                href={getPhoneCallLink(lead.telefono)}
+                onClick={() => onLogOutreach(lead.id, 'contactado', 'contactado')}
+                className="inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs shadow-lg transition-all"
+              >
+                <FaPhone className="text-xs" /> Llamar
+              </a>
+            )
           ) : (
             <button
               onClick={() => onFindContact(lead.id)}

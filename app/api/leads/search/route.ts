@@ -43,30 +43,48 @@ function isValidEmail(email: string): boolean {
 }
 
 // Detectar si un teléfono es móvil chileno (compatible con WhatsApp)
+function splitPhones(phone: string): string[] {
+  return (phone || '').split(/[,;\/]\s*/).filter(Boolean);
+}
+
+function phoneDigits(phone: string): string {
+  return (phone || '').replace(/\D/g, '');
+}
+
+function isPlaceholderPhone(phone: string): boolean {
+  return !phone || phone.includes('...') || phone.trim() === '+';
+}
+
+function isMobileDigits(digits: string): boolean {
+  return (digits.startsWith('569') && digits.length === 11) || (digits.startsWith('9') && digits.length === 9);
+}
+
+function isCallableDigits(digits: string): boolean {
+  if (isMobileDigits(digits)) return true;
+  if (digits.startsWith('56')) return digits.length >= 10 && digits.length <= 11;
+  if (digits.length === 8 && digits.startsWith('9')) return false;
+  return digits.length >= 8 && digits.length <= 9;
+}
+
 function isWhatsAppCompatible(tel: string): boolean {
-  const digits = tel.replace(/\D/g, '');
-  if (digits.startsWith('569')) return true;
-  if (digits.startsWith('9') && digits.length === 9) return true;
-  return false;
+  return splitPhones(tel).some(phone => !isPlaceholderPhone(phone) && isMobileDigits(phoneDigits(phone)));
 }
 
 // Normalizar teléfono chileno a formato internacional
 function normalizePhone(tel: string): string {
   if (!tel || !tel.trim()) return '';
-  const phones = tel.split(/[,;\/]\s*/);
-  let best = phones[0];
-  for (const p of phones) {
-    const d = p.replace(/\D/g, '');
-    if (d.startsWith('569') || (d.startsWith('9') && d.length <= 9)) {
-      best = p; break;
-    }
-  }
-  let digits = best.replace(/\D/g, '');
+  const phones = splitPhones(tel).filter(phone => !isPlaceholderPhone(phone));
+  const best = phones.find(phone => isMobileDigits(phoneDigits(phone)))
+    || phones.find(phone => isCallableDigits(phoneDigits(phone)))
+    || '';
+  let digits = phoneDigits(best);
   if (!digits) return '';
-  if (digits.startsWith('569')) return '+' + digits;
+  if (digits.startsWith('569') && digits.length === 11) return '+' + digits;
   if (digits.startsWith('9') && digits.length === 9) return '+56' + digits;
-  if (digits.startsWith('56')) return '+' + digits;
-  return '+' + digits;
+  if (digits.startsWith('56') && digits.length >= 10 && digits.length <= 11) return '+' + digits;
+  if (digits.length === 8 && digits.startsWith('9')) return '';
+  if (digits.length >= 8 && digits.length <= 9) return '+56' + digits;
+  return '';
 }
 
 function cleanGeminiJson(text: string): string {
@@ -114,14 +132,73 @@ function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function normalizeSearchText(value: any): string {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
 function isProductOnlyFamilyEventLead(lead: any): boolean {
-  const text = `${lead?.empresa || ''} ${lead?.website || ''} ${lead?.email || ''} ${lead?.ubicacion || ''}`.toLowerCase();
+  const text = normalizeSearchText(`${lead?.empresa || ''} ${lead?.actividad || ''} ${lead?.motivo || ''} ${lead?.descripcion || ''} ${lead?.website || ''} ${lead?.email || ''} ${lead?.ubicacion || ''}`);
   const banned = [
-    'cotillon', 'cotillón', 'globo', 'globos', 'torta', 'tortas', 'piñata', 'pinata',
-    'piñateria', 'piñatería', 'dulceria', 'dulcería', 'jugueteria', 'juguetería',
-    'regalos', 'sorpresas', 'articulos de fiesta', 'artículos de fiesta',
+    'cotillon', 'globo', 'globos', 'torta', 'tortas', 'pinata', 'pinateria',
+    'dulceria', 'jugueteria', 'regalo', 'regalos', 'sorpresas',
+    'articulos de fiesta', 'decoracion', 'decoraciones', 'balloon', 'cake',
+    'pasteleria', 'reposteria', 'inflable', 'inflables', 'disfraz', 'disfraces',
   ];
   return banned.some(word => text.includes(word));
+}
+
+function hasEventOrVenueSignal(text: string): boolean {
+  return /(evento|eventos|productora|producciones|banqueter|catering|planner|celebracion|celebraciones|fiesta|fiestas|salon|centro de eventos|venue|hotel|cabana|cabanas|restaurant|restaurante|parcela|quincho|resort|camping|cervecer|turismo|outdoor|experiencia|centro turistico|termas)/.test(text);
+}
+
+function hasWeddingOrVenueSignal(text: string): boolean {
+  return /(wedding|matrimonio|matrimonios|novios|novias|banqueter|planner|eventos|centro de eventos|salon|venue|hotel|parcela|quincho|catering)/.test(text);
+}
+
+function hasEducationSignal(text: string): boolean {
+  return /(colegio|liceo|escuela|universidad|instituto|jardin|educacion|educativo|educativa|fundacion educativa|centro de padres|preuniversitario|capacitacion)/.test(text);
+}
+
+function hasPublicInstitutionSignal(text: string): boolean {
+  return /(municipal|municipalidad|gobierno|delegacion|seremi|ministerio|servicio publico|corporacion|dideco|cultura|turismo|deporte|biblioteca|centro cultural)/.test(text);
+}
+
+function hasCommunitySignal(text: string): boolean {
+  return /(club|junta de vecinos|iglesia|parroquia|fundacion|ong|adulto mayor|camara|asociacion|agrupacion|comunidad|corporacion|club deportivo|social|cultural)/.test(text);
+}
+
+function getCategoryFitRejection(lead: any, categoria: string): string {
+  const text = normalizeSearchText(`${lead?.empresa || ''} ${lead?.actividad || ''} ${lead?.motivo || ''} ${lead?.descripcion || ''} ${lead?.website || ''} ${lead?.email || ''} ${lead?.ubicacion || ''} ${lead?.instagram || ''} ${lead?.facebook || ''} ${lead?.tiktok || ''}`);
+
+  if (categoria === 'cumpleanos') {
+    if (isProductOnlyFamilyEventLead(lead)) return 'vende productos de fiesta, no organiza ni deriva eventos';
+    if (!hasEventOrVenueSignal(text)) return 'sin señal de organización, banquetería, venue, hotel o espacio para eventos familiares';
+  }
+
+  if (categoria === 'matrimonios' && !hasWeddingOrVenueSignal(text)) {
+    return 'sin señal clara de matrimonios, banquetería, planner o venue';
+  }
+
+  if (categoria === 'turismo' && !isTourismOrVenueSignal(text)) {
+    return 'sin señal de turismo, hotel, venue o espacio complementario';
+  }
+
+  if (categoria === 'educacion' && !hasEducationSignal(text)) {
+    return 'sin señal de institución educativa o comunidad escolar';
+  }
+
+  if (categoria === 'municipal' && !hasPublicInstitutionSignal(text)) {
+    return 'sin señal de entidad pública, municipal o comunitaria institucional';
+  }
+
+  if (categoria === 'comunidad' && !hasCommunitySignal(text)) {
+    return 'sin señal de organización comunitaria con convocatoria';
+  }
+
+  return '';
 }
 
 function hasLocalSignal(text: string): boolean {
@@ -138,7 +215,7 @@ function hasUncertainLocalFit(text: string): boolean {
 }
 
 function isTourismOrVenueSignal(text: string): boolean {
-  return /(hotel|cabaña|cabañas|cabanas|hostal|turismo|tur[ií]stic|viajes|operador|outdoor|aventura|centro de eventos|sal[oó]n|venue|resort|camping|restaurant|restaurante|parque|termas|experiencia)/.test(text);
+  return /(hotel|cabaña|cabana|cabañas|cabanas|hostal|turismo|tur[ií]stic|centro turistico|viajes|operador|outdoor|aventura|centro de eventos|sal[oó]n|salon|venue|resort|camping|restaurant|restaurante|parque|termas|experiencia|parcela|quincho|cervecer)/.test(text);
 }
 
 function isTechnicalSupplierSignal(text: string): boolean {
@@ -146,7 +223,7 @@ function isTechnicalSupplierSignal(text: string): boolean {
 }
 
 function buildLeadQuality(lead: any, categoria: string, cleanTel: string, site: string, isWap: boolean) {
-  const text = `${lead?.empresa || ''} ${lead?.website || ''} ${lead?.email || ''} ${lead?.ubicacion || ''} ${lead?.instagram || ''} ${lead?.facebook || ''}`.toLowerCase();
+  const text = normalizeSearchText(`${lead?.empresa || ''} ${lead?.actividad || ''} ${lead?.motivo || ''} ${lead?.descripcion || ''} ${lead?.website || ''} ${lead?.email || ''} ${lead?.ubicacion || ''} ${lead?.instagram || ''} ${lead?.facebook || ''}`);
   const notes: string[] = [];
   let score = 5;
   let role = 'cliente directo';
@@ -219,7 +296,7 @@ function buildLeadQuality(lead: any, categoria: string, cleanTel: string, site: 
 }
 
 function inferLeadSector(lead: any, requestedSector: string): string {
-  const text = `${lead?.empresa || ''} ${lead?.ubicacion || ''} ${lead?.website || ''} ${lead?.email || ''}`.toLowerCase();
+  const text = normalizeSearchText(`${lead?.empresa || ''} ${lead?.ubicacion || ''} ${lead?.website || ''} ${lead?.email || ''}`);
   if (hasUncertainLocalFit(text)) return 'externo';
   if (isRemoteOnlyLead(text)) return 'externo';
   if (/(villarrica|puc[oó]n|lican ray|molco|caburgua|curarrehue|coñaripe|conaripe)/.test(text)) return 'lacustre';
@@ -298,11 +375,16 @@ Respeta la zona seleccionada. Si no hay suficientes leads buenos en esa zona, de
 
 Definición de la categoría "${categoryDefinition.label}": ${categoryDefinition.searchPrompt}
 
+Regla global de calidad: no incluyas negocios que solo venden productos o servicios puntuales si no pueden decidir, recomendar o necesitar un recinto. Evita tiendas de artículos de fiesta, decoración, globos, tortas, regalos, fotografía aislada, sonido aislado o arriendo de equipos si no organizan eventos completos.
+
 IMPORTANTE: Busca teléfonos de contacto REALES, preferentemente móviles con WhatsApp (+56 9). Busca en Google Maps, páginas amarillas, Facebook, Instagram. Si no encuentras teléfono, déjalo vacío "".
+Cada lead debe tener al menos un canal accionable: teléfono, email, sitio web real o red social real. No incluyas leads donde solo tengas nombre y dirección.
 El sitio web debe ser un dominio real (ej: "www.empresa.cl"), NO pongas emails como website. Si hay email, usa campo "email".
 Instagram, Facebook y TikTok: solo usuario o URL real visible. Si no encuentras una red verificable, usa string vacío "". No inventes usuarios y no mezcles URLs, por ejemplo nunca respondas "instagram.com/https://...".
 
-Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","website","email","ubicacion","instagram","facebook","tiktok"}`;
+Agrega "actividad" con el rubro comprobado y "motivo" con una frase corta de por qué podría necesitar o derivar el recinto. Si no puedes justificarlo, no incluyas el lead.
+
+Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","website","email","ubicacion","instagram","facebook","tiktok","actividad","motivo"}`;
 
     let leads: any[] = [];
     let lastGeminiStatus = 0;
@@ -380,7 +462,9 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
     const saved: any[] = [];
     const seenNames = new Set<string>();
     const seenPhones = new Set<string>();
+    const seenSites = new Set<string>();
     let skippedOutOfZone = 0;
+    let skippedBadFit = 0;
 
     for (let i = 0; i < Math.min(leads.length, safeLimit); i++) {
       const lead = leads[i];
@@ -388,9 +472,18 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
       const empresaOriginal = (lead.empresa || '').trim();
       const rawTel = (lead.telefono || '').trim();
       const cleanPhone = rawTel.replace(/\D/g, '');
+      const candidateSite = cleanWebsite(lead.website || '');
 
-      if (normalizedCategoria === 'cumpleanos' && isProductOnlyFamilyEventLead(lead)) {
-        console.warn(`[QUALITY] Saltando tienda/producto no apto para eventos familiares: ${empresaOriginal}`);
+      if (!empresaOriginal || normalizedName.length < 3) {
+        skippedBadFit++;
+        console.warn('[QUALITY] Saltando lead sin nombre de empresa util.');
+        continue;
+      }
+
+      const categoryFitRejection = getCategoryFitRejection(lead, normalizedCategoria);
+      if (categoryFitRejection) {
+        skippedBadFit++;
+        console.warn(`[QUALITY] Saltando lead poco apto (${categoryFitRejection}): ${empresaOriginal}`);
         continue;
       }
 
@@ -404,8 +497,13 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
         console.warn(`[DEDUP] Saltando duplicado por teléfono: ${empresaOriginal} (${cleanPhone})`);
         continue;
       }
+      if (candidateSite && seenSites.has(candidateSite)) {
+        console.warn(`[DEDUP] Saltando duplicado por web: ${empresaOriginal} (${candidateSite})`);
+        continue;
+      }
       seenNames.add(normalizedName);
       if (cleanPhone) seenPhones.add(cleanPhone);
+      if (candidateSite) seenSites.add(candidateSite);
 
       const leadSector = inferLeadSector(lead, safeSector);
       if (isOutsideRequestedSector(leadSector, safeSector)) {
@@ -424,12 +522,20 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
           .limit(1);
         if (byPhone && byPhone.length > 0) existingDb = byPhone[0];
       }
+      if (!existingDb && candidateSite) {
+        const { data: byWebsite } = await supabase
+          .from('leads')
+          .select(LEAD_LOOKUP_FIELDS)
+          .eq('website', candidateSite)
+          .limit(1);
+        if (byWebsite && byWebsite.length > 0) existingDb = byWebsite[0];
+      }
 
       // Validar y limpiar campos
       const email = isValidEmail(lead.email) ? lead.email.trim() : '';
       const cleanTel = normalizePhone(rawTel);
       const isWap = isWhatsAppCompatible(rawTel);
-      const site = cleanWebsite(lead.website || '');
+      const site = candidateSite;
       const instagram = cleanSocialHandle(lead.instagram, 'instagram')
         || cleanSocialHandle(lead.website, 'instagram')
         || existingDb?.instagram
@@ -448,6 +554,23 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
       let finalEmail = email;
       if (!finalEmail && lead.website && lead.website.includes('@')) {
         if (isValidEmail(lead.website)) finalEmail = lead.website.trim();
+      }
+
+      const hasActionableContact = !!(
+        cleanTel ||
+        existingDb?.telefono ||
+        finalEmail ||
+        existingDb?.email ||
+        site ||
+        existingDb?.website ||
+        instagram ||
+        facebook ||
+        tiktok
+      );
+      if (!hasActionableContact) {
+        skippedBadFit++;
+        console.warn(`[QUALITY] Saltando lead sin canal accionable: ${empresaOriginal}`);
+        continue;
       }
 
       // Si ya existe, hacer UPDATE (no duplicar)
@@ -574,6 +697,7 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
         withWebsite: verifiedSaved.filter((l: any) => cleanWebsite(l.website)).length,
         withEmail: verifiedSaved.filter(l => l.email).length,
         filteredOut: skippedOutOfZone,
+        filteredBadFit: skippedBadFit,
       }
     });
   } catch (error: any) {

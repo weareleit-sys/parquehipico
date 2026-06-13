@@ -29,6 +29,7 @@ export interface SearchState {
     withWebsite: number;
     withEmail: number;
     filteredOut?: number;
+    filteredBadFit?: number;
   } | null;
   searchPhaseIdx: number;
   newLeads: Lead[];
@@ -120,9 +121,17 @@ export function useSearch(
         setSearchStats(data.stats || null);
         setSearchStatus('done');
         const filteredOut = Number(data.stats?.filteredOut || 0);
-        setSearchMessage(filteredOut > 0
-          ? `${data.total} contactos útiles en ${form.searchLocation}. Se omitieron ${filteredOut} fuera de zona.`
-          : `${data.total} contactos útiles en ${form.searchLocation}`);
+        const filteredBadFit = Number(data.stats?.filteredBadFit || 0);
+        const omittedTotal = filteredOut + filteredBadFit;
+        if (Number(data.total || 0) === 0) {
+          setSearchMessage(omittedTotal > 0
+            ? `No quedaron contactos útiles en ${form.searchLocation}. Se omitieron ${omittedTotal} resultados poco útiles.`
+            : `No encontramos contactos útiles en ${form.searchLocation}.`);
+        } else {
+          setSearchMessage(omittedTotal > 0
+            ? `${data.total} contactos útiles en ${form.searchLocation}. Se omitieron ${omittedTotal} resultados poco útiles.`
+            : `${data.total} contactos útiles en ${form.searchLocation}`);
+        }
         if (onSearchComplete) {
           onSearchComplete(data.leads || [], form);
         } else {

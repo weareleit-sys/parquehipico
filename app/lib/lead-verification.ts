@@ -599,8 +599,10 @@ function setField(
 }
 
 function mergeRawData(rawData: unknown, verification: VerificationResult): string {
+  const parsed = parseLeadRawData(rawData);
+  delete parsed.verification_attempt;
   return JSON.stringify({
-    ...parseLeadRawData(rawData),
+    ...parsed,
     verification,
   });
 }

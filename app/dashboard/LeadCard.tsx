@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FaWhatsapp, FaSearch, FaExternalLinkAlt, FaMagic, FaEye, FaInstagram, FaFacebook, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
+import { FaWhatsapp, FaSearch, FaExternalLinkAlt, FaMagic, FaEye, FaInstagram, FaFacebook, FaCheckCircle, FaExclamationCircle, FaPhone } from 'react-icons/fa';
 import { FaTiktok } from 'react-icons/fa';
 import type { Lead } from './hooks/useLeads';
 import { buildSocialUrl, buildWebsiteUrl } from '@/lib/lead-links';
@@ -9,8 +9,13 @@ import { LEAD_VERIFICATION_VERSION } from '@/lib/lead-verification-version';
 import {
   getEstadoColor,
   getEstadoBadge,
+  getEstadoLabel,
   getCategoryEmoji,
   getRelativeTime,
+  getPhoneCallLink,
+  getDisplayPhone,
+  hasCallablePhone,
+  isWhatsAppCompatiblePhone,
 } from './components/LeadRow';
 import { sectoresAraucania } from './data/sectores';
 import { getCategoryLabel } from './data/categories';
@@ -24,15 +29,26 @@ interface LeadCardProps {
   onOpenOutreach: () => void;
   onOpenGuion: () => void;
   onFindContact: () => void;
-  onWhatsAppClick: () => void;
+  onPrimaryContactClick: () => void;
 }
 
 const getSectorLabel = (s: string) => sectoresAraucania[s]?.label || s || '—';
 
-const getPriorityLabel = (score?: number) => {
+const hasCurrentVerification = (rawData: string) => {
+  if (!rawData) return false;
+  try {
+    const verification = JSON.parse(rawData).verification;
+    return !!verification?.status && Number(verification.version || 0) >= LEAD_VERIFICATION_VERSION;
+  } catch {
+    return false;
+  }
+};
+
+const getPriorityLabel = (score: number | undefined, verified: boolean) => {
   if (!score) return null;
-  if (score >= 8) return { text: 'Prioridad alta', className: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20' };
-  if (score >= 6) return { text: 'Prioridad media', className: 'bg-amber-500/15 text-amber-300 border-amber-500/20' };
+  if (score >= 9 && verified) return { text: 'Prioridad alta', className: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20' };
+  if (score >= 9) return { text: 'Buen candidato', className: 'bg-amber-500/15 text-amber-300 border-amber-500/20' };
+  if (score >= 7) return { text: 'Prioridad media', className: 'bg-amber-500/15 text-amber-300 border-amber-500/20' };
   return { text: 'Revisar', className: 'bg-slate-700/60 text-slate-300 border-slate-600' };
 };
 
@@ -46,9 +62,20 @@ const getLeadRole = (rawData: string) => {
   }
 };
 
+const getLeadReason = (rawData: string) => {
+  if (!rawData) return '';
+  try {
+    const parsed = JSON.parse(rawData);
+    const reason = typeof parsed.motivo === 'string' ? parsed.motivo.trim() : '';
+    return reason.length > 140 ? `${reason.slice(0, 137)}...` : reason;
+  } catch {
+    return '';
+  }
+};
+
 const getVerificationBadge = (rawData: string) => {
   const unreviewed = {
-    text: 'Sin revisar',
+    text: 'Datos pendientes',
     icon: <FaExclamationCircle className="text-[10px]" />,
     className: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
   };
@@ -60,27 +87,27 @@ const getVerificationBadge = (rawData: string) => {
     if (Number(verification.version || 0) < LEAD_VERIFICATION_VERSION) return unreviewed;
     if (verification.status === 'verificado') {
       return {
-        text: 'Verificado',
+        text: 'Datos ok',
         icon: <FaCheckCircle className="text-[10px]" />,
         className: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25',
       };
     }
     if (verification.status === 'parcial') {
       return {
-        text: 'Parcial',
+        text: 'Datos parciales',
         icon: <FaCheckCircle className="text-[10px]" />,
         className: 'bg-blue-500/15 text-blue-300 border-blue-500/25',
       };
     }
     if (verification.status === 'conflicto') {
       return {
-        text: 'Conflicto',
+        text: 'Datos dudosos',
         icon: <FaExclamationCircle className="text-[10px]" />,
         className: 'bg-red-500/15 text-red-300 border-red-500/25',
       };
     }
     return {
-      text: 'Sin verificar',
+      text: 'Datos pendientes',
       icon: <FaExclamationCircle className="text-[10px]" />,
       className: 'bg-slate-700/50 text-slate-300 border-slate-600',
     };
@@ -109,18 +136,25 @@ const getTrustedLinks = (rawData: string) => {
 
 export default function LeadCard({
   lead, isNew, wasContacted, findingContact,
-  whatsappLink, onOpenOutreach, onOpenGuion, onFindContact, onWhatsAppClick,
+  whatsappLink, onOpenOutreach, onOpenGuion, onFindContact, onPrimaryContactClick,
 }: LeadCardProps) {
   const lastTime = getRelativeTime(lead._lastOutreach?.fecha_contacto || null);
   const lastResult = lead._lastOutreach?.resultado;
-  const priority = getPriorityLabel(lead.score);
+  const isVerified = hasCurrentVerification(lead.raw_data);
+  const priority = getPriorityLabel(lead.score, isVerified);
   const leadRole = getLeadRole(lead.raw_data);
+  const leadReason = getLeadReason(lead.raw_data);
   const verificationBadge = getVerificationBadge(lead.raw_data);
   const trustedLinks = getTrustedLinks(lead.raw_data);
   const websiteUrl = trustedLinks.website ? buildWebsiteUrl(lead.website) : '';
   const instagramUrl = trustedLinks.instagram ? buildSocialUrl('instagram', lead.instagram) : '';
   const facebookUrl = trustedLinks.facebook ? buildSocialUrl('facebook', lead.facebook) : '';
   const tiktokUrl = trustedLinks.tiktok ? buildSocialUrl('tiktok', lead.tiktok) : '';
+  const hasStoredLinks = !!(lead.website || lead.instagram || lead.facebook || lead.tiktok);
+  const hasTrustedLinks = !!(websiteUrl || instagramUrl || facebookUrl || tiktokUrl);
+  const canUseWhatsApp = isWhatsAppCompatiblePhone(lead.telefono);
+  const canCall = hasCallablePhone(lead.telefono);
+  const displayPhone = getDisplayPhone(lead.telefono);
 
   const lastContactLabel = (() => {
     if (!lastTime) return null;
@@ -156,10 +190,13 @@ export default function LeadCard({
               )}
             </div>
           )}
+          {leadReason && (
+            <p className="text-sm text-slate-400 mt-2 leading-snug">{leadReason}</p>
+          )}
         </div>
         <div className="flex flex-col items-end gap-1 flex-shrink-0">
           <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${getEstadoBadge(lead.estado_lead)}`}>
-            {lead.estado_lead.replace('_', ' ')}
+            {getEstadoLabel(lead.estado_lead)}
           </span>
           {isNew && !wasContacted && (
             <span className="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-bold">Nuevo</span>
@@ -168,15 +205,15 @@ export default function LeadCard({
       </div>
 
       <div className="space-y-1">
-        {lead.telefono && (
+        {displayPhone && (
           <p className={`text-base font-mono font-semibold ${lead.web_status === 'fijo' ? 'text-amber-400' : 'text-slate-200'}`}>
-            {lead.web_status === 'fijo' ? '📞 ' : '📱 '}{lead.telefono}
+            {lead.web_status === 'fijo' ? '📞 ' : '📱 '}{displayPhone}
           </p>
         )}
         {lead.email && (
           <p className="text-sm text-pink-400 font-mono break-all">{lead.email}</p>
         )}
-        {!lead.telefono && !lead.email && (
+        {!displayPhone && !lead.email && (
           <p className="text-sm text-slate-500 italic">Sin datos de contacto</p>
         )}
       </div>
@@ -204,6 +241,11 @@ export default function LeadCard({
             className="min-h-10 min-w-10 inline-flex items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-cyan-300 hover:bg-slate-700 transition-colors"
             aria-label={`Abrir TikTok de ${lead.empresa}`}><FaTiktok /></a>
         )}
+        {!hasTrustedLinks && hasStoredLinks && (
+          <span className="min-h-10 inline-flex items-center rounded-lg border border-slate-700 bg-slate-800/60 px-3 text-sm font-bold text-slate-400">
+            Web/redes en revisi&oacute;n
+          </span>
+        )}
         <span className="text-sm text-slate-500 sm:ml-auto">{getSectorLabel(lead.sector)}</span>
       </div>
 
@@ -220,11 +262,18 @@ export default function LeadCard({
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        {lead.telefono ? (
-          <a href={whatsappLink} target="_blank" rel="noopener noreferrer" onClick={onWhatsAppClick}
+        {canCall ? (
+          canUseWhatsApp ? (
+          <a href={whatsappLink} target="_blank" rel="noopener noreferrer" onClick={onPrimaryContactClick}
             className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-3 rounded-lg text-sm shadow transition-all">
             <FaWhatsapp /> WhatsApp
           </a>
+          ) : (
+            <a href={getPhoneCallLink(lead.telefono)} onClick={onPrimaryContactClick}
+              className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 px-3 rounded-lg text-sm shadow transition-all">
+              <FaPhone /> Llamar
+            </a>
+          )
         ) : (
           <button onClick={onFindContact} disabled={findingContact}
             className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-3 rounded-lg text-sm transition-all disabled:opacity-50">
@@ -239,7 +288,7 @@ export default function LeadCard({
         </button>
         <button onClick={onOpenOutreach}
           className="inline-flex items-center justify-center gap-2 px-3 py-3 rounded-lg text-sm font-bold bg-slate-800 border border-slate-700 text-slate-200 hover:border-slate-600 transition-all">
-          Estado
+          Cambiar estado
         </button>
       </div>
     </div>

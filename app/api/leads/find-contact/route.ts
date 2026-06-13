@@ -5,11 +5,17 @@ import { verifyLeadData } from '@/lib/lead-verification';
 
 function normalizePhone(tel: string): string {
   if (!tel || !tel.trim()) return '';
+  if (tel.includes('...') || tel.trim() === '+') return '';
   let digits = tel.replace(/\D/g, '');
-  if (digits.startsWith('569')) return '+' + digits;
+  const isMobile = (digits.startsWith('569') && digits.length === 11) || (digits.startsWith('9') && digits.length === 9);
+  const isCallable = isMobile
+    || (digits.startsWith('56') && digits.length >= 10 && digits.length <= 11)
+    || (!digits.startsWith('56') && !(digits.length === 8 && digits.startsWith('9')) && digits.length >= 8 && digits.length <= 9);
+  if (!isCallable) return '';
+  if (digits.startsWith('569') && digits.length === 11) return '+' + digits;
   if (digits.startsWith('9') && digits.length === 9) return '+56' + digits;
   if (digits.startsWith('56')) return '+' + digits;
-  return digits ? '+' + digits : '';
+  return '+56' + digits;
 }
 
 function cleanGeminiJson(text: string): string {
