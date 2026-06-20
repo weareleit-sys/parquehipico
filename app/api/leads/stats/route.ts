@@ -4,6 +4,22 @@ import { normalizeLeadCategoryValue } from '@/lib/lead-categories';
 import { LEAD_VERIFICATION_VERSION } from '@/lib/lead-verification-version';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+type LeadStatsRow = {
+  id: string;
+  estado_lead: string | null;
+  score: number | null;
+  sector: string | null;
+  categoria: string | null;
+  raw_data: unknown;
+};
+
+type SupabaseStatsResponse = {
+  data: LeadStatsRow[] | null;
+  error: { message: string } | null;
+  count: number | null;
+};
 
 function hasCurrentVerification(rawData: unknown): boolean {
   if (!rawData) return false;
@@ -39,17 +55,40 @@ function hasCurrentFailedAttempt(rawData: unknown): boolean {
   }
 }
 
+async function fetchAllLeadsForStats(supabase: any): Promise<{ leads: LeadStatsRow[]; total: number }> {
+  const pageSize = 1000;
+  let from = 0;
+  let total: number | null = null;
+  const leads: LeadStatsRow[] = [];
+
+  while (true) {
+    const response: SupabaseStatsResponse = await supabase
+      .from('leads')
+      .select('id, estado_lead, score, sector, categoria, raw_data', { count: total === null ? 'exact' : undefined })
+      .order('created_at', { ascending: false })
+      .range(from, from + pageSize - 1);
+
+    const data = response.data;
+    const error = response.error;
+    const returnedCount = response.count;
+
+    if (error) throw error;
+    if (total === null) total = returnedCount ?? 0;
+
+    const page = (data || []) as LeadStatsRow[];
+    leads.push(...page);
+
+    if (page.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return { leads, total: Math.max(total ?? 0, leads.length) };
+}
+
 export async function GET() {
   try {
     const supabase = getSupabaseAdmin();
-    const { data, error, count } = await supabase
-      .from('leads')
-      .select('estado_lead, score, sector, categoria, raw_data', { count: 'exact' })
-      .range(0, 999);
-
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-    const leads = data || [];
+    const { leads, total } = await fetchAllLeadsForStats(supabase);
     const pending = leads.filter((lead: any) => ['nuevo', 'en_proceso'].includes(lead.estado_lead)).length;
     const contacted = leads.filter((lead: any) => lead.estado_lead === 'contactado').length;
     const replied = leads.filter((lead: any) => lead.estado_lead === 'respondio').length;
@@ -76,7 +115,7 @@ export async function GET() {
     }, {});
 
     return NextResponse.json({
-      total: count ?? leads.length,
+      total,
       pending,
       contacted,
       replied,

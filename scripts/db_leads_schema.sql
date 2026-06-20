@@ -97,18 +97,22 @@ CREATE OR REPLACE FUNCTION check_rate_limit(p_ip TEXT, p_endpoint TEXT, p_max IN
 RETURNS TABLE(count INT, reset_at TIMESTAMPTZ, allowed BOOLEAN) AS $$
 BEGIN
   RETURN QUERY
-  INSERT INTO rate_limits (ip, endpoint, count, reset_at)
-  VALUES (p_ip, p_endpoint, 1, NOW() + (p_window_min || ' minutes')::INTERVAL)
-  ON CONFLICT (ip, endpoint) DO UPDATE
-  SET count = CASE
-    WHEN rate_limits.reset_at <= NOW() THEN 1
-    ELSE rate_limits.count + 1
-  END,
-  reset_at = CASE
-    WHEN rate_limits.reset_at <= NOW() THEN NOW() + (p_window_min || ' minutes')::INTERVAL
-    ELSE rate_limits.reset_at
-  END
-  RETURNING rate_limits.count, rate_limits.reset_at, (rate_limits.count <= p_max) AS allowed;
+  WITH upserted AS (
+    INSERT INTO rate_limits (ip, endpoint, count, reset_at)
+    VALUES (p_ip, p_endpoint, 1, NOW() + (p_window_min || ' minutes')::INTERVAL)
+    ON CONFLICT (ip, endpoint) DO UPDATE
+    SET count = CASE
+      WHEN rate_limits.reset_at <= NOW() THEN 1
+      ELSE rate_limits.count + 1
+    END,
+    reset_at = CASE
+      WHEN rate_limits.reset_at <= NOW() THEN NOW() + (p_window_min || ' minutes')::INTERVAL
+      ELSE rate_limits.reset_at
+    END
+    RETURNING rate_limits.count AS current_count, rate_limits.reset_at AS current_reset_at
+  )
+  SELECT current_count, current_reset_at, (current_count <= p_max) AS allowed
+  FROM upserted;
 END;
 $$ LANGUAGE plpgsql;
 
