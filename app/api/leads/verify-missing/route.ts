@@ -44,6 +44,8 @@ export async function POST(req: NextRequest) {
     const { data: candidates, error } = await supabase
       .from('leads')
       .select('*')
+      .in('estado_lead', ['nuevo', 'en_proceso', 'contactado', 'respondio', 'agendado'])
+      .order('score', { ascending: false, nullsFirst: false })
       .order('updated_at', { ascending: true })
       .limit(200);
 

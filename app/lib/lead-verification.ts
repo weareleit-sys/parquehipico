@@ -265,6 +265,24 @@ function identityOverlapScore(lead: VerifyLeadInput, target: string): {
   return { score: matches / tokens.length, matches, total: tokens.length };
 }
 
+function hostIdentityOverlapScore(host: string, lead: VerifyLeadInput): {
+  score: number;
+  matches: number;
+  total: number;
+} {
+  const tokens = identityTokensForLead(lead);
+  if (tokens.length === 0) return { score: 0, matches: 0, total: 0 };
+  const hostText = normalizeText(hostFromUrlish(host)).replace(/\s+/g, '');
+  const matches = tokens.filter(token => hostText.includes(normalizeText(token).replace(/\s+/g, ''))).length;
+  return { score: matches / tokens.length, matches, total: tokens.length };
+}
+
+function emailDomainMatchesHost(email: string | null | undefined, host: string): boolean {
+  if (!email || !email.includes('@')) return false;
+  const domain = email.split('@').pop() || '';
+  return sameHostName(domain, host);
+}
+
 function hasLeadLocationSignal(text: string, lead: VerifyLeadInput): boolean {
   const terms = locationTermsForLead(lead);
   return terms.some(term => includesPhrase(text, term));
@@ -325,6 +343,8 @@ function isWebsiteRelevantToLead(host: string, html: string, lead: VerifyLeadInp
 
   const nameScore = tokenOverlapScore(lead.empresa, sample);
   const identity = identityOverlapScore(lead, sample);
+  const hostIdentity = hostIdentityOverlapScore(host, lead);
+  const emailMatchesHost = emailDomainMatchesHost(lead.email, host);
   const locationExpected = locationTermsForLead(lead).length > 0;
   const locationMatches = hasLeadLocationSignal(sample, lead);
   const outsideLocation = hasOutsideLocationSignal(sample, lead);
@@ -340,6 +360,9 @@ function isWebsiteRelevantToLead(host: string, html: string, lead: VerifyLeadInp
   }
   if (nameScore >= 0.34 && identity.score >= 0.34 && (!locationExpected || locationMatches)) {
     return { accepted: true, reason: 'nombre y zona coinciden en la web' };
+  }
+  if (!outsideLocation && (emailMatchesHost || hostIdentity.matches >= 2 || (hostIdentity.total <= 2 && hostIdentity.matches >= 1))) {
+    return { accepted: true, reason: 'dominio o email coinciden con la identidad del lead' };
   }
   if (locationExpected && !locationMatches) {
     return { accepted: false, reason: 'web no menciona la zona del lead' };
@@ -515,7 +538,7 @@ async function fetchOfficialWebsite(website: string, lead: VerifyLeadInput): Pro
 }
 
 async function fetchGooglePlace(lead: VerifyLeadInput): Promise<GooglePlaceLookup> {
-  const key = process.env.GOOGLE_MAPS_API_KEY;
+  const key = process.env.GOOGLE_MAPS_API_KEY || process.env.MAPS_API_KEY;
   if (!key) return { place: null, notes: [] };
 
   const query = `${lead.empresa} ${lead.ubicacion || ''}`.trim();
@@ -608,7 +631,7 @@ function mergeRawData(rawData: unknown, verification: VerificationResult): strin
 }
 
 export async function verifyLeadData(lead: VerifyLeadInput): Promise<VerifyLeadOutput> {
-  const googleConfigured = !!process.env.GOOGLE_MAPS_API_KEY;
+  const googleConfigured = !!(process.env.GOOGLE_MAPS_API_KEY || process.env.MAPS_API_KEY);
   const sources: string[] = [];
   const notes: string[] = [];
   const fields: VerificationResult['fields'] = {};
@@ -631,7 +654,7 @@ export async function verifyLeadData(lead: VerifyLeadInput): Promise<VerifyLeadO
   } else if (googleConfigured) {
     notes.push('Google Places no encontro coincidencia confiable.');
   } else {
-    notes.push('GOOGLE_MAPS_API_KEY no configurada; se omitio verificacion Google.');
+    notes.push('GOOGLE_MAPS_API_KEY o MAPS_API_KEY no configurada; se omitio verificacion Google.');
   }
 
   const websiteForCrawler = updates.website || google?.website || lead.website || '';
@@ -663,7 +686,7 @@ export async function verifyLeadData(lead: VerifyLeadInput): Promise<VerifyLeadO
       rejectReason.includes('inactiva') ||
       rejectReason.includes('estacionada') ||
       rejectReason.includes('redirige a red social');
-    const clearRejectedWebsite = clearConflictingWebsite || !google;
+    const clearRejectedWebsite = clearConflictingWebsite;
     if (clearRejectedWebsite && lead.website && sameHost(lead.website, websiteForCrawler)) {
       updates.website = '';
       clearedFields.push('website');

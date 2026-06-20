@@ -87,6 +87,27 @@ function normalizePhone(tel: string): string {
   return '';
 }
 
+async function findExistingLeadByPhone(supabase: any, phone: string) {
+  const digits = phoneDigits(phone);
+  if (digits.length < 8) return null;
+
+  const { data } = await supabase
+    .from('leads')
+    .select(LEAD_LOOKUP_FIELDS)
+    .not('telefono', 'is', null)
+    .limit(500);
+
+  const matches = (data || []).filter((lead: any) => {
+    const existingDigits = phoneDigits(lead.telefono);
+    if (existingDigits.length < 8) return false;
+    return existingDigits === digits ||
+      existingDigits.endsWith(digits.slice(-8)) ||
+      digits.endsWith(existingDigits.slice(-8));
+  });
+
+  return matches.find((lead: any) => lead.estado_lead !== 'descartado') || matches[0] || null;
+}
+
 function cleanGeminiJson(text: string): string {
   let cleaned = text.trim();
   if (cleaned.includes('```json')) {
@@ -514,14 +535,7 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
 
       // Verificar si ya existe en BD por nombre similar o mismo teléfono
       let existingDb: any = await findExistingLeadByName(supabase, normalizedName);
-      if (!existingDb && cleanPhone) {
-        const { data: byPhone } = await supabase
-          .from('leads')
-          .select(LEAD_LOOKUP_FIELDS)
-          .eq('telefono', `+${cleanPhone}`)
-          .limit(1);
-        if (byPhone && byPhone.length > 0) existingDb = byPhone[0];
-      }
+      if (!existingDb && cleanPhone) existingDb = await findExistingLeadByPhone(supabase, cleanPhone);
       if (!existingDb && candidateSite) {
         const { data: byWebsite } = await supabase
           .from('leads')

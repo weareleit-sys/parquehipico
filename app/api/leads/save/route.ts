@@ -10,6 +10,20 @@ function addIfPresent(target: Record<string, any>, key: string, value: any) {
 const ALLOWED_ESTADOS = new Set(['nuevo', 'en_proceso', 'contactado', 'respondio', 'agendado', 'rechazo', 'descartado']);
 const ALLOWED_SECTORES = new Set(['temuco', 'lacustre', 'sur', 'costa', 'norte', 'lagos', 'externo']);
 
+function normalizePhone(value: any): string | undefined {
+  if (value === undefined) return undefined;
+  const raw = String(value || '').trim();
+  if (!raw || raw === '+' || raw.includes('...')) return '';
+  const digits = raw.replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.startsWith('569') && digits.length === 11) return `+${digits}`;
+  if (digits.startsWith('9') && digits.length === 9) return `+56${digits}`;
+  if (digits.startsWith('56') && digits.length >= 10 && digits.length <= 11) return `+${digits}`;
+  if (digits.length === 8 && digits.startsWith('9')) return '';
+  if (digits.length >= 8 && digits.length <= 9) return `+56${digits}`;
+  return '';
+}
+
 function parseInteger(value: any): number | undefined {
   if (value === undefined || value === null || value === '') return undefined;
   const parsed = Number.parseInt(value.toString(), 10);
@@ -79,7 +93,7 @@ export async function POST(request: NextRequest) {
     addIfPresent(leadData, 'categoria', normalizedCategoria);
     addIfPresent(leadData, 'categorias', normalizedCategorias);
     addIfPresent(leadData, 'estado_lead', estado_lead);
-    addIfPresent(leadData, 'telefono', telefono);
+    addIfPresent(leadData, 'telefono', normalizePhone(telefono));
     addIfPresent(leadData, 'website', website !== undefined ? cleanWebsite(website) : undefined);
     addIfPresent(leadData, 'email', email);
     addIfPresent(leadData, 'ubicacion', ubicacion);
