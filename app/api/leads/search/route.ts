@@ -406,6 +406,21 @@ function shouldAutoDiscardLead(quality: ReturnType<typeof buildLeadQuality>, sec
   return sector === 'externo' || quality.score <= 4;
 }
 
+function hasAnyActionableChannel(lead: any): boolean {
+  return !!(
+    normalizePhone(lead?.telefono || '') ||
+    isValidEmail(lead?.email || '') ||
+    cleanWebsite(lead?.website || '') ||
+    cleanSocialHandle(lead?.instagram, 'instagram') ||
+    cleanSocialHandle(lead?.facebook, 'facebook') ||
+    cleanSocialHandle(lead?.tiktok, 'tiktok')
+  );
+}
+
+function isStrongVerificationStatus(status: string): boolean {
+  return status === 'verificado' || status === 'parcial';
+}
+
 export async function POST(req: NextRequest) {
   const supabase = getSupabaseAdmin();
   const requestBody = await req.json().catch(() => ({}));
@@ -759,15 +774,30 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
     const verifiedSaved = await Promise.all(saved.map(async (lead) => {
       try {
         const { updates, verification } = await verifyLeadData(lead);
-        if (!dryRun && lead.id && Object.keys(updates).length > 0) {
-          await supabase.from('leads').update(updates).eq('id', lead.id);
-        }
-        return {
+        const mergedLead = {
           ...lead,
           ...updates,
           raw_data: updates.raw_data || lead.raw_data,
           verification,
         };
+        const postVerifyUpdates: Record<string, any> = {};
+        const hasContactAfterVerification = hasAnyActionableChannel(mergedLead);
+        if (!hasContactAfterVerification) {
+          mergedLead.estado_lead = 'descartado';
+          mergedLead.score = Math.min(Number(mergedLead.score || 1), 4);
+          postVerifyUpdates.estado_lead = 'descartado';
+          postVerifyUpdates.score = mergedLead.score;
+        } else if (!isStrongVerificationStatus(verification.status) && ['nuevo', 'en_proceso'].includes(String(mergedLead.estado_lead || 'nuevo'))) {
+          mergedLead.estado_lead = 'en_proceso';
+          postVerifyUpdates.estado_lead = 'en_proceso';
+        }
+        if (!dryRun && lead.id && Object.keys(updates).length > 0) {
+          await supabase.from('leads').update(updates).eq('id', lead.id);
+        }
+        if (!dryRun && lead.id && Object.keys(postVerifyUpdates).length > 0) {
+          await supabase.from('leads').update(postVerifyUpdates).eq('id', lead.id);
+        }
+        return mergedLead;
       } catch (error) {
         console.warn(`[VERIFY] No se pudo verificar ${lead.empresa}:`, error);
         return lead;
