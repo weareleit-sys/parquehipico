@@ -125,6 +125,12 @@ export function cleanSocialHandle(
     'pages',
     'login',
     'profile.php',
+    'tr',
+    'plugins',
+    'sharer',
+    'share.php',
+    'dialog',
+    'privacy',
     'http',
     'https',
   ]);

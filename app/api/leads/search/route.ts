@@ -18,6 +18,46 @@ function normalizeName(name: string): string {
     .trim();
 }
 
+const IDENTITY_STOP_WORDS = new Set([
+  'ag', 'spa', 'ltda', 'limitada', 'sa', 'de', 'del', 'la', 'las', 'los', 'el', 'y',
+  'chile', 'empresa', 'servicios', 'servicio', 'turismo', 'eventos', 'evento',
+  'productora', 'productoras', 'producciones', 'municipalidad', 'municipal',
+]);
+
+function identityTokens(name: string): string[] {
+  return normalizeName(name)
+    .split(' ')
+    .filter(token => token.length >= 4 && !IDENTITY_STOP_WORDS.has(token));
+}
+
+function identityOverlapScore(a: string, b: string): number {
+  const tokens = identityTokens(a);
+  if (tokens.length === 0) return 0;
+  const target = normalizeName(b);
+  const matches = tokens.filter(token => target.includes(token)).length;
+  return matches / tokens.length;
+}
+
+function isLikelySameLead(existingLead: any, empresa: string, website: string): boolean {
+  const existingName = normalizeName(existingLead?.empresa || '');
+  const nextName = normalizeName(empresa || '');
+  if (!existingName || !nextName) return false;
+  if (existingName === nextName) return true;
+  if ((existingName.includes(nextName) || nextName.includes(existingName)) && Math.min(existingName.length, nextName.length) >= 8) {
+    return true;
+  }
+
+  const nameOverlap = Math.max(
+    identityOverlapScore(empresa, existingLead?.empresa || ''),
+    identityOverlapScore(existingLead?.empresa || '', empresa)
+  );
+  const existingSite = cleanWebsite(existingLead?.website || '');
+  const nextSite = cleanWebsite(website || '');
+  const sameSite = !!existingSite && !!nextSite && existingSite === nextSite;
+
+  return nameOverlap >= 0.6 || (sameSite && nameOverlap >= 0.3);
+}
+
 async function findExistingLeadByName(supabase: any, normalizedName: string) {
   if (!normalizedName) return null;
   const words = normalizedName
@@ -87,9 +127,9 @@ function normalizePhone(tel: string): string {
   return '';
 }
 
-async function findExistingLeadByPhone(supabase: any, phone: string) {
+async function findExistingLeadByPhone(supabase: any, phone: string, empresa: string, website: string) {
   const digits = phoneDigits(phone);
-  if (digits.length < 8) return null;
+  if (digits.length < 8) return { lead: null, ambiguous: false };
 
   const { data } = await supabase
     .from('leads')
@@ -105,7 +145,16 @@ async function findExistingLeadByPhone(supabase: any, phone: string) {
       digits.endsWith(existingDigits.slice(-8));
   });
 
-  return matches.find((lead: any) => lead.estado_lead !== 'descartado') || matches[0] || null;
+  if (matches.length === 0) return { lead: null, ambiguous: false };
+  const sameLeadMatches = matches.filter((lead: any) => isLikelySameLead(lead, empresa, website));
+  if (sameLeadMatches.length > 0) {
+    return {
+      lead: sameLeadMatches.find((lead: any) => lead.estado_lead !== 'descartado') || sameLeadMatches[0],
+      ambiguous: false,
+    };
+  }
+
+  return { lead: null, ambiguous: true };
 }
 
 function cleanGeminiJson(text: string): string {
@@ -535,14 +584,30 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
 
       // Verificar si ya existe en BD por nombre similar o mismo teléfono
       let existingDb: any = await findExistingLeadByName(supabase, normalizedName);
-      if (!existingDb && cleanPhone) existingDb = await findExistingLeadByPhone(supabase, cleanPhone);
+      if (!existingDb && cleanPhone) {
+        const phoneMatch = await findExistingLeadByPhone(supabase, cleanPhone, empresaOriginal, candidateSite);
+        if (phoneMatch.ambiguous) {
+          skippedBadFit++;
+          console.warn(`[DEDUP] Saltando lead ambiguo por telefono compartido: ${empresaOriginal} (${cleanPhone})`);
+          continue;
+        }
+        existingDb = phoneMatch.lead;
+      }
       if (!existingDb && candidateSite) {
         const { data: byWebsite } = await supabase
           .from('leads')
           .select(LEAD_LOOKUP_FIELDS)
           .eq('website', candidateSite)
           .limit(1);
-        if (byWebsite && byWebsite.length > 0) existingDb = byWebsite[0];
+        if (byWebsite && byWebsite.length > 0) {
+          const websiteMatch = byWebsite.find((lead: any) => isLikelySameLead(lead, empresaOriginal, candidateSite));
+          if (!websiteMatch) {
+            skippedBadFit++;
+            console.warn(`[DEDUP] Saltando lead ambiguo por web compartida: ${empresaOriginal} (${candidateSite})`);
+            continue;
+          }
+          existingDb = websiteMatch;
+        }
       }
 
       // Validar y limpiar campos

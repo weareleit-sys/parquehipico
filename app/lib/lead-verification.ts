@@ -57,6 +57,7 @@ interface VerifyLeadInput {
   tiktok?: string;
   sector?: string;
   categoria?: string;
+  estado_lead?: string;
   raw_data?: string;
 }
 
@@ -644,6 +645,9 @@ export async function verifyLeadData(lead: VerifyLeadInput): Promise<VerifyLeadO
     sources.push('google_places');
     setField(fields, 'telefono', google.telefono, 'google_places', 'alta');
     setField(fields, 'website', google.website, 'google_places', 'alta');
+    if (google.business_status === 'CLOSED_PERMANENTLY') {
+      notes.push('Google Places indica que el negocio esta cerrado permanentemente.');
+    }
     if (google.telefono && (!lead.telefono || !normalizePhone(lead.telefono).startsWith('+569'))) {
       updates.telefono = google.telefono;
       updates.web_status = google.telefono.startsWith('+569') ? 'activa' : 'fijo';
@@ -733,7 +737,10 @@ export async function verifyLeadData(lead: VerifyLeadInput): Promise<VerifyLeadO
   if (!fields.tiktok && cleanedTiktok && updates.tiktok !== '') setField(fields, 'tiktok', cleanedTiktok, 'gemini_limpio', 'media');
 
   const highConfidenceCount = Object.values(fields).filter(field => field?.confidence === 'alta').length;
-  const status: VerificationStatus = clearedFields.length > 0 && highConfidenceCount === 0
+  const googlePermanentlyClosed = google?.business_status === 'CLOSED_PERMANENTLY';
+  const status: VerificationStatus = googlePermanentlyClosed && highConfidenceCount < 2
+    ? 'conflicto'
+    : clearedFields.length > 0 && highConfidenceCount === 0
     ? 'conflicto'
     : highConfidenceCount >= 2
     ? 'verificado'
@@ -758,6 +765,10 @@ export async function verifyLeadData(lead: VerifyLeadInput): Promise<VerifyLeadO
     fields,
     notes: clearedFields.length > 0 ? [...notes, `Campos limpiados: ${[...new Set(clearedFields)].join(', ')}.`] : notes,
   };
+
+  if (googlePermanentlyClosed && status === 'conflicto' && (!lead.estado_lead || ['nuevo', 'en_proceso'].includes(lead.estado_lead))) {
+    updates.estado_lead = 'descartado';
+  }
 
   updates.raw_data = mergeRawData(lead.raw_data, verification);
   updates.updated_at = new Date().toISOString();
