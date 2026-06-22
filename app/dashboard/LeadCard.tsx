@@ -34,20 +34,22 @@ interface LeadCardProps {
 
 const getSectorLabel = (s: string) => sectoresAraucania[s]?.label || s || '—';
 
-const hasCurrentVerification = (rawData: string) => {
-  if (!rawData) return false;
+const getCurrentVerificationStatus = (rawData: string) => {
+  if (!rawData) return '';
   try {
     const verification = JSON.parse(rawData).verification;
-    return !!verification?.status && Number(verification.version || 0) >= LEAD_VERIFICATION_VERSION;
+    if (!verification?.status || Number(verification.version || 0) < LEAD_VERIFICATION_VERSION) return '';
+    return String(verification.status);
   } catch {
-    return false;
+    return '';
   }
 };
 
-const getPriorityLabel = (score: number | undefined, verified: boolean) => {
+const getPriorityLabel = (score: number | undefined, verificationStatus: string) => {
   if (!score) return null;
-  if (score >= 9 && verified) return { text: 'Prioridad alta', className: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20' };
-  if (score >= 9) return { text: 'Buen candidato', className: 'bg-amber-500/15 text-amber-300 border-amber-500/20' };
+  const hasStrongVerification = ['verificado', 'parcial'].includes(verificationStatus);
+  if (score >= 9 && hasStrongVerification) return { text: 'Prioridad alta', className: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20' };
+  if (score >= 9) return { text: 'Revisar datos', className: 'bg-amber-500/15 text-amber-300 border-amber-500/20' };
   if (score >= 7) return { text: 'Prioridad media', className: 'bg-amber-500/15 text-amber-300 border-amber-500/20' };
   return { text: 'Revisar', className: 'bg-slate-700/60 text-slate-300 border-slate-600' };
 };
@@ -140,8 +142,8 @@ export default function LeadCard({
 }: LeadCardProps) {
   const lastTime = getRelativeTime(lead._lastOutreach?.fecha_contacto || null);
   const lastResult = lead._lastOutreach?.resultado;
-  const isVerified = hasCurrentVerification(lead.raw_data);
-  const priority = getPriorityLabel(lead.score, isVerified);
+  const verificationStatus = getCurrentVerificationStatus(lead.raw_data);
+  const priority = getPriorityLabel(lead.score, verificationStatus);
   const leadRole = getLeadRole(lead.raw_data);
   const leadReason = getLeadReason(lead.raw_data);
   const verificationBadge = getVerificationBadge(lead.raw_data);
