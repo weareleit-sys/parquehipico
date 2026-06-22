@@ -1,0 +1,213 @@
+=== HANDOFF CODEX - PARQUE HIPICO ===
+Fecha: 22 junio 2026
+Proyecto: D:\Proyectos Antigravity\parquehipico\web
+Nota: este hilo/proyecto es solo Parque Hipico. No tocar IAenBlanco ni Oracle.
+
+=== ESTADO EJECUTIVO ===
+
+Sistema de leads interno para Parque Hipico La Montana.
+
+Estado actual:
+- Build: PASS con `npm run build`
+- Smoke local: PASS
+- Supabase anon REST: protegido, no expone leads
+- RLS: cerrada para leads/outreach/search_jobs/rate_limits, acceso app via service_role
+- Git: `main` sincronizado con `origin/main`
+- Diagnostico actualizado: docs/DIAGNOSTICO_COMPLETO.md
+
+Notas honestas:
+- Codigo actual: 89/100
+- Produccion esperada: 86-89/100 segun redeploy y limpieza de datos
+- Datos historicos: 78/100 por leads antiguos sin verificacion vigente
+- Potencial con limpieza + UX: 92-94/100
+
+=== CAMBIOS IMPORTANTES YA INCORPORADOS ===
+
+Commits relevantes ya en origin/main:
+
+01e6f26 Add dry run lead search mode
+da4ecca Separate ready and review search results
+d66c3fd Tighten weak lead category quality gates
+1fcab4a feat: metricas de conversion en /api/leads/stats
+194225e docs: informe final evaluacion 85/100
+68f0930 docs: diagnostico completo con mapas visuales
+
+Funciones clave actuales:
+- Busqueda con Gemini Grounding
+- Verificacion con Google Places + crawler web
+- Limpieza de website/redes sociales
+- Deduplicacion por nombre, telefono y website con proteccion contra coincidencias ambiguas
+- `dryRun` en `/api/leads/search` para probar calidad sin guardar
+- Resultados nuevos separados entre "Listos para contactar" y "Revisar antes de contactar"
+- Login con Supabase Auth + cookie firmada
+- Middleware protege dashboard, leads y outreach
+
+=== PRUEBAS RECIENTES ===
+
+Build:
+`npm run build` -> PASS
+
+Smoke:
+- Dashboard HTTP: PASS
+- Dashboard login HTTP: PASS
+- Auth login validation: PASS
+- Auth logout: PASS
+- Lead list API: PASS
+- Stats API: PASS
+- Category counts: PASS
+- Empty save validation: PASS
+- Supabase anon REST: PASS
+
+Dry-run calidad:
+- Turismo / Zona Lacustre: 5/5 listos, 0 revisar
+- Educacion / Temuco: 5/5 listos, 0 revisar
+- Comunidad / Costa: 1/4 listo, 3 revisar
+
+Lectura:
+- Turismo/Venues y Educacion funcionan muy bien.
+- Comunidad sigue siendo categoria debil por baja presencia digital, pero ahora el sistema la manda correctamente a revision.
+
+=== METRICAS ACTUALES DE BASE ===
+
+Total leads: 137
+Pendientes: 120
+Contactados: 11
+Respondieron: 0
+Agendados: 0
+Descartados: 6
+Buenos candidatos: 78
+Prioridad alta verificada: 43
+Necesitan verificacion vigente: 80
+Verificados: 29
+Parciales: 6
+Conflicto / sin verificar: 22
+Sin canal de contacto: 14
+
+Por categoria:
+- turismo: 18
+- corporativo: 25
+- productoras: 19
+- educacion: 14
+- matrimonios: 13
+- comunidad: 9
+- municipal: 12
+- cumpleanos/eventos familiares: 27
+
+Riesgo principal:
+Los datos historicos todavia pueden mostrar leads con score alto pero sin verificacion fuerte.
+
+=== ARQUITECTURA ===
+
+Frontend:
+- app/dashboard/DashboardClient.tsx
+- app/dashboard/components/SearchPanel.tsx
+- app/dashboard/components/FilterBar.tsx
+- app/dashboard/components/LeadsTable.tsx
+- app/dashboard/components/LeadCardView.tsx
+- app/dashboard/LeadCard.tsx
+- app/dashboard/GuionModal.tsx
+- app/dashboard/OutreachModal.tsx
+- app/dashboard/hooks/useLeads.ts
+- app/dashboard/hooks/useSearch.ts
+- app/dashboard/hooks/useOutreach.ts
+
+Backend APIs:
+- POST /api/leads/search
+- GET  /api/leads/list
+- GET  /api/leads/stats
+- POST /api/leads/save
+- POST /api/leads/find-contact
+- POST /api/leads/generar-guion
+- POST /api/leads/verify
+- POST /api/leads/verify-missing
+- POST /api/outreach/log
+- GET  /api/outreach/log
+- POST /api/auth/login
+- POST /api/auth/logout
+
+Libs clave:
+- app/lib/supabase.ts
+- app/lib/auth-session.ts
+- app/lib/rate-limit.ts
+- app/lib/lead-categories.ts
+- app/lib/lead-links.ts
+- app/lib/lead-verification.ts
+
+=== PRIORIDADES REALES ===
+
+Prioridad 1:
+1. Confirmar redeploy de produccion desde `origin/main`.
+2. Limpiar datos antiguos con `/api/leads/verify-missing` por tandas de 5.
+3. Ajustar UI/regla de prioridad:
+   - "Prioridad alta" solo si score >= 9 y verificacion es `verificado` o `parcial`.
+4. Suavizar metricas tecnicas para usuario final no tecnico.
+
+Prioridad 2:
+1. Panel simple de auditoria por lead:
+   - Por que lo aceptamos
+   - Por que revisar
+2. Refactor de `app/api/leads/search/route.ts`.
+3. Refactor de `app/lib/lead-verification.ts`.
+4. Tests unitarios para:
+   - normalizacion de telefono
+   - cleanWebsite
+   - cleanSocialHandle
+   - dedupe
+   - category fit
+   - scoring
+
+Prioridad 3:
+1. CI/CD con build + smoke.
+2. Export CSV/Excel.
+3. Seguimientos programados.
+4. Roles por usuario.
+5. Jobs async solo si crece el uso.
+
+=== PRESENTACION AL CLIENTE ===
+
+No vender como:
+"La IA encuentra leads perfectos automaticamente."
+
+Vender como:
+"Sistema interno de prospeccion asistida con IA, verificacion automatica y revision humana para datos dudosos."
+
+Categorias recomendadas para demo:
+- Turismo/Venues
+- Educacion
+- Gobierno/Municipal
+- Productoras
+- Matrimonios
+
+Evitar usar Comunidad como demostracion principal.
+
+=== COMANDOS UTILES ===
+
+Build:
+`npm run build`
+
+Dev:
+`npx next dev -p 3011`
+
+Smoke:
+`powershell -ExecutionPolicy Bypass -File .\scripts\smoke_leads_system.ps1 -BaseUrl http://127.0.0.1:3011`
+
+Nota operacional:
+Si se corre `npm run build` y luego `next dev`, limpiar `.next` antes de levantar dev:
+`Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue`
+
+=== ARCHIVOS DE REFERENCIA ===
+
+- docs/DIAGNOSTICO_COMPLETO.md
+- docs/INFORME_FINAL.md
+- AGENTS.md
+- scripts/rls_fix.sql
+- scripts/db_leads_schema.sql
+- scripts/smoke_leads_system.ps1
+
+=== CUIDADOS ===
+
+- No imprimir ni commitear `.env.local`.
+- No repetir claves/API keys en respuestas.
+- No tocar proyectos IAenBlanco desde este hilo.
+- No prometer 100% de exactitud de IA.
+- Tratar Comunidad y datos sin verificacion como "revisar antes de contactar".
