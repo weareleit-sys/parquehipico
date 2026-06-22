@@ -408,16 +408,23 @@ function shouldAutoDiscardLead(quality: ReturnType<typeof buildLeadQuality>, sec
 
 export async function POST(req: NextRequest) {
   const supabase = getSupabaseAdmin();
+  const requestBody = await req.json().catch(() => ({}));
+  const dryRunRequest = !!requestBody.dryRun;
+  let remaining = 999;
 
   // Rate limiting
+  if (!dryRunRequest) {
   const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
-  const { allowed, remaining } = await checkRateLimit(ip, 'search');
+  const { allowed, remaining: searchesRemaining } = await checkRateLimit(ip, 'search');
+  remaining = searchesRemaining;
   if (!allowed) {
     return NextResponse.json({ error: `Límite de búsquedas alcanzado. Esperá unos minutos.` }, { status: 429 });
   }
 
+  }
+
   try {
-    const { categoria, ubicacion = 'Temuco', sector = 'temuco', limit = 10 } = await req.json();
+    const { categoria, ubicacion = 'Temuco', sector = 'temuco', limit = 10, dryRun = false } = requestBody;
 
     if (!categoria) {
       return NextResponse.json({ error: 'Falta campo requerido: categoria' }, { status: 400 });
@@ -688,7 +695,9 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
       };
 
       let finalId: string;
-      if (recordId) {
+      if (dryRun) {
+        finalId = recordId || `dry-run-${i + 1}`;
+      } else if (recordId) {
         // Actualizar existente (conservar el nombre original que tiene en BD)
         const { error: updateError } = await supabase
           .from('leads').update(updateData).eq('id', recordId);
@@ -750,7 +759,7 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
     const verifiedSaved = await Promise.all(saved.map(async (lead) => {
       try {
         const { updates, verification } = await verifyLeadData(lead);
-        if (lead.id && Object.keys(updates).length > 0) {
+        if (!dryRun && lead.id && Object.keys(updates).length > 0) {
           await supabase.from('leads').update(updates).eq('id', lead.id);
         }
         return {
@@ -767,6 +776,7 @@ Responde SOLO un JSON array sin Markdown con objetos: {"empresa","telefono","web
 
     return NextResponse.json({
       success: true,
+      dryRun: !!dryRun,
       leads: verifiedSaved,
       total: verifiedSaved.length,
       remaining_searches: remaining,
