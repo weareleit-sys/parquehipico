@@ -108,6 +108,28 @@ export async function GET() {
       (lead.score !== null && lead.score !== undefined && Number(lead.score) <= 5)
     ).length;
 
+    // Outreach conversion metrics
+    const { data: outreachData } = await supabase
+      .from('outreach')
+      .select('resultado, respuesta_fecha, fecha_contacto');
+
+    const totalOutreach = outreachData?.length || 0;
+    const withResponse = outreachData?.filter((o: any) => o.respuesta_fecha).length || 0;
+    const responseRate = totalOutreach > 0 ? Math.round((withResponse / totalOutreach) * 100) : 0;
+
+    let avgResponseHours = 0;
+    if (withResponse > 0) {
+      const responseTimes = outreachData
+        ?.filter((o: any) => o.respuesta_fecha)
+        .map((o: any) => (new Date(o.respuesta_fecha).getTime() - new Date(o.fecha_contacto).getTime()) / 3600000) || [];
+      avgResponseHours = Math.round(responseTimes.reduce((a: number, b: number) => a + b, 0) / responseTimes.length);
+    }
+
+    const byResult = (outreachData || []).reduce((acc: Record<string, number>, o: any) => {
+      acc[o.resultado] = (acc[o.resultado] || 0) + 1;
+      return acc;
+    }, {});
+
     const byCategory = leads.reduce((acc: Record<string, number>, lead: any) => {
       const key = normalizeLeadCategoryValue(lead.categoria) || 'sin_categoria';
       acc[key] = (acc[key] || 0) + 1;
@@ -129,6 +151,13 @@ export async function GET() {
       verificationFailed,
       review,
       byCategory,
+      outreach: {
+        totalOutreach,
+        withResponse,
+        responseRate,
+        avgResponseHours,
+        byResult,
+      },
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
