@@ -17,12 +17,53 @@ interface SearchPanelProps extends SearchState, SearchActions {
   onLogOutreach: (leadId: string, resultado: string, nuevoEstado: string) => void;
 }
 
+function getVerificationStatus(lead: Lead): string {
+  const directStatus = (lead as any).verification?.status;
+  if (directStatus) return String(directStatus);
+  try {
+    const parsed = lead.raw_data ? JSON.parse(lead.raw_data) : null;
+    return parsed?.verification?.status ? String(parsed.verification.status) : '';
+  } catch {
+    return '';
+  }
+}
+
+function isReadyToContact(lead: Lead): boolean {
+  const status = getVerificationStatus(lead);
+  return ['verificado', 'parcial'].includes(status) && lead.estado_lead !== 'descartado';
+}
+
 export default function SearchPanel({
   searchStatus, searchMessage, searchStats, searchPhaseIdx, newLeads,
   searchPhases, form, isSearching, setForm, handleStartSearch, markNewLeadContacted,
   findingContactId, onOpenOutreach, onOpenGuion, onFindContact, onLogOutreach,
 }: SearchPanelProps) {
   const foundCount = newLeads.length;
+  const readyLeads = newLeads.filter(isReadyToContact);
+  const reviewLeads = newLeads.filter(lead => !isReadyToContact(lead));
+  const readyCount = readyLeads.length;
+  const reviewCount = reviewLeads.length;
+
+  const renderLeadCard = (lead: Lead) => {
+    const wasContacted = !!lead._lastOutreach || ['contactado', 'respondio', 'agendado', 'rechazo'].includes(lead.estado_lead);
+    return (
+      <LeadCard
+        key={lead.id}
+        lead={lead}
+        isNew={true}
+        wasContacted={wasContacted}
+        findingContact={findingContactId === lead.id}
+        whatsappLink={getWhatsAppLink(lead)}
+        onOpenOutreach={() => onOpenOutreach(lead)}
+        onOpenGuion={() => onOpenGuion(lead)}
+        onFindContact={() => onFindContact(lead.id)}
+        onPrimaryContactClick={() => {
+          markNewLeadContacted(lead.id);
+          onLogOutreach(lead.id, 'contactado', 'contactado');
+        }}
+      />
+    );
+  };
 
   return (
     <section className="bg-slate-900 rounded-2xl p-4 sm:p-5 border border-amber-500/30 space-y-4">
@@ -39,7 +80,7 @@ export default function SearchPanel({
 
         {searchStatus === 'done' && (
           <div className="inline-flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 text-sm font-bold text-emerald-300">
-            <FaCheckCircle /> {foundCount} listos
+            <FaCheckCircle /> {readyCount} listos{reviewCount > 0 ? `, ${reviewCount} revisar` : ''}
           </div>
         )}
       </div>
@@ -153,37 +194,39 @@ export default function SearchPanel({
 
           {foundCount > 0 && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between gap-3 border-t border-emerald-900/80 pt-3">
-                <p className="text-xs font-bold uppercase tracking-wide text-emerald-200">
-                  Contactar ahora
-                </p>
-                <p className="text-xs text-slate-500">
-                  Al buscar de nuevo, estos pasan a la lista general.
-                </p>
-              </div>
+              {readyCount > 0 && (
+                <>
+                  <div className="flex items-center justify-between gap-3 border-t border-emerald-900/80 pt-3">
+                    <p className="text-xs font-bold uppercase tracking-wide text-emerald-200">
+                      Listos para contactar
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Al buscar de nuevo, estos pasan a la lista general.
+                    </p>
+                  </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-                {newLeads.map(lead => {
-                  const wasContacted = !!lead._lastOutreach || ['contactado', 'respondio', 'agendado', 'rechazo'].includes(lead.estado_lead);
-                  return (
-                    <LeadCard
-                      key={lead.id}
-                      lead={lead}
-                      isNew={true}
-                      wasContacted={wasContacted}
-                      findingContact={findingContactId === lead.id}
-                      whatsappLink={getWhatsAppLink(lead)}
-                      onOpenOutreach={() => onOpenOutreach(lead)}
-                      onOpenGuion={() => onOpenGuion(lead)}
-                      onFindContact={() => onFindContact(lead.id)}
-                      onPrimaryContactClick={() => {
-                        markNewLeadContacted(lead.id);
-                        onLogOutreach(lead.id, 'contactado', 'contactado');
-                      }}
-                    />
-                  );
-                })}
-              </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+                    {readyLeads.map(renderLeadCard)}
+                  </div>
+                </>
+              )}
+
+              {reviewCount > 0 && (
+                <>
+                  <div className="flex items-center justify-between gap-3 border-t border-amber-900/80 pt-3">
+                    <p className="text-xs font-bold uppercase tracking-wide text-amber-200">
+                      Revisar antes de contactar
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Datos incompletos o sin verificaci&oacute;n fuerte.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 opacity-90">
+                    {reviewLeads.map(renderLeadCard)}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
