@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { Lead } from './hooks/useLeads';
 
 interface OutreachModalProps {
@@ -9,11 +9,25 @@ interface OutreachModalProps {
   token: string;
 }
 
+const resultToState: Record<string, string> = {
+  pendiente: 'en_proceso',
+  contactado: 'contactado',
+  respondio: 'respondio',
+  agendado: 'agendado',
+  rechazo: 'rechazo',
+};
+
 export default function OutreachModal({ lead, isOpen, onClose, onSaved, token }: OutreachModalProps) {
   const [loading, setLoading] = useState(false);
   const [notas, setNotas] = useState('');
-  const [resultado, setResultado] = useState('contactado'); // pendiente | contactado | respondio | agendado | rechazo
-  const [nuevoEstado, setNuevoEstado] = useState(lead.estado_lead);
+  const [resultado, setResultado] = useState('contactado');
+  const [nuevoEstado, setNuevoEstado] = useState(
+    lead.estado_lead && lead.estado_lead !== 'nuevo' ? lead.estado_lead : 'contactado'
+  );
+
+  useEffect(() => {
+    setNuevoEstado(resultToState[resultado] || 'contactado');
+  }, [resultado]);
 
   if (!isOpen) return null;
 
@@ -33,8 +47,8 @@ export default function OutreachModal({ lead, isOpen, onClose, onSaved, token }:
           canal: 'whatsapp',
           resultado,
           notas,
-          nuevo_estado_lead: nuevoEstado
-        })
+          nuevo_estado_lead: nuevoEstado,
+        }),
       });
 
       if (response.ok) {
@@ -42,11 +56,11 @@ export default function OutreachModal({ lead, isOpen, onClose, onSaved, token }:
         onClose();
       } else {
         const errData = await response.json();
-        alert(`Error al registrar outreach: ${errData.error || 'Intenta de nuevo'}`);
+        alert(`Error al registrar seguimiento: ${errData.error || 'Intenta de nuevo'}`);
       }
     } catch (err) {
       console.error(err);
-      alert('Error de conexión.');
+      alert('Error de conexion.');
     } finally {
       setLoading(false);
     }
@@ -57,61 +71,64 @@ export default function OutreachModal({ lead, isOpen, onClose, onSaved, token }:
       <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl animate-fade-in">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h3 className="text-xl font-bold text-white">Registrar Contacto</h3>
+            <h3 className="text-xl font-bold text-white">Estado / seguimiento</h3>
             <p className="text-sm text-slate-400 mt-1">{lead.empresa}</p>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="text-slate-400 hover:text-white transition-colors"
+            aria-label="Cerrar"
           >
-            ✕
+            x
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-semibold text-slate-300 mb-2">
-              Resultado del Contacto
+              Que paso con este contacto
             </label>
             <select
               value={resultado}
               onChange={(e) => setResultado(e.target.value)}
               className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2.5 outline-none focus:border-amber-500 transition-colors"
             >
-              <option value="pendiente">Pendiente</option>
-              <option value="contactado">Mensaje Enviado / Contactado</option>
-              <option value="respondio">Respondió Interesado</option>
-              <option value="agendado">Reunión / Visita Agendada</option>
-              <option value="rechazo">Rechazado / Sin interés</option>
+              <option value="pendiente">Queda pendiente</option>
+              <option value="contactado">Mensaje enviado / contactado</option>
+              <option value="respondio">Respondio / interesado</option>
+              <option value="agendado">Reunion o visita agendada</option>
+              <option value="rechazo">Sin interes / rechazo</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-semibold text-slate-300 mb-2">
-              Nuevo Estado del Lead
+              Dejar contacto en seccion
             </label>
             <select
               value={nuevoEstado}
               onChange={(e) => setNuevoEstado(e.target.value)}
               className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2.5 outline-none focus:border-amber-500 transition-colors"
             >
-              <option value="nuevo">Nuevo</option>
-              <option value="en_proceso">En Proceso</option>
+              <option value="nuevo">Pendiente</option>
+              <option value="en_proceso">En proceso</option>
               <option value="contactado">Contactado</option>
+              <option value="respondio">Interesado</option>
               <option value="agendado">Agendado</option>
+              <option value="rechazo">Sin interes</option>
               <option value="descartado">Descartado</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-semibold text-slate-300 mb-2">
-              Notas / Comentarios
+              Notas / comentarios
             </label>
             <textarea
               value={notas}
               onChange={(e) => setNotas(e.target.value)}
               rows={3}
-              placeholder="Escribe detalles del contacto, fechas importantes, etc."
+              placeholder="Ej: pidio cotizacion, llamar el viernes, no era la persona correcta..."
               className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 transition-colors resize-none"
             />
           </div>
@@ -129,7 +146,7 @@ export default function OutreachModal({ lead, isOpen, onClose, onSaved, token }:
               disabled={loading}
               className="px-5 py-2 text-sm font-bold text-slate-900 bg-amber-500 rounded-lg hover:bg-amber-400 transition-all disabled:opacity-50"
             >
-              {loading ? 'Guardando...' : 'Guardar Registro'}
+              {loading ? 'Guardando...' : 'Guardar estado'}
             </button>
           </div>
         </form>

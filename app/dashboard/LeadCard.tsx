@@ -290,7 +290,7 @@ export default function LeadCard({
         </button>
         <button onClick={onOpenOutreach}
           className="inline-flex items-center justify-center gap-2 px-3 py-3 rounded-lg text-sm font-bold bg-slate-800 border border-slate-700 text-slate-200 hover:border-slate-600 transition-all">
-          Cambiar estado
+          Estado / interes
         </button>
       </div>
     </div>
